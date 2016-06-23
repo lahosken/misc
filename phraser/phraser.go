@@ -42,7 +42,7 @@ const (
 	tmpFilenameFormat         = "p-%s-%012d.txt"
 	dictTampThreshholdEntries = 6000000
 	dictOutputThreshhold      = 20000000
-  lowScore                  = 15
+	lowScore                  = 35 // TODO instead of magic constant, could compute histogram in persist()
 )
 
 var (
@@ -671,7 +671,7 @@ func Reduce(tmpPath string, outPath string) {
 	// things mmmostly wouldn't appear in the first 1M phrases, so good enough
 	// for our purposes.
 
-  magicNumber := 5
+	magicNumber := 5
 
 	// First pass
 	for _, tmpFilename := range tmpFilenames {
@@ -735,18 +735,18 @@ func Reduce(tmpPath string, outPath string) {
 		}
 		tmpF.Close()
 	}
-  if len(bigCounter.d) > dictOutputThreshhold {
-    // Probably our bigCounter is chock-full of stuff and the machine is straining
-    // under the load. Delete low-score entries so that we don't waste time
-    // sorting them and such.
-    log.Printf(" LEN(bigCounter.d)=%v BEFORE PURGE", len(bigCounter.d))
-    for phrase, score := range bigCounter.d {
-      if score <= lowScore {
-        delete(bigCounter.d, phrase)
-      }
-    }
-    log.Printf(" LEN(bigCounter.d)=%v AFTER PURGE", len(bigCounter.d))
-  }
+	if len(bigCounter.d) > dictOutputThreshhold {
+		// Probably our bigCounter is chock-full of stuff and the machine is straining
+		// under the load. Delete low-score entries so that we don't waste time
+		// sorting them and such.
+		log.Printf(" LEN(bigCounter.d)=%v BEFORE lowScore PURGE", len(bigCounter.d))
+		for phrase, score := range bigCounter.d {
+			if score <= lowScore {
+				delete(bigCounter.d, phrase)
+			}
+		}
+		log.Printf(" LEN(bigCounter.d)=%v AFTER lowScore PURGE", len(bigCounter.d))
+	}
 	bigCounter.persist(outPath)
 }
 
