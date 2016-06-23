@@ -42,6 +42,7 @@ const (
 	tmpFilenameFormat         = "p-%s-%012d.txt"
 	dictTampThreshholdEntries = 6000000
 	dictOutputThreshhold      = 20000000
+  lowScore                  = 15
 )
 
 var (
@@ -63,7 +64,7 @@ var (
 	//    The '''S. S. ''Minnow''''' is a fictional charter boat on the
 	//    hit 1960s television sitcom ''Gilligan's Island''.
 	// "Minnow" and "Gilligan's Island" are italicized; "S. S. Minnow" is
-	// bolded. These spans ?often? indicate especially interesting text
+	// bolded. These spans often(?) indicate especially interesting text
 	// sections.  E.g., in addition to tallying the text "The S S Minnow is a..."
 	// we also should tally "S S Minnow", "Minnow".
 	spanREs = []*regexp.Regexp{
@@ -170,7 +171,7 @@ func (c counter) persist(outPath string) {
 		sortMe[score] = append(sortMe[score], phrase)
 	}
 	if len(c.d) > 5000000 {
-		log.Printf("   BIG SORT DONE")
+		log.Printf("   BIG SORT DONE SIZE=%v", len(c.d))
 	}
 	os.MkdirAll(filepath.Dir(outPath), 0776)
 	outF, err := os.Create(outPath)
@@ -413,11 +414,11 @@ func line2snippets(line string, snippets *counter) {
 // devote most of my hard drive to keeping those files around for the attempt.
 func readNgrams(fodderPath, tmpPath string) {
 	lineCount := uint64(0)
-	inFilePaths, _ := filepath.Glob(filepath.Join(fodderPath, "*winnowed.gz")) // REMIND winnowed
+	inFilePaths, _ := filepath.Glob(filepath.Join(fodderPath, "*-winnowed.gz"))
 	found := counter{}
 	for _, inFilePath := range inFilePaths {
 		shortName := strings.Split(filepath.Base(inFilePath), ".")[0]
-		if strings.Contains(shortname, "-_") {
+		if strings.Contains(shortName, "-_") {
 			// we ignore _ADJ_, _NOUN_, etc. ngrams, which these "_" files are full of, so...
 			continue
 		}
@@ -483,7 +484,7 @@ func readNgrams(fodderPath, tmpPath string) {
 							capitalCount += 1.0
 						}
 					}
-					score := (2.0 + capitalCount) * math.Log(math.Log(float64(match_count))+float64(volume_count)) / float64(years_ago+1)
+					score := (7.0 + capitalCount) * math.Log(math.Log(float64(match_count))+float64(volume_count)) / float64(years_ago+1)
 					if score >= 1.0 {
 						found.boost(frag, uint64(score))
 					}
@@ -663,21 +664,14 @@ func Reduce(tmpPath string, outPath string) {
 	//
 	// If we try to pick up ALL the entries, we fill up our memory with
 	// uncommon phrases. Instead, two passes
-	//   first: count everything w/count >1
-	//   second: for items w/ count <=1, "boost" things we saw in 1st pass
+	//   first: count everything w/count >5
+	//   second: for items w/ count <=5, "boost" things we saw in 1st pass
 	//
 	// No, this isn't super-rigorous; it leaves out some things. But those
 	// things mmmostly wouldn't appear in the first 1M phrases, so good enough
 	// for our purposes.
-	// E.g., "disavow any" is _darned_ unusual in that it shows up as a "1" in
-	// a dozen places but never higher than 1. Giving it a theoretical score of
-	// 9704, about 3.4millionth in the list, i.e., pretty darned far down.
-	//
-	// Instead of magic number 2, could use 5 and still get pretty good results.
-	// But 2 means we aren't abusing this un-rigorous trick so egregiously.
-	// Some slapdash experimenting (see maxes.py script) suggests that 3 would
-	// be a pretty good number if want to catch things that'll end up with score
-	// > 10000
+
+  magicNumber := 5
 
 	// First pass
 	for _, tmpFilename := range tmpFilenames {
@@ -701,7 +695,7 @@ func Reduce(tmpPath string, outPath string) {
 			if err != nil {
 				log.Fatal("Weird tmp file line (non-int score?) %s %s", tmpFilename, line)
 			}
-			if score <= 1 {
+			if score <= magicNumber {
 				break
 			}
 			phrase := match[2]
@@ -730,7 +724,7 @@ func Reduce(tmpPath string, outPath string) {
 			if err != nil {
 				log.Fatal("weird tmp file line (non-int score?) %s %s", tmpFilename, line)
 			}
-			if score > 1 {
+			if score > magicNumber {
 				continue
 			}
 			phrase := match[2]
@@ -741,7 +735,18 @@ func Reduce(tmpPath string, outPath string) {
 		}
 		tmpF.Close()
 	}
-
+  if len(bigCounter.d) > dictOutputThreshhold {
+    // Probably our bigCounter is chock-full of stuff and the machine is straining
+    // under the load. Delete low-score entries so that we don't waste time
+    // sorting them and such.
+    log.Printf(" LEN(bigCounter.d)=%v BEFORE PURGE", len(bigCounter.d))
+    for phrase, score := range bigCounter.d {
+      if score <= lowScore {
+        delete(bigCounter.d, phrase)
+      }
+    }
+    log.Printf(" LEN(bigCounter.d)=%v AFTER PURGE", len(bigCounter.d))
+  }
 	bigCounter.persist(outPath)
 }
 
