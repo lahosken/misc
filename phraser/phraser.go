@@ -42,7 +42,7 @@ const (
 	tmpFilenameFormat         = "p-%s-%012d.txt"
 	dictTampThreshholdEntries = 6000000
 	dictOutputThreshhold      = 20000000
-	lowScore                  = 35 // TODO instead of magic constant, could compute histogram in persist()
+	lowScore                  = 5 // TODO instead of magic constant, could compute histogram in persist()
 )
 
 var (
@@ -484,7 +484,7 @@ func readNgrams(fodderPath, tmpPath string) {
 							capitalCount += 1.0
 						}
 					}
-					score := (7.0 + capitalCount) * math.Log(math.Log(float64(match_count))+float64(volume_count)) / float64(years_ago+1)
+					score := (3.0 + capitalCount) * math.Sqrt(math.Sqrt(float64(match_count))+float64(volume_count)) / float64(years_ago+1)
 					if score >= 1.0 {
 						found.boost(frag, uint64(score))
 					}
@@ -699,7 +699,7 @@ func Reduce(tmpPath string, outPath string) {
 				break
 			}
 			phrase := match[2]
-			bigCounter.boost(phrase, uint64(8.0*math.Log1p(float64(score))))
+			bigCounter.boost(phrase, uint64(math.Sqrt(float64(score))))
 		}
 		tmpF.Close()
 	}
@@ -730,7 +730,7 @@ func Reduce(tmpPath string, outPath string) {
 			phrase := match[2]
 			// only "boost" existing, no new stuff
 			if _, contains := bigCounter.d[phrase]; contains {
-				bigCounter.boost(phrase, uint64(8.0*math.Log1p(float64(score))))
+				bigCounter.boost(phrase, uint64(math.Sqrt(float64(score))))
 			}
 		}
 		tmpF.Close()
