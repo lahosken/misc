@@ -1,0 +1,41 @@
+div#activity-zone {
+    margin-top: -1em;
+}
+div.msg {
+    border: 1px dotted black;
+    border-left: 2px solid red;
+    background-color: #fed;
+    padding-left: 2px;
+    margin: 1px;
+}
+a#fsq {
+    margin-top: -0.5em;
+    float: right;
+    color: white; background-color: blue;
+}
+
+button#ping {
+    white-space: normal; /* some place-names are long. Don't (fail to) cram 'em onto one line. */
+}
+
+div#gazetteer {
+    min-height: 1.5em;
+    text-align: center;
+}
+
+span.trophy {
+    background-color: yellow;
+}
+#show-junkdrawer {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+}
+.inv-prism {
+    display: inline-block;
+    background-color: #ddd;
+    white-space: nowrap;
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

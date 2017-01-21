@@ -1,0 +1,17 @@
+application: rovercast-1372
+version: main
+runtime: go
+api_version: go1
+
+# TODO this is silly.
+default_expiration: "1m"
+
+handlers:
+- url: /s
+  static_dir: s
+
+- url: /client
+  static_dir: client
+
+- url: /.*
+  script: _go_app

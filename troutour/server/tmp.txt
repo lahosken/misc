@@ -1,0 +1,38 @@
+===
+
+2016/08/22 02:48:03 INFO: CHOSEN CLUMP cF66
+2016/08/22 02:48:03 INFO: for cJ28
+2016/08/22 02:48:03 INFO: +agglomerate({[cF66 cJ28]} map[] clumps)
+2016/08/22 02:48:03 INFO:  adding (RM'd [])
+2016/08/22 02:48:03 INFO: +agglomerate({[cJ28 cZ50]} map[cF66|cJ28:{[cF66 cJ28]}] clumps)
+2016/08/22 02:48:03 INFO:  adding (RM'd [])
+2016/08/22 02:48:03 INFO: +agglomerate({[cF80 cJ28]} map[cF66|cJ28:{[cF66 cJ28]} cJ28|cZ50:{[cJ28 cZ50]}] clumps)
+2016/08/22 02:48:03 INFO:  adding (RM'd [])
+2016/08/22 02:48:03 INFO: +agglomerate({[cJ28 cJ45]} map[cF66|cJ28:{[cF66 cJ28]} cJ28|cZ50:{[cJ28 cZ50]} cF80|cJ28:{[cF80 cJ28]}] clumps)
+2016/08/22 02:48:03 INFO:  adding (RM'd [])
+2016/08/22 02:48:03 INFO: for cF80
+2016/08/22 02:48:03 INFO: +agglomerate({[cF66 cF80]} map[cF66|cJ28:{[cF66 cJ28]} cJ28|cZ50:{[cJ28 cZ50]} cF80|cJ28:{[cF80 cJ28]} cJ28|cJ45:{[cJ28 cJ45]}] clumps)
+2016/08/22 02:48:03 INFO:  adding (RM'd [])
+2016/08/22 02:48:03 INFO: +agglomerate({[cF80 cJ28]} map[cF66|cJ28:{[cF66 cJ28]} cJ28|cZ50:{[cJ28 cZ50]} cF80|cJ28:{[cF80 cJ28]} cJ28|cJ45:{[cJ28 cJ45]} cF66|cF80:{[cF66 cF80]}] clumps)
+2016/08/22 02:48:03 INFO:  already there, nm
+2016/08/22 02:48:03 INFO: +agglomerate({[cF80 cZ50]} map[cJ28|cJ45:{[cJ28 cJ45]} cF66|cF80:{[cF66 cF80]} cF66|cJ28:{[cF66 cJ28]} cJ28|cZ50:{[cJ28 cZ50]} cF80|cJ28:{[cF80 cJ28]}] clumps)
+2016/08/22 02:48:03 INFO:  adding (RM'd [])
+2016/08/22 02:48:03 INFO: for cJ45
+2016/08/22 02:48:03 INFO: +agglomerate({[cF66 cJ45]} map[cF80|cJ28:{[cF80 cJ28]} cJ28|cJ45:{[cJ28 cJ45]} cF66|cF80:{[cF66 cF80]} cF80|cZ50:{[cF80 cZ50]} cF66|cJ28:{[cF66 cJ28]} cJ28|cZ50:{[cJ28 cZ50]}] clumps)
+2016/08/22 02:48:03 INFO:  adding (RM'd [cJ28|cZ50])
+2016/08/22 02:48:03 INFO: +agglomerate({[cJ28 cJ45]} map[cF66|cJ28:{[cF66 cJ28]} cF66|cJ45:{[cF66 cJ45]} cF80|cJ28:{[cF80 cJ28]} cJ28|cJ45:{[cJ28 cJ45]} cF66|cF80:{[cF66 cF80]} cF80|cZ50:{[cF80 cZ50]}] clumps)
+2016/08/22 02:48:03 INFO:  already there, nm
+2016/08/22 02:48:03 INFO: +agglomerate({[cJ45 cZ50]} map[cF80|cJ28:{[cF80 cJ28]} cJ28|cJ45:{[cJ28 cJ45]} cF66|cF80:{[cF66 cF80]} cF80|cZ50:{[cF80 cZ50]} cF66|cJ28:{[cF66 cJ28]} cF66|cJ45:{[cF66 cJ45]}] clumps)
+2016/08/22 02:48:03 INFO:  adding (RM'd [])
+2016/08/22 02:48:03 INFO: for cZ50
+2016/08/22 02:48:03 INFO: +agglomerate({[cF66 cZ50]} map[cF66|cF80:{[cF66 cF80]} cF80|cZ50:{[cF80 cZ50]} cJ45|cZ50:{[cJ45 cZ50]} cF66|cJ28:{[cF66 cJ28]} cF66|cJ45:{[cF66 cJ45]} cF80|cJ28:{[cF80 cJ28]} cJ28|cJ45:{[cJ28 cJ45]}] clumps)
+2016/08/22 02:48:03 INFO:  adding (RM'd [])
+2016/08/22 02:48:03 INFO: +agglomerate({[cJ28 cZ50]} map[cJ45|cZ50:{[cJ45 cZ50]} cF66|cZ50:{[cF66 cZ50]} cF66|cJ28:{[cF66 cJ28]} cF66|cJ45:{[cF66 cJ45]} cF80|cJ28:{[cF80 cJ28]} cJ28|cJ45:{[cJ28 cJ45]} cF66|cF80:{[cF66 cF80]} cF80|cZ50:{[cF80 cZ50]}] clumps)
+2016/08/22 02:48:03 INFO:  blocked by a shorter one, nm
+2016/08/22 02:48:03 INFO: +agglomerate({[cJ45 cZ50]} map[cF66|cJ45:{[cF66 cJ45]} cF80|cJ28:{[cF80 cJ28]} cJ28|cJ45:{[cJ28 cJ45]} cF66|cF80:{[cF66 cF80]} cF80|cZ50:{[cF80 cZ50]} cJ45|cZ50:{[cJ45 cZ50]} cF66|cZ50:{[cF66 cZ50]} cF66|cJ28:{[cF66 cJ28]}] clumps)
+2016/08/22 02:48:03 INFO:  already there, nm
+2016/08/22 02:48:03 INFO: +agglomerate({[cF80 cZ50]} map[cF66|cZ50:{[cF66 cZ50]} cF66|cJ28:{[cF66 cJ28]} cF66|cJ45:{[cF66 cJ45]} cF80|cJ28:{[cF80 cJ28]} cJ28|cJ45:{[cJ28 cJ45]} cF66|cF80:{[cF66 cF80]} cF80|cZ50:{[cF80 cZ50]} cJ45|cZ50:{[cJ45 cZ50]}] clumps)
+2016/08/22 02:48:03 INFO:  already there, nm
+2016/08/22 02:48:03 INFO: ADDED [cF66|cJ28 cF66|cF80 cF66|cJ45 cF66|cZ50]
+2016/08/22 02:48:03 INFO: RM'ED [cJ28|cZ50 cJ28|cZ50]
+INFO     2016-08-22 02:48:03,982 module.py:788] default: "GET /a/xsadj HTTP/1.1" 200

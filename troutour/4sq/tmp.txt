@@ -1,0 +1,1558 @@
+===
+---
+displayType: venue
+id: 57852fff498e80acdc383fbc
+venue:
+ /name: California Academy of Sciences
+ /location:
+   city : "San Francisco"
+   neighborhood : "Golden Gate Park"
+   contextGeoId : 2160
+   cc : "US"
+   country : "United States"
+   postalCode : "94118"
+   state : "CA"
+   contextLine : "Golden Gate Park"
+   formattedAddress : ["<span itemprop=\"streetAddress\">55 Mu
+   crossStreet : "at Martin Luther King Jr Dr"
+   address : "55 Music Concourse Dr"
+   lat : 37.7697648824009
+   lng : -122.46631622314455
+ /stats:
+   tipCount : 441
+   checkinsCount : 64399
+   usersCount : 40862
+ /categories:
+   {"pluralName": "Science Museums", "prima
+---
+displayType: venue
+id: 57852fff498e80acdc383fbd
+venue:
+ /name: Conservatory of Flowers
+ /location:
+   city : "San Francisco"
+   neighborhood : "Golden Gate Park"
+   contextGeoId : 2160
+   cc : "US"
+   country : "United States"
+   postalCode : "94118"
+   state : "CA"
+   contextLine : "Golden Gate Park"
+   formattedAddress : ["<span itemprop=\"streetAddress\">100 J
+   crossStreet : "at Conservatory Dr W"
+   address : "100 J F Kennedy Dr"
+   lat : 37.77256353055066
+   lng : -122.46023297309877
+ /stats:
+   tipCount : 66
+   checkinsCount : 10630
+   usersCount : 7932
+ /categories:
+   {"pluralName": "Gardens", "primary": tru
+---
+displayType: venue
+id: 57852fff498e80acdc383fbe
+venue:
+ /name: Easy Breezy
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">718 I
+   crossStreet : "btwn 8th & 9th"
+   address : "718 Irving St"
+   lat : 37.76416449766622
+   lng : -122.46569536645696
+ /stats:
+   tipCount : 33
+   checkinsCount : 1691
+   usersCount : 738
+ /categories:
+   {"pluralName": "Frozen Yogurt Shops", "p
+---
+displayType: venue
+id: 57852fff498e80acdc383fbf
+venue:
+ /name: Ebisu
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1283 
+   crossStreet : "at Irving"
+   address : "1283 9th Ave"
+   lat : 37.764490389096174
+   lng : -122.46636426983471
+ /stats:
+   tipCount : 80
+   checkinsCount : 4455
+   usersCount : 2668
+ /categories:
+   {"pluralName": "Sushi Restaurants", "pri
+---
+displayType: venue
+id: 57852fff498e80acdc383fc0
+venue:
+ /name: Golden Gate Park Children's Playground
+ /location:
+   city : "San Francisco"
+   neighborhood : "Golden Gate Park"
+   contextGeoId : 2160
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Golden Gate Park"
+   formattedAddress : ["<span itemprop=\"streetAddress\">Bowli
+   crossStreet : "near South Dr"
+   address : "Bowling Green Drive"
+   lat : 37.76824678348723
+   lng : -122.45769023895264
+ /stats:
+   tipCount : 23
+   checkinsCount : 3933
+   usersCount : 2478
+ /categories:
+   {"pluralName": "Playgrounds", "primary":
+---
+displayType: venue
+id: 57852fff498e80acdc383fc1
+venue:
+ /name: Nopalito
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1224 
+   crossStreet : "Irving St"
+   address : "1224 9th Ave"
+   lat : 37.76593141060717
+   lng : -122.46640205383301
+ /stats:
+   tipCount : 116
+   checkinsCount : 5844
+   usersCount : 3480
+ /categories:
+   {"pluralName": "Mexican Restaurants", "p
+---
+displayType: venue
+id: 57852fff498e80acdc383fc2
+venue:
+ /name: The National AIDS Memorial Grove
+ /location:
+   city : "San Francisco"
+   neighborhood : "Golden Gate Park"
+   contextGeoId : 2160
+   cc : "US"
+   country : "United States"
+   postalCode : "94121"
+   state : "CA"
+   contextLine : "Golden Gate Park"
+   formattedAddress : ["<span itemprop=\"streetAddress\">Golde
+   crossStreet : "btwn Bowling Green & Middle Dr E"
+   address : "Golden Gate Park"
+   lat : 37.769883615080055
+   lng : -122.46093034744263
+ /stats:
+   tipCount : 9
+   checkinsCount : 2065
+   usersCount : 1262
+ /categories:
+   {"pluralName": "Parks", "primary": true,
+---
+displayType: venue
+id: 57852fff498e80acdc383fc3
+venue:
+ /name: Lavash
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">511 I
+   crossStreet : "at 6th St"
+   address : "511 Irving St"
+   lat : 37.76411322369617
+   lng : -122.46347579884224
+ /stats:
+   tipCount : 50
+   checkinsCount : 2186
+   usersCount : 1526
+ /categories:
+   {"pluralName": "Middle Eastern Restauran
+---
+displayType: venue
+id: 57852fff498e80acdc383fc4
+venue:
+ /name: Circus Center
+ /location:
+   city : "San Francisco"
+   contextGeoId : 72057594043319895
+   cc : "US"
+   country : "United States"
+   postalCode : "94117"
+   state : "CA"
+   contextLine : "San Francisco, CA"
+   formattedAddress : ["<span itemprop=\"streetAddress\">755 F
+   crossStreet : "Arguello Blvd."
+   address : "755 Frederick St"
+   lat : 37.76553604414796
+   lng : -122.456849960759
+ /stats:
+   tipCount : 7
+   checkinsCount : 2969
+   usersCount : 521
+ /categories:
+   {"pluralName": "Performing Arts Venues",
+---
+displayType: venue
+id: 57852fff498e80acdc383fc5
+venue:
+ /name: Green Apple Books & Le Video
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1231 
+   crossStreet : "at Lincoln Way"
+   address : "1231 9th Ave"
+   lat : 37.765365711497225
+   lng : -122.46648036006773
+ /stats:
+   tipCount : 13
+   checkinsCount : 1767
+   usersCount : 792
+ /categories:
+   {"pluralName": "Bookstores", "primary": 
+---
+displayType: venue
+id: 57852fff498e80acdc383fc6
+venue:
+ /name: Wooly Pig Cafe
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">205 H
+   crossStreet : "at 3rd Ave"
+   address : "205 Hugo St"
+   lat : 37.76522
+   lng : -122.460266
+ /stats:
+   tipCount : 29
+   checkinsCount : 2267
+   usersCount : 855
+ /categories:
+   {"pluralName": "Caf\u00e9s", "primary": 
+---
+displayType: venue
+id: 57852fff498e80acdc383fc7
+venue:
+ /name: Burn Group Fitness
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">637 I
+   address : "637 Irving St"
+   lat : 37.76403225838489
+   lng : -122.46494906424905
+ /stats:
+   tipCount : 7
+   checkinsCount : 1638
+   usersCount : 166
+ /categories:
+   {"pluralName": "Gyms", "primary": true, 
+---
+displayType: venue
+id: 57852fff498e80acdc383fc8
+venue:
+ /name: Koo
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">408 I
+   crossStreet : "at 5th Ave"
+   address : "408 Irving St"
+   lat : 37.76430297307453
+   lng : -122.46253967285156
+ /stats:
+   tipCount : 64
+   checkinsCount : 2271
+   usersCount : 1394
+ /categories:
+   {"pluralName": "Sushi Restaurants", "pri
+---
+displayType: venue
+id: 57852fff498e80acdc383fc9
+venue:
+ /name: Sharon Meadow
+ /location:
+   city : "San Francisco"
+   neighborhood : "Golden Gate Park"
+   contextGeoId : 2160
+   cc : "US"
+   country : "United States"
+   postalCode : "94117"
+   state : "CA"
+   contextLine : "Golden Gate Park"
+   formattedAddress : ["<span itemprop=\"streetAddress\">Kezar
+   crossStreet : "Golden Gate Park"
+   address : "Kezar Dr"
+   lat : 37.768837549496475
+   lng : -122.45800543434933
+ /stats:
+   tipCount : 10
+   checkinsCount : 2625
+   usersCount : 1583
+ /categories:
+   {"pluralName": "Parks", "primary": true,
+---
+displayType: venue
+id: 57852fff498e80acdc383fca
+venue:
+ /name: Morrison Planetarium
+ /location:
+   city : "San Francisco"
+   neighborhood : "Golden Gate Park"
+   contextGeoId : 2160
+   cc : "US"
+   country : "United States"
+   postalCode : "94118"
+   state : "CA"
+   contextLine : "Golden Gate Park"
+   formattedAddress : ["<span itemprop=\"streetAddress\">55 Mu
+   crossStreet : "at California Academy of Sciences"
+   address : "55 Music Concourse Dr"
+   lat : 37.76998456139671
+   lng : -122.46615972958666
+ /stats:
+   tipCount : 24
+   checkinsCount : 4171
+   usersCount : 2873
+ /categories:
+   {"pluralName": "Planetariums", "primary"
+---
+displayType: venue
+id: 57852fff498e80acdc383fcb
+venue:
+ /name: Pluto's
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">627 I
+   crossStreet : "at 7th Ave"
+   address : "627 Irving St"
+   lat : 37.76406938429144
+   lng : -122.46477216220397
+ /stats:
+   tipCount : 50
+   checkinsCount : 6054
+   usersCount : 2402
+ /categories:
+   {"pluralName": "Salad Places", "primary"
+---
+displayType: venue
+id: 57852fff498e80acdc383fcc
+venue:
+ /name: Steinhart Aquarium
+ /location:
+   city : "San Francisco"
+   neighborhood : "Golden Gate Park"
+   contextGeoId : 2160
+   cc : "US"
+   country : "United States"
+   postalCode : "94118"
+   state : "CA"
+   contextLine : "Golden Gate Park"
+   formattedAddress : ["<span itemprop=\"streetAddress\">55 Mu
+   crossStreet : "at California Academy of Sciences"
+   address : "55 Music Concourse Dr"
+   lat : 37.769794625422776
+   lng : -122.4662702919326
+ /stats:
+   tipCount : 14
+   checkinsCount : 2985
+   usersCount : 2081
+ /categories:
+   {"pluralName": "Aquariums", "primary": t
+---
+displayType: venue
+id: 57852fff498e80acdc383fcd
+venue:
+ /name: Poki Time
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   contextLine : "Inner Sunset"
+   state : "CA"
+   formattedAddress : ["<span itemprop=\"streetAddress\">549 I
+   address : "549 Irving St"
+   lat : 37.7641
+   lng : -122.46399
+ /stats:
+   tipCount : 10
+   checkinsCount : 583
+   usersCount : 373
+ /categories:
+   {"pluralName": "Hawaiian Restaurants", "
+---
+displayType: venue
+id: 57852fff498e80acdc383fce
+venue:
+ /name: Sunset Gym
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1247 
+   crossStreet : "Lincoln Way"
+   address : "1247 9th Ave"
+   lat : 37.765093097891736
+   lng : -122.46673465250868
+ /stats:
+   tipCount : 3
+   checkinsCount : 3403
+   usersCount : 173
+ /categories:
+   {"pluralName": "Gyms", "primary": true, 
+---
+displayType: venue
+id: 57852fff498e80acdc383fcf
+venue:
+ /name: Pacific Catch
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1200 
+   crossStreet : "at Lincoln Way"
+   address : "1200 9th Ave"
+   lat : 37.765779274936385
+   lng : -122.46632557306172
+ /stats:
+   tipCount : 134
+   checkinsCount : 10693
+   usersCount : 5110
+ /categories:
+   {"pluralName": "Seafood Restaurants", "p
+---
+displayType: venue
+id: 57852fff498e80acdc383fd0
+venue:
+ /name: Marnee Thai
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1243 
+   crossStreet : "btwn Lincoln Way & Irving St"
+   address : "1243 9th Ave"
+   lat : 37.76517011253651
+   lng : -122.46646930386062
+ /stats:
+   tipCount : 64
+   checkinsCount : 4684
+   usersCount : 2659
+ /categories:
+   {"pluralName": "Thai Restaurants", "prim
+---
+displayType: venue
+id: 57852fff498e80acdc383fd1
+venue:
+ /name: Music Concourse
+ /location:
+   city : "San Francisco"
+   neighborhood : "Golden Gate Park"
+   contextGeoId : 2160
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Golden Gate Park"
+   formattedAddress : ["<span itemprop=\"streetAddress\">Conco
+   crossStreet : "Golden Gate Park"
+   address : "Concourse Dr"
+   lat : 37.77062993041223
+   lng : -122.46746957302092
+ /stats:
+   tipCount : 10
+   checkinsCount : 4136
+   usersCount : 2571
+ /categories:
+   {"pluralName": "Plazas", "primary": true
+---
+displayType: venue
+id: 57852fff498e80acdc383fd2
+venue:
+ /name: Kezar Stadium
+ /location:
+   city : "San Francisco"
+   neighborhood : "Golden Gate Park"
+   contextGeoId : 2160
+   cc : "US"
+   country : "United States"
+   postalCode : "94117"
+   state : "CA"
+   contextLine : "Golden Gate Park"
+   formattedAddress : ["<span itemprop=\"streetAddress\">600 F
+   crossStreet : "Stanyan St"
+   address : "600 Frederick St"
+   lat : 37.7664488451093
+   lng : -122.455053146336
+ /stats:
+   tipCount : 24
+   checkinsCount : 7059
+   usersCount : 2327
+ /categories:
+   {"pluralName": "Track Stadiums", "primar
+---
+displayType: venue
+id: 57852fff498e80acdc383fd3
+venue:
+ /name: AcroSports
+ /location:
+   city : "San Francisco"
+   contextGeoId : 72057594043319895
+   cc : "US"
+   country : "United States"
+   postalCode : "94117"
+   state : "CA"
+   contextLine : "San Francisco, CA"
+   formattedAddress : ["<span itemprop=\"streetAddress\">639 F
+   crossStreet : "near Stanyan"
+   address : "639 Frederick St"
+   lat : 37.76576677
+   lng : -122.45545864105225
+ /stats:
+   tipCount : 5
+   checkinsCount : 1235
+   usersCount : 287
+ /categories:
+   {"pluralName": "Athletics & Sports", "pr
+---
+displayType: venue
+id: 57852fff498e80acdc383fd4
+venue:
+ /name: InnerFog
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">545 I
+   crossStreet : "at 7th Ave"
+   address : "545 Irving St"
+   lat : 37.764166885334824
+   lng : -122.46387106276683
+ /stats:
+   tipCount : 33
+   checkinsCount : 2827
+   usersCount : 1294
+ /categories:
+   {"pluralName": "Wine Bars", "primary": t
+---
+displayType: venue
+id: 57852fff498e80acdc383fd5
+venue:
+ /name: The Little Shamrock
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">807 L
+   crossStreet : "9th Ave"
+   address : "807 Lincoln Way"
+   lat : 37.76591506294141
+   lng : -122.4665301129853
+ /stats:
+   tipCount : 34
+   checkinsCount : 4326
+   usersCount : 2062
+ /categories:
+   {"pluralName": "Irish Pubs", "primary": 
+---
+displayType: venue
+id: 57852fff498e80acdc383fd6
+venue:
+ /name: The Yellow Submarine
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">503 I
+   crossStreet : "6th Avenue"
+   address : "503 Irving St"
+   lat : 37.76413
+   lng : -122.463254
+ /stats:
+   tipCount : 40
+   checkinsCount : 2505
+   usersCount : 1333
+ /categories:
+   {"pluralName": "Sandwich Places", "prima
+---
+displayType: venue
+id: 57852fff498e80acdc383fd7
+venue:
+ /name: Lime Tree Southeast Asian Kitchen
+ /location:
+   city : "San Francisco"
+   neighborhood : "Inner Sunset"
+   contextGeoId : 2170
+   cc : "US"
+   country : "United States"
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset"
+   formattedAddress : ["<span itemprop=\"streetAddress\">450 I
+   crossStreet : "btw 5th & 6th"
+   address : "450 Irving St"
+   lat : 37.764269
+   lng : -122.462833
+ /stats:
+   tipCount : 45
+   checkinsCount : 2408
+   usersCount : 1575
+ /categories:
+   {"pluralName": "Asian Restaurants", "pri
+---
+displayType: venue
+id: 57852fff498e80acdc383fd8
+venue:
+ /name: Shakespeare Garden
+ /location:
+   city : "San Francisco"
+   neighborhood : "Golden Gate Park"
+   contextGeoId : 2160
+   cc : "US"
+   country : "United States"
+   postalCode : "94121"
+   state : "CA"
+   contextLine : "Golden Gate Park"
+   formattedAddress : ["<span itemprop=\"streetAddress\">Marti
+   crossStreet : "in Golden Gate Park"
+   address : "Martin Luther King Junior Dr"
+   lat : 37.76895283057378
+   lng : -122.46722012758255
+ /stats:
+   tipCount : 11
+   checkinsCount : 1913
+   usersCount : 1322
+ /categories:
+   {"pluralName": "Gardens", "primary": tru
+---
+displayType: venue
+id: 57852fff498e80acdc383fd9
+venue:
+ /name: Osher Rainforest
+ /location:
+   city : "San Francisco"
+   neighborhood : "Golden Gate Park"
+   contextGeoId : 2160
+   cc : "US"
+   country : "United States"
+   postalCode : "94118"
+   state : "CA"
+   contextLine : "Golden Gate Park"
+   formattedAddress : ["<span itemprop=\"streetAddress\">55 Mu
+   crossStreet : "at California Academy Of Sciences"
+   address : "55 Music Concourse Dr"
+   lat : 37.76975898911685
+   lng : -122.46639191037808
+ /stats:
+   tipCount : 9
+   checkinsCount : 2729
+   usersCount : 1922
+ /categories:
+   {"pluralName": "Science Museums", "prima
+===
+---
+displayType: venue
+id: 57852f3e498e2753be2d7712
+venue:
+ /name: Hollow
+ /location:
+   distance : 1167
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1435 
+   crossStreet : "btwn 15th & 16th Ave"
+   address : "1435 Irving St"
+   lat : 37.76374693039945
+   lng : -122.47342895489572
+ /stats:
+   tipCount : 86
+   checkinsCount : 3201
+   usersCount : 1377
+ /categories:
+   {"pluralName": "Coffee Shops", "primary"
+---
+displayType: venue
+id: 57852f3e498e2753be2d7713
+venue:
+ /name: Art's Cafe
+ /location:
+   distance : 1732
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">747 I
+   crossStreet : "at 8th Ave"
+   address : "747 Irving St"
+   lat : 37.7639417068072
+   lng : -122.46601047023418
+ /stats:
+   tipCount : 75
+   checkinsCount : 3409
+   usersCount : 1539
+ /categories:
+   {"pluralName": "Breakfast Spots", "prima
+---
+displayType: venue
+id: 57852f3e498e2753be2d7714
+venue:
+ /name: Trouble Coffee
+ /location:
+   distance : 1940
+   neighborhood : "Outer Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2197
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Outer Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">4033 
+   crossStreet : "at 46th Ave"
+   address : "4033 Judah St"
+   lat : 37.76033350637597
+   lng : -122.50536918640137
+ /stats:
+   tipCount : 187
+   checkinsCount : 10227
+   usersCount : 4188
+ /categories:
+   {"pluralName": "Coffee Shops", "primary"
+---
+displayType: venue
+id: 57852f3e498e2753be2d7715
+venue:
+ /name: Izakaya Sozai
+ /location:
+   distance : 1125
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1500 
+   crossStreet : "at 16th Ave"
+   address : "1500 Irving St"
+   lat : 37.763742
+   lng : -122.474044
+ /stats:
+   tipCount : 153
+   checkinsCount : 5760
+   usersCount : 3709
+ /categories:
+   {"pluralName": "Japanese Restaurants", "
+---
+displayType: venue
+id: 57852f3e498e2753be2d7716
+venue:
+ /name: Outerlands
+ /location:
+   distance : 1909
+   neighborhood : "Outer Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2197
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Outer Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">4001 
+   crossStreet : "at 45th Ave"
+   address : "4001 Judah St"
+   lat : 37.76025716839021
+   lng : -122.50502586364745
+ /stats:
+   tipCount : 208
+   checkinsCount : 9116
+   usersCount : 5729
+ /categories:
+   {"pluralName": "American Restaurants", "
+---
+displayType: venue
+id: 57852f3e498e2753be2d7717
+venue:
+ /name: Devil's Teeth Baking Company
+ /location:
+   distance : 1928
+   neighborhood : "Outer Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2197
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Outer Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">3876 
+   crossStreet : "btwn 45th & 46th Ave"
+   address : "3876 Noriega St"
+   lat : 37.75310437374734
+   lng : -122.50500977039337
+ /stats:
+   tipCount : 123
+   checkinsCount : 5675
+   usersCount : 2258
+ /categories:
+   {"pluralName": "Bakeries", "primary": tr
+---
+displayType: venue
+id: 57852f3e498e2753be2d7718
+venue:
+ /name: Easy Breezy
+ /location:
+   distance : 1768
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">718 I
+   crossStreet : "btwn 8th & 9th"
+   address : "718 Irving St"
+   lat : 37.76416449766622
+   lng : -122.46569536645696
+ /stats:
+   tipCount : 33
+   checkinsCount : 1691
+   usersCount : 738
+ /categories:
+   {"pluralName": "Frozen Yogurt Shops", "p
+---
+displayType: venue
+id: 57852f3e498e2753be2d7719
+venue:
+ /name: New Eritrea Restaurant & Bar
+ /location:
+   distance : 1596
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">907 I
+   crossStreet : "btwn 10th Ave. & 11th Ave."
+   address : "907 Irving St"
+   lat : 37.763849
+   lng : -122.46769059
+ /stats:
+   tipCount : 32
+   checkinsCount : 1659
+   usersCount : 1141
+ /categories:
+   {"pluralName": "Ethiopian Restaurants", 
+---
+displayType: venue
+id: 57852f3e498e2753be2d771a
+venue:
+ /name: San Tung Chinese Restaurant
+ /location:
+   distance : 1497
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1031 
+   crossStreet : "btwn 11th & 12th Ave"
+   address : "1031 Irving St"
+   lat : 37.76387861173316
+   lng : -122.46899561679331
+ /stats:
+   tipCount : 236
+   checkinsCount : 14629
+   usersCount : 8155
+ /categories:
+   {"pluralName": "Chinese Restaurants", "p
+---
+displayType: venue
+id: 57852f3e498e2753be2d771b
+venue:
+ /name: Andytown
+ /location:
+   distance : 1634
+   neighborhood : "Outer Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2197
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Outer Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">3655 
+   crossStreet : "at 43rd Ave"
+   address : "3655 Lawton St"
+   lat : 37.75663526453123
+   lng : -122.50225782394409
+ /stats:
+   tipCount : 106
+   checkinsCount : 4423
+   usersCount : 1357
+ /categories:
+   {"pluralName": "Coffee Shops", "primary"
+---
+displayType: venue
+id: 57852f3e498e2753be2d771c
+venue:
+ /name: Ebisu
+ /location:
+   distance : 1732
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1283 
+   crossStreet : "at Irving"
+   address : "1283 9th Ave"
+   lat : 37.764490389096174
+   lng : -122.46636426983471
+ /stats:
+   tipCount : 80
+   checkinsCount : 4455
+   usersCount : 2668
+ /categories:
+   {"pluralName": "Sushi Restaurants", "pri
+---
+displayType: venue
+id: 57852f3e498e2753be2d771d
+venue:
+ /name: Toyose
+ /location:
+   distance : 1897
+   neighborhood : "Outer Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2197
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Outer Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">3814 
+   crossStreet : "btwn 45th & 46th"
+   address : "3814 Noriega St"
+   lat : 37.753090721410764
+   lng : -122.50465046392779
+ /stats:
+   tipCount : 70
+   checkinsCount : 4980
+   usersCount : 2772
+ /categories:
+   {"pluralName": "Korean Restaurants", "pr
+---
+displayType: venue
+id: 57852f3e498e2753be2d771e
+venue:
+ /name: Arizmendi Bakery
+ /location:
+   distance : 1681
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1331 
+   crossStreet : "btwn Irving St & Judah St"
+   address : "1331 9th Ave"
+   lat : 37.763461
+   lng : -122.466368
+ /stats:
+   tipCount : 112
+   checkinsCount : 8998
+   usersCount : 3033
+ /categories:
+   {"pluralName": "Bakeries", "primary": tr
+---
+displayType: venue
+id: 57852f3e498e2753be2d771f
+venue:
+ /name: Nopalito
+ /location:
+   distance : 1811
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1224 
+   crossStreet : "Irving St"
+   address : "1224 9th Ave"
+   lat : 37.76593141060717
+   lng : -122.46640205383301
+ /stats:
+   tipCount : 116
+   checkinsCount : 5844
+   usersCount : 3480
+ /categories:
+   {"pluralName": "Mexican Restaurants", "p
+---
+displayType: venue
+id: 57852f3e498e2753be2d7720
+venue:
+ /name: Manna
+ /location:
+   distance : 1638
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">845 I
+   crossStreet : "10th Ave."
+   address : "845 Irving St"
+   lat : 37.763955
+   lng : -122.467219
+ /stats:
+   tipCount : 63
+   checkinsCount : 3432
+   usersCount : 1939
+ /categories:
+   {"pluralName": "Korean Restaurants", "pr
+---
+displayType: venue
+id: 57852f3e498e2753be2d7721
+venue:
+ /name: Andronico's
+ /location:
+   distance : 1369
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1200 
+   crossStreet : "at Funston Ave"
+   address : "1200 Irving St"
+   lat : 37.76425268807979
+   lng : -122.47102989004696
+ /stats:
+   tipCount : 45
+   checkinsCount : 9121
+   usersCount : 2133
+ /categories:
+   {"pluralName": "Grocery Stores", "primar
+---
+displayType: venue
+id: 57852f3e498e2753be2d7722
+venue:
+ /name: The Taco Shop at Underdog's
+ /location:
+   distance : 908
+   neighborhood : "Outer Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2197
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Outer Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1824 
+   crossStreet : "at 19th Ave"
+   address : "1824 Irving St"
+   lat : 37.763664
+   lng : -122.477546
+ /stats:
+   tipCount : 127
+   checkinsCount : 13539
+   usersCount : 4932
+ /categories:
+   {"pluralName": "Taco Places", "primary":
+---
+displayType: venue
+id: 57852f3e498e2753be2d7723
+venue:
+ /name: Mollusk Surf Shop
+ /location:
+   distance : 2064
+   neighborhood : "Outer Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2197
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Outer Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">4500 
+   crossStreet : "at 46th Ave"
+   address : "4500 Irving St"
+   lat : 37.762307
+   lng : -122.506217
+ /stats:
+   tipCount : 7
+   checkinsCount : 684
+   usersCount : 498
+ /categories:
+   {"pluralName": "Board Shops", "primary":
+---
+displayType: venue
+id: 57852f3e498e2753be2d7725
+venue:
+ /name: Lavash
+ /location:
+   distance : 1942
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">511 I
+   crossStreet : "at 6th St"
+   address : "511 Irving St"
+   lat : 37.76411322369617
+   lng : -122.46347579884224
+ /stats:
+   tipCount : 50
+   checkinsCount : 2186
+   usersCount : 1526
+ /categories:
+   {"pluralName": "Middle Eastern Restauran
+---
+displayType: venue
+id: 57852f3e498e2753be2d7727
+venue:
+ /name: Golden Gate Heights Mosaic Stairway
+ /location:
+   distance : 930
+   neighborhood : "Golden Gate Heights"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 194448
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Golden Gate Heights, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">Morag
+   crossStreet : "btw 15th Ave & 16th Ave"
+   address : "Moraga St"
+   lat : 37.75625567534798
+   lng : -122.47317463159561
+ /stats:
+   tipCount : 34
+   checkinsCount : 3345
+   usersCount : 2275
+ /categories:
+   {"pluralName": "Scenic Lookouts", "prima
+---
+displayType: venue
+id: 57852f3e498e2753be2d772a
+venue:
+ /name: Snowbird Coffee
+ /location:
+   distance : 1675
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1352A
+   crossStreet : "Irving"
+   address : "1352A 9th Ave"
+   lat : 37.76309350825185
+   lng : -122.46623159512482
+ /stats:
+   tipCount : 46
+   checkinsCount : 2136
+   usersCount : 866
+ /categories:
+   {"pluralName": "Coffee Shops", "primary"
+---
+displayType: venue
+id: 57852f3e498e2753be2d772d
+venue:
+ /name: Beachside Coffee Bar & Kitchen
+ /location:
+   distance : 2184
+   neighborhood : "Outer Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2197
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Outer Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">4300 
+   crossStreet : "at 48th Ave"
+   address : "4300 Judah St"
+   lat : 37.760414990788334
+   lng : -122.5081594666779
+ /stats:
+   tipCount : 74
+   checkinsCount : 4202
+   usersCount : 2261
+ /categories:
+   {"pluralName": "Caf\u00e9s", "primary": 
+---
+displayType: venue
+id: 57852f3e498e2753be2d772f
+venue:
+ /name: Clancey's Market & Deli
+ /location:
+   distance : 1597
+   neighborhood : "Outer Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2197
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Outer Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">3960 
+   crossStreet : "at 41st Ave."
+   address : "3960 Irving St"
+   lat : 37.762546
+   lng : -122.500501
+ /stats:
+   tipCount : 13
+   checkinsCount : 528
+   usersCount : 203
+ /categories:
+   {"pluralName": "Convenience Stores", "pr
+---
+displayType: venue
+id: 57852f3e498e2753be2d7732
+venue:
+ /name: Yummy Yummy
+ /location:
+   distance : 1509
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1015 
+   crossStreet : "btwn 11th & 12th"
+   address : "1015 Irving St"
+   lat : 37.76385345014913
+   lng : -122.46881604194641
+ /stats:
+   tipCount : 74
+   checkinsCount : 3807
+   usersCount : 2029
+ /categories:
+   {"pluralName": "Vietnamese Restaurants",
+---
+displayType: venue
+id: 57852f3e498e2753be2d7735
+venue:
+ /name: The Pizza Place on Noriega
+ /location:
+   distance : 1977
+   neighborhood : "Outer Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2197
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Outer Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">3901 
+   crossStreet : "at 46th Ave"
+   address : "3901 Noriega St"
+   lat : 37.75287526093616
+   lng : -122.50552358117169
+ /stats:
+   tipCount : 43
+   checkinsCount : 3670
+   usersCount : 1271
+ /categories:
+   {"pluralName": "Pizza Places", "primary"
+---
+displayType: venue
+id: 57852f3e498e2753be2d7738
+venue:
+ /name: Thanh Long
+ /location:
+   distance : 1998
+   neighborhood : "Outer Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2197
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Outer Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">4101 
+   crossStreet : "at 46th Ave"
+   address : "4101 Judah St"
+   lat : 37.760331
+   lng : -122.506032
+ /stats:
+   tipCount : 68
+   checkinsCount : 3602
+   usersCount : 2738
+ /categories:
+   {"pluralName": "Vietnamese Restaurants",
+---
+displayType: venue
+id: 57852f3e498e2753be2d7739
+venue:
+ /name: Green Apple Books & Le Video
+ /location:
+   distance : 1772
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">1231 
+   crossStreet : "at Lincoln Way"
+   address : "1231 9th Ave"
+   lat : 37.765365711497225
+   lng : -122.46648036006773
+ /stats:
+   tipCount : 13
+   checkinsCount : 1767
+   usersCount : 792
+ /categories:
+   {"pluralName": "Bookstores", "primary": 
+---
+displayType: venue
+id: 57852f3e498e2753be2d773d
+venue:
+ /name: Wooly Pig Cafe
+ /location:
+   distance : 2251
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">205 H
+   crossStreet : "at 3rd Ave"
+   address : "205 Hugo St"
+   lat : 37.76522
+   lng : -122.460266
+ /stats:
+   tipCount : 29
+   checkinsCount : 2267
+   usersCount : 855
+ /categories:
+   {"pluralName": "Caf\u00e9s", "primary": 
+---
+displayType: venue
+id: 57852f3e498e2753be2d773e
+venue:
+ /name: Burn Group Fitness
+ /location:
+   distance : 1821
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">637 I
+   address : "637 Irving St"
+   lat : 37.76403225838489
+   lng : -122.46494906424905
+ /stats:
+   tipCount : 7
+   checkinsCount : 1638
+   usersCount : 166
+ /categories:
+   {"pluralName": "Gyms", "primary": true, 
+---
+displayType: venue
+id: 57852f3e498e2753be2d7741
+venue:
+ /name: Koo
+ /location:
+   distance : 2026
+   neighborhood : "Inner Sunset"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 2170
+   postalCode : "94122"
+   state : "CA"
+   contextLine : "Inner Sunset, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">408 I
+   crossStreet : "at 5th Ave"
+   address : "408 Irving St"
+   lat : 37.76430297307453
+   lng : -122.46253967285156
+ /stats:
+   tipCount : 64
+   checkinsCount : 2271
+   usersCount : 1394
+ /categories:
+   {"pluralName": "Sushi Restaurants", "pri
+===
+---
+displayType: venue
+id: 57852e48498ebe78f330bbf7
+venue:
+ /name: Zazie
+ /location:
+   distance : 338
+   neighborhood : "Cole Valley"
+   city : "San Francisco"
+   cc : "US"
+   country : "United States"
+   contextGeoId : 194560
+   postalCode : "94117"
+   state : "CA"
+   contextLine : "Cole Valley, San Francisco"
+   formattedAddress : ["<span itemprop=\"streetAddress\">941 C
+   crossStreet : "btwn Parnassus Ave & Carl St"
+   address : "941 Cole St"
+   lat : 37.76524912923089
+   lng : -122.45002190184468
+ /stats:
+   tipCount : 271
+   checkinsCount : 14462
+   usersCount : 8873
+ /categories:
+   {"pluralName": "Breakfast Spots", "prima
+---
+displayType: venue
+id: 57852e48498ebe78f330bbf8
+venue:
+ /name: 
