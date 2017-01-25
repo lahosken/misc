@@ -8,6 +8,7 @@ import (
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
 	"html/template"
+	"math/rand"
 	"net/http"
 	"time"
 )
@@ -514,6 +515,41 @@ func clumpDownContents(ctx context.Context, clump Clump) (err error, finishedP b
 	return
 }
 
+// Maybe add a remove-todo for some randomly-chosen clumps.
+func doomRandClumps(ctx context.Context) {
+	// Choose a random spot on the globe.
+	// We've indexed our clumps by "ClumpBox".
+	lat, lng := randLatLng()
+	cb := latLng2ClumpBox(lat, lng)
+	cq := datastore.NewQuery("Clump").
+		Filter("ClumpBox >=", cb).
+		Order("ClumpBox").
+		Limit(10)
+	if rand.Float64() > 0.5 {
+		cq = datastore.NewQuery("Clump").
+			Filter("ClumpBox <=", cb).
+			Order("-ClumpBox").
+			Limit(10)
+	}
+	for cursor := cq.Run(ctx); ; {
+		clump := Clump{}
+		_, err := cursor.Next(&clump)
+		if err == datastore.Done {
+			err = nil
+			break
+		}
+		if err != nil {
+			log.Errorf(ctx, "ERROR FETCHING clumps %v", err)
+			return
+		}
+		addClumpDownTodo(ctx, clump.ID)
+		if clump.ClumpBox != cb {
+			break
+		}
+	}
+	return
+}
+
 func cronClumpDown(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
 	late := time.Now().Add(30 * time.Second)
@@ -557,4 +593,15 @@ func cronClumpDown(w http.ResponseWriter, r *http.Request) {
 		datastore.Delete(ctx, cdtdKey)
 		continue
 	}
+
+	// Consider zapping a clump at randomly-chosen coords.
+	if !time.Now().Before(late) {
+		return
+	}
+	// This is a cron job running 1/5 minutes.
+	// We don't want it to wipe out everything. So...
+	if rand.Float64() > 0.01 {
+		return
+	}
+	doomRandClumps(ctx)
 }

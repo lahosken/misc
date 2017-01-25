@@ -2,6 +2,7 @@ package server
 
 import (
 	"math"
+	"math/rand"
 )
 
 const (
@@ -13,8 +14,8 @@ func kmPerLat() float64 {
 }
 
 func kmPerLng(lat float64) float64 {
-	latRad := lat * math.Pi / 180.0
-	cos := math.Cos(latRad)
+	latRadians := lat * math.Pi / 180.0
+	cos := math.Cos(latRadians)
 	if cos <= 0.01 {
 		cos = 0.01
 	}
@@ -120,4 +121,18 @@ func segsIntersectP(a1Lat, a1Lng, a2Lat, a2Lng, b1Lat, b1Lng, b2Lat, b2Lng float
 		return false
 	}
 	return true
+}
+
+func randLatLng() (lat, lng float64) {
+	lng = 9999.0
+	for lng <= -180.0 || lng >= 180.0 {
+		lng = (rand.Float64() * 360.0) - 180.0
+	}
+	cosLat := 9999.0
+	for cosLat <= -1.0 || cosLat >= 1.0 {
+		cosLat = (rand.Float64() * 2.0) - 1.0
+	}
+	latRadians := math.Acos(cosLat)
+	lat = (latRadians * 180.0 / math.Pi) - 90.0
+	return
 }

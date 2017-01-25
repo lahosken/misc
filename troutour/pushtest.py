@@ -29,8 +29,7 @@ def Template2Go():
 
 var tmplS = `''')
   tdotgo.write(template)
-  tdotgo.write("`\n\n")
-  tdotgo.write
+  tdotgo.write("`\n")
   tdotgo.close()
 
 def Main():
