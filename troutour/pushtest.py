@@ -10,7 +10,7 @@ DEST = "srvtest"
 def Copy(frompath):
   if not frompath: return
   topath = os.path.join(DEST, frompath)
-  if frompath.startswith("server/") and frompath.endswith(".yaml"):
+  if frompath.startswith("server/"):
       topath = topath.replace("server/", "")
   print topath
   todir = os.path.dirname(topath)

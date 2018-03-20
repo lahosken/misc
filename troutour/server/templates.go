@@ -76,6 +76,14 @@ var tmplS = `<!doctype html>
       <li>Sometimes regions appear where there were none.
 	Sometimes regions disappear. This can tear up your ⛗Routes.
     </ul>
+    <p><b>Privacy Policy:</b> <br>
+      <i>Data we collect:</i>
+      This game "remembers" some places you've
+      been close to&mdash;places you've been in the last hour, places
+      you have 💎Prisms for, places you have ⛗Routes, places you have
+      🎤&nbsp;Clients. <br>
+      <i>How we use it:</i> To make the game rules work, as described above. <br>
+      <i>Who do we share it with:</i> Law enforcement, if they have a warrant, hypothetically. <br>
     </div>
 </body>
 </html>

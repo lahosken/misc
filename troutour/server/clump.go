@@ -516,10 +516,11 @@ func clumpDownContents(ctx context.Context, clump Clump) (err error, finishedP b
 }
 
 // Maybe add a remove-todo for some randomly-chosen clumps.
-func doomRandClumps(ctx context.Context) {
+func doomRandClumps(w http.ResponseWriter, ctx context.Context) {
 	// Choose a random spot on the globe.
 	// We've indexed our clumps by "ClumpBox".
 	lat, lng := randLatLng()
+  fmt.Fprintf(w, "<p>randLatLng: %v %v", lat, lng)
 	cb := latLng2ClumpBox(lat, lng)
 	cq := datastore.NewQuery("Clump").
 		Filter("ClumpBox >=", cb).
@@ -539,9 +540,11 @@ func doomRandClumps(ctx context.Context) {
 			break
 		}
 		if err != nil {
+      fmt.Fprintf(w, "<p>doomRandClumps ERROR FETCHING clumps %v", err)
 			log.Errorf(ctx, "ERROR FETCHING clumps %v", err)
 			return
 		}
+    fmt.Fprintf(w, "<p>doomRandClumps dooms %v", clump.ID)
 		addClumpDownTodo(ctx, clump.ID)
 		if clump.ClumpBox != cb {
 			break
@@ -555,6 +558,7 @@ func cronClumpDown(w http.ResponseWriter, r *http.Request) {
 	late := time.Now().Add(30 * time.Second)
 	already := map[int32]bool{}
 	q := datastore.NewQuery("ClumpDownTodo")
+  fmt.Fprintf(w, "<p>considering todos...")
 	for cursor := q.Run(ctx); ; {
 		cdtd := ClumpDownTodo{}
 		cdtdKey, err := cursor.Next(&cdtd)
@@ -562,6 +566,7 @@ func cronClumpDown(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		if err != nil {
+      fmt.Fprintf(w, "<p>cronClumpDown Next hit error: %v", err)
 			log.Errorf(ctx, "cronClumpDown Next hit error: %v", err)
 			break
 		}
@@ -597,11 +602,14 @@ func cronClumpDown(w http.ResponseWriter, r *http.Request) {
 	// Consider zapping a clump at randomly-chosen coords.
 	if !time.Now().Before(late) {
 		return
-	}
+  }
+  fmt.Fprintf(w, "<p>considering doom")
 	// This is a cron job running 1/5 minutes.
 	// We don't want it to wipe out everything. So...
-	if rand.Float64() > 0.01 {
+	if rand.Float64() > .10 {
 		return
 	}
-	doomRandClumps(ctx)
+	doomRandClumps(w, ctx)
+  freshLat, freshLng := randLatLngNearCity()
+  addRupTodo(ctx, "doom", freshLat, freshLng)
 }

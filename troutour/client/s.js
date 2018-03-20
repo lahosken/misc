@@ -781,6 +781,9 @@ function drawMapRegions(gl) {
 	    fsqURL = closestLoc.fsq;
 	}
 	var pingdom = $('<div><a id="fsq" class="ui-corner-all">4sq</a><span class="reg"></span></div>');
+	if (fsqURL.includes('wikipedia')) {
+	    pingdom = $('<div><a id="fsq" class="ui-corner-all">Wi</a><span class="reg"></span></div>');
+	}
 	pingdom.find('a#fsq').attr('href', fsqURL);
 	pingdom.find('span.reg').append(locDom(closestLoc));
 	$('#ping').empty().append(pingdom);
@@ -799,7 +802,7 @@ function drawMapRegions(gl) {
 	if (nearRegionID) {
 	    $('#gazetteer').html('☛ Tap the map to show info about tapped region here');
 	} else {
-	    $('#gazetteer').html('⏳Hang out in some Foursquare-popular neighborhood several minutes for a more interesting map⏳');
+	    $('#gazetteer').html('⏳Hang out in some Wikipedia-known neighborhood several minutes for a more interesting map⏳');
 	}
     } else {
 	$('#gazetteer').html(locDom(locs[tappedRegionID]));
@@ -812,8 +815,8 @@ function drawMap() {
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   drawMapRegions(gl);
-  drawMapIcons(gl);
   drawMapRoutes(gl);
+  drawMapIcons(gl);
   drawMapBountyLines(gl);
   drawMapGrid(gl);
 }

@@ -136,3 +136,73 @@ func randLatLng() (lat, lng float64) {
 	lat = (latRadians * 180.0 / math.Pi) - 90.0
 	return
 }
+
+var bigCities = [...][]float64 {
+  []float64{ -37.810, 144.967 }, // Melbourne
+  []float64{ -36.852, 174.760 }, // Auckland
+  []float64{ -33.884, 151.204 }, // Sydney
+  []float64{ -23.544, -46.634 }, // São Paulo
+  []float64{  -6.214, 106.848 }, // Jakarta
+  []float64{   1.398, 103.870 }, // Singapore
+  []float64{   6.530,   3.356 }, // Lagos
+  []float64{   7.106, 171.375 }, // Marshall Islands
+  []float64{  12.964,  77.584 }, // Bangalore
+  []float64{  13.764, 100.536 }, // Bangkok
+  []float64{  19.136,  72.918 }, // Mumbai
+  []float64{  19.433, -99.138 }, // Mexico City
+  []float64{  21.310,-157.860 }, // Honolulu
+  []float64{  22.332, 114.186 }, // Hong Kong
+  []float64{  22.572, 114.062 }, // Shenzhen
+  []float64{  23.133, 113.268 }, // Guangzhou
+  []float64{  24.940,  67.122 }, // Karachi
+  []float64{  25.804, -80.234 }, // Miami
+  []float64{  28.622,  77.234 }, // Delhi
+  []float64{  29.557, -95.100 }, // Houston
+  []float64{  30.044,  31.236 }, // Cairo
+  []float64{  30.598, 114.304 }, // Wuhan
+  []float64{  30.274, -97.740 }, // Austin
+  []float64{  31.226, 121.466 }, // Shanghai
+  []float64{  32.788, -96.794 }, // Dallas
+  []float64{  33.450,-112.094 }, // Phoenix
+  []float64{  33.760, -84.385 }, // Atlanta
+  []float64{  34.054,-118.246 }, // LAX
+  []float64{  34.062,-117.324 }, // San Bernadino
+  []float64{  34.746, 135.574 }, // Osaka
+  []float64{  35.616, -82.566 }, // Asheville
+  []float64{  35.698, 139.732 }, // Tokyo
+  []float64{  36.170,-115.144 }, // Las Vegas
+  []float64{  37.430,-122.169 }, // Stanford
+  []float64{  37.570, 126.988 }, // Seoul
+  []float64{  37.872,-122.260 }, // Cal
+  []float64{  38.632, -90.200 }, // St Louis
+  []float64{  38.906, -77.036 }, // Washington DC
+  []float64{  39.909, 116.396 }, // Beijing
+  []float64{  39.950, -75.150 }, // Philadelphia
+  []float64{  40.006,-105.264 }, // Boulder
+  []float64{  40.778, -73.966 }, // NYC
+  []float64{  40.442, -80.014 }, // Pittsburgh
+  []float64{  41.046,  29.036 }, // Istanbul
+  []float64{  41.874, -87.761 }, // ORD
+  []float64{  42.354, -71.091 }, // Boston
+  []float64{  42.390, -83.050 }, // Detroit
+  []float64{  43.084, -89.371 }, // Madison Wisconsin
+  []float64{  43.748, -79.596 }, // Toronto
+  []float64{  44.972, -93.230 }, // Minneapolis
+  []float64{  45.413, -75.698 }, // Ottawa
+  []float64{  45.584, -73.556 }, // Montreal
+  []float64{  45.602,-122.684 }, // Portland Oregon
+  []float64{  47.672,-122.258 }, // Seattle
+  []float64{  49.272,-123.094 }, // Vancouver BC
+  []float64{  50.074,  14.422 }, // Prague
+  []float64{  51.508,  -0.095 }, // London
+  []float64{  52.415,   4.859 }, // Amsterdam
+  []float64{  54.364,  18.568 }, // Gdańsk
+  []float64{  55.760,  37.626 }, // Moscow
+};
+
+func randLatLngNearCity() (lat, lng float64) {
+  whichCity := rand.Intn(len(bigCities))
+  lat = bigCities[whichCity][0] + 0.5 * (rand.Float64() - 0.5)
+  lng = bigCities[whichCity][1] + 0.5 * (rand.Float64() - 0.5)
+  return
+}

@@ -3,7 +3,7 @@ cron:
 - description: "RegionUp"
   # promote some dormant regions -> nascent regions
   url: /cron/rup
-  schedule: every 5 minutes from 6:01 to 21:00
+  schedule: every 5 minutes
   timezone: America/Los_Angeles
   target: cycle
 
@@ -17,7 +17,7 @@ cron:
 - description: "WorkingForTheClumpDown"
   # remove marked-for-destruction clumps
   url: /cron/clumpdown
-  schedule: every 5 minutes from 6:03 to 21:00
+  schedule: every 5 minutes
   timezone: America/Los_Angeles
   target: cycle
 

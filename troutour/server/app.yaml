@@ -1,5 +1,3 @@
-application: rovercast-1372
-version: main
 runtime: go
 api_version: go1
 
