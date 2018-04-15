@@ -53,13 +53,13 @@ func topscreen(w http.ResponseWriter, r *http.Request, userID string, sessionID 
 }
 
 func doQueue(ctx context.Context) {
-  dirtyClumps  := map[int32]bool{}
+	dirtyClumps := map[int32]bool{}
 	cronClumpAdj(ctx, dirtyClumps)
-  cronRegionUp(ctx, dirtyClumps)
-  cronClumpDown(ctx, dirtyClumps)
+	cronRegionUp(ctx, dirtyClumps)
+	cronClumpDown(ctx, dirtyClumps)
 	cronFsq(ctx)
 	cronCleanupCheckins(ctx)
-  time.Sleep(30 * time.Second)
+	time.Sleep(30 * time.Second)
 }
 
 var delayedDoQueueFunc = delay.Func("whatDoesKeyDo", doQueue)

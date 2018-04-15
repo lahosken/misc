@@ -138,65 +138,65 @@ func randLatLng() (lat, lng float64) {
 }
 
 var bigCities = [...][]float64{
-	[]float64{-43.528, 172.628},  // Christchurch New Zealand
-	[]float64{-41.290, 174.774},  // Wellington
-	[]float64{-37.810, 144.967},  // Melbourne
-	[]float64{-36.852, 174.760},  // Auckland
-	[]float64{-35.310, 149.124},  // Canberra
-	[]float64{-34.928, 138.612},  // Adelaide
-	[]float64{-34.628, -58.448},  // Buenos Aires
-	[]float64{-33.922, 18.418},   // Cape Town
-	[]float64{-33.884, 151.204},  // Sydney
-	[]float64{-31.954, 115.862},  // Perth
-	[]float64{-27.476, 153.028},  // Brisbane
-	[]float64{-26.198, 28.038},   // Johannesburg
-	[]float64{-23.544, -46.634},  // São Paulo
-	[]float64{-19.264, 146.824},  // Townsville
-	[]float64{-16.924, 145.750},  // Cairns
-	[]float64{-12.426, 130.854},  // Darwin Australia
-	[]float64{-12.054, -77.056},  // Lima
-	[]float64{-6.918, 107.610},   // Bandung
-	[]float64{-6.214, 106.848},   // Jakarta
-	[]float64{-1.286, 36.822},    // Nairobi
-	[]float64{0.320, 32.580},     // Kampala
-	[]float64{1.398, 103.870},    // Singapore
-	[]float64{3.134, 101.680},    // Kuala Lumpur
-	[]float64{6.530, 3.356},      // Lagos
-	[]float64{6.918, 79.868},     // Colombo Sri Lanka
-	[]float64{12.964, 77.584},    // Bangalore
-	[]float64{13.764, 100.536},   // Bangkok
-	[]float64{14.610, 121.012},   // Manila
-	[]float64{16.874, 96.202},    // Yangon
-	[]float64{17.376, 78.488},    // Hyderabad
-	[]float64{18.420, -66.078},   // San Juan Puerto Rico
-	[]float64{19.136, 72.918},    // Mumbai
-	[]float64{19.433, -99.138},   // Mexico City
-	[]float64{19.710, -155.084},  // Hilo
-	[]float64{20.236, 85.828},    // Bhubaneswar
-	[]float64{22.332, 114.186},   // Hong Kong
-	[]float64{22.564, 88.358},    // Kolkata
-	[]float64{22.572, 114.062},   // Shenzhen
-	[]float64{23.113, -82.368},   // Havana
-	[]float64{23.133, 113.268},   // Guangzhou
-	[]float64{23.800, 90.416},    // Dhaka
-	[]float64{24.940, 67.122},    // Karachi
-	[]float64{25.028, 121.530},   // Taipei
-	[]float64{25.212, 55.270},    // Dubai
-	[]float64{25.700, 32.640},    // Luxor
-	[]float64{25.804, -80.234},   // Miami
-	[]float64{27.952, -81.458},   // Tampa
-	[]float64{28.622, 77.234},    // Delhi
-	[]float64{29.557, -95.100},   // Houston
-	[]float64{29.976, -90.086},   // New Orleans
-	[]float64{30.044, 31.236},    // Cairo
-	[]float64{30.598, 114.304},   // Wuhan
-	[]float64{30.274, -97.740},   // Austin
-	[]float64{30.694, -88.046},   // Mobile
-	[]float64{31.226, -110.962},  // Tucson
-	[]float64{31.226, 121.466},   // Shanghai
-	[]float64{31.762, -106.486},  // El Paso
-	[]float64{31.782, 35.220},    // Jerusalem
-	[]float64{32.686, -117.102},  // San Diego
+	[]float64{-43.528, 172.628}, // Christchurch New Zealand
+	[]float64{-41.290, 174.774}, // Wellington
+	[]float64{-37.810, 144.967}, // Melbourne
+	[]float64{-36.852, 174.760}, // Auckland
+	[]float64{-35.310, 149.124}, // Canberra
+	[]float64{-34.928, 138.612}, // Adelaide
+	[]float64{-34.628, -58.448}, // Buenos Aires
+	[]float64{-33.922, 18.418},  // Cape Town
+	[]float64{-33.884, 151.204}, // Sydney
+	[]float64{-31.954, 115.862}, // Perth
+	[]float64{-27.476, 153.028}, // Brisbane
+	[]float64{-26.198, 28.038},  // Johannesburg
+	[]float64{-23.544, -46.634}, // São Paulo
+	[]float64{-19.264, 146.824}, // Townsville
+	[]float64{-16.924, 145.750}, // Cairns
+	[]float64{-12.426, 130.854}, // Darwin Australia
+	[]float64{-12.054, -77.056}, // Lima
+	[]float64{-6.918, 107.610},  // Bandung
+	[]float64{-6.214, 106.848},  // Jakarta
+	[]float64{-1.286, 36.822},   // Nairobi
+	[]float64{0.320, 32.580},    // Kampala
+	[]float64{1.398, 103.870},   // Singapore
+	[]float64{3.134, 101.680},   // Kuala Lumpur
+	[]float64{6.530, 3.356},     // Lagos
+	[]float64{6.918, 79.868},    // Colombo Sri Lanka
+	[]float64{12.964, 77.584},   // Bangalore
+	[]float64{13.764, 100.536},  // Bangkok
+	[]float64{14.610, 121.012},  // Manila
+	[]float64{16.874, 96.202},   // Yangon
+	[]float64{17.376, 78.488},   // Hyderabad
+	[]float64{18.420, -66.078},  // San Juan Puerto Rico
+	[]float64{19.136, 72.918},   // Mumbai
+	[]float64{19.433, -99.138},  // Mexico City
+	[]float64{19.710, -155.084}, // Hilo
+	[]float64{20.236, 85.828},   // Bhubaneswar
+	[]float64{22.332, 114.186},  // Hong Kong
+	[]float64{22.564, 88.358},   // Kolkata
+	[]float64{22.572, 114.062},  // Shenzhen
+	[]float64{23.113, -82.368},  // Havana
+	[]float64{23.133, 113.268},  // Guangzhou
+	[]float64{23.800, 90.416},   // Dhaka
+	[]float64{24.940, 67.122},   // Karachi
+	[]float64{25.028, 121.530},  // Taipei
+	[]float64{25.212, 55.270},   // Dubai
+	[]float64{25.700, 32.640},   // Luxor
+	[]float64{25.804, -80.234},  // Miami
+	[]float64{27.952, -81.458},  // Tampa
+	[]float64{28.622, 77.234},   // Delhi
+	[]float64{29.557, -95.100},  // Houston
+	[]float64{29.976, -90.086},  // New Orleans
+	[]float64{30.044, 31.236},   // Cairo
+	[]float64{30.598, 114.304},  // Wuhan
+	[]float64{30.274, -97.740},  // Austin
+	[]float64{30.694, -88.046},  // Mobile
+	[]float64{31.226, -110.962}, // Tucson
+	[]float64{31.226, 121.466},  // Shanghai
+	[]float64{31.762, -106.486}, // El Paso
+	[]float64{31.782, 35.220},   // Jerusalem
+	[]float64{32.686, -117.102}, // San Diego
 	[]float64{32.774, -79.934},  // Charleston
 	[]float64{32.788, -96.794},  // Dallas
 	[]float64{33.450, -112.094}, // Phoenix

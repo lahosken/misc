@@ -70,7 +70,7 @@ func (r *Region) Save() ([]datastore.Property, error) {
 	return datastore.SaveStruct(r)
 }
 
-func cronRegionUp(ctx context.Context	, dirtyClumps map[int32]bool) {
+func cronRegionUp(ctx context.Context, dirtyClumps map[int32]bool) {
 	ninetySecondsFromStart := time.Now().Add(90 * time.Second)
 
 	todoList := []RupTodo{}
@@ -82,13 +82,13 @@ func cronRegionUp(ctx context.Context	, dirtyClumps map[int32]bool) {
 	}
 	for ix, ntd := range todoList {
 		// Ha ha app engine has a 60 second deadline.
-    // TODO: since we moved to task-queue, this deadline is
-    //       now more like 10 minutes.
+		// TODO: since we moved to task-queue, this deadline is
+		//       now more like 10 minutes.
 		if ninetySecondsFromStart.Before(time.Now()) {
 			break
 		}
-    clumpBox := latLng2ClumpBox(todoList[ix].Lat, todoList[ix].Lng)
-    if dirtyClumps[clumpBox] {
+		clumpBox := latLng2ClumpBox(todoList[ix].Lat, todoList[ix].Lng)
+		if dirtyClumps[clumpBox] {
 			continue
 		}
 		err, addedCount := regionUp(ctx, ntd.Lat, ntd.Lng)
@@ -97,7 +97,7 @@ func cronRegionUp(ctx context.Context	, dirtyClumps map[int32]bool) {
 			sid := todoKeys[ix].StringID()
 			addFsqTodo(ctx, sid, ntd.Lat, ntd.Lng)
 			datastore.Delete(ctx, todoKeys[ix]) // if 4sq finds new things, it'll create a todo hereabouts.
-      dirtyClumpsMarkDirty(dirtyClumps, todoList[ix].Lat, todoList[ix].Lng, 7.0)
+			dirtyClumpsMarkDirty(dirtyClumps, todoList[ix].Lat, todoList[ix].Lng, 7.0)
 
 			continue
 
@@ -111,10 +111,10 @@ func cronRegionUp(ctx context.Context	, dirtyClumps map[int32]bool) {
 			continue
 		}
 		if addedCount > 0 {
-      dirtyClumpsMarkDirty(dirtyClumps, todoList[ix].Lat, todoList[ix].Lng, 7.0)
+			dirtyClumpsMarkDirty(dirtyClumps, todoList[ix].Lat, todoList[ix].Lng, 7.0)
 
-      ntd.Lat += -0.005 + (rand.Float64() * 0.010)
-      ntd.Lng += -0.005 + (rand.Float64() * 0.010)
+			ntd.Lat += -0.005 + (rand.Float64() * 0.010)
+			ntd.Lng += -0.005 + (rand.Float64() * 0.010)
 			datastore.Put(ctx, todoKeys[ix], &ntd)
 		} else {
 			if rand.Float64() < 0.3 {

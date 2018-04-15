@@ -295,24 +295,24 @@ func adjifyFindBlockers(adj ClumpAdj, m map[string]ClumpAdj, clumps map[string]*
 }
 
 func dirtyClumpsMarkDirty(dirtyClumps map[int32]bool, lat float64, lng float64, rangeKm float64) {
-		clumpRanges := nearbyClumpRanges(lat, lng, rangeKm)
-		for _, clumpRange := range clumpRanges {
-			for box := clumpRange[0]; box <= clumpRange[1]; box++ {
-				dirtyClumps[box] = true
-			}
+	clumpRanges := nearbyClumpRanges(lat, lng, rangeKm)
+	for _, clumpRange := range clumpRanges {
+		for box := clumpRange[0]; box <= clumpRange[1]; box++ {
+			dirtyClumps[box] = true
 		}
+	}
 }
 
 func cronClumpAdj(ctx context.Context, dirtyClumps map[int32]bool) {
-  ninetySecondsFromStart := time.Now().Add(90 * time.Second)
-  todoList := []ClumpAdjTodo{}
-  catdq := datastore.NewQuery("ClumpAdjTodo").Limit(100)
-  todoKeys, err := catdq.GetAll(ctx, &todoList)
-  if err != nil {
-    log.Errorf(ctx, "fetching to-dos got %v", err)
-  }
+	ninetySecondsFromStart := time.Now().Add(90 * time.Second)
+	todoList := []ClumpAdjTodo{}
+	catdq := datastore.NewQuery("ClumpAdjTodo").Limit(100)
+	todoKeys, err := catdq.GetAll(ctx, &todoList)
+	if err != nil {
+		log.Errorf(ctx, "fetching to-dos got %v", err)
+	}
 	for ix, catdKey := range todoKeys {
-    if ninetySecondsFromStart.Before(time.Now()) {
+		if ninetySecondsFromStart.Before(time.Now()) {
 			break
 		}
 		clumpBox := latLng2ClumpBox(todoList[ix].Lat, todoList[ix].Lng)
@@ -329,7 +329,7 @@ func cronClumpAdj(ctx context.Context, dirtyClumps map[int32]bool) {
 			log.Errorf(ctx, "<p>failed to delete done to-do %v", err)
 			return
 		}
-    dirtyClumpsMarkDirty(dirtyClumps, todoList[ix].Lat, todoList[ix].Lng, 10.0)
+		dirtyClumpsMarkDirty(dirtyClumps, todoList[ix].Lat, todoList[ix].Lng, 10.0)
 	}
 }
 
@@ -565,11 +565,11 @@ func cronClumpDown(ctx context.Context, dirtyClumps map[int32]bool) {
 			datastore.Delete(ctx, cdtdKey)
 			continue
 		}
-    clumpBox := latLng2ClumpBox(clump.Lat, clump.Lng)
+		clumpBox := latLng2ClumpBox(clump.Lat, clump.Lng)
 		if dirtyClumps[clumpBox] {
 			continue
 		}
-    dirtyClumpsMarkDirty(dirtyClumps, clump.Lat, clump.Lng,  2*clumpAdjReachKm)
+		dirtyClumpsMarkDirty(dirtyClumps, clump.Lat, clump.Lng, 2*clumpAdjReachKm)
 		finishedP := clumpDown(ctx, clump, late)
 		if !finishedP {
 			continue
@@ -589,7 +589,7 @@ func cronClumpDown(ctx context.Context, dirtyClumps map[int32]bool) {
 		return
 	}
 
-  // TODO: should be another fn?
+	// TODO: should be another fn?
 	// This is a cron job running 1/ minutes.
 	// We don't want it to wipe out everything. So...
 	if rand.Float64() > 1.1 { // TODO was 0.1
@@ -597,7 +597,7 @@ func cronClumpDown(ctx context.Context, dirtyClumps map[int32]bool) {
 	}
 	doomRandClumps(ctx)
 
-  // TODO: should be another fn?
+	// TODO: should be another fn?
 	// to balance against dooming, maybe spawn a new region
 	freshLat, freshLng := randLatLngNearCity()
 	addRupTodo(ctx, "doom", freshLat, freshLng)
