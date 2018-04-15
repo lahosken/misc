@@ -20,14 +20,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"golang.org/x/net/context"
-	"google.golang.org/appengine"
+	//	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/urlfetch"
 	"hash/adler32"
 	"math"
 	"math/rand"
-	"net/http"
+	// "net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -98,9 +98,8 @@ func fetchFsqVenues(ctx context.Context, lat float64, lng float64, rangeKm float
 
 // We have a "todo" list of lat/lngs. For each of those,
 // query 4sq API. Record new data. GC stale data.
-func cronFsq(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, `<p>cronFsq`)
-	ctx := appengine.NewContext(r)
+func cronFsq(ctx context.Context) {
+	// ctx := appengine.NewContext(r)
 
 	// RegionBox values of requests we've handled this time.
 	// We don't want an impatient user in one city mashing their phone button
@@ -118,7 +117,6 @@ func cronFsq(w http.ResponseWriter, r *http.Request) {
 	/*
 	 * Loop through our "todo"s
 	 */
-	fmt.Fprintf(w, `<p>ToDos:`)
 	for cursor := datastore.NewQuery("FsqTodo").Run(ctx); ; {
 		ftd := FsqTodo{}
 		key, err := cursor.Next(&ftd)
@@ -130,9 +128,7 @@ func cronFsq(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		fmt.Fprintf(w, `<br>considering %v %v %v`, ftd.Lat, ftd.Lng, key)
 		if alreadyBoxes[latLng2RegionBox(ftd.Lat, ftd.Lng)] {
-			fmt.Fprintf(w, ` but alreadyBoxed`)
 			continue
 		}
 		alreadyBoxes[latLng2RegionBox(ftd.Lat, ftd.Lng)] = true
@@ -140,10 +136,8 @@ func cronFsq(w http.ResponseWriter, r *http.Request) {
 		// What venues nearby do we already know about?
 		venues, err := fetchFsqVenues(ctx, ftd.Lat, ftd.Lng, 3.0)
 		if err != nil {
-			fmt.Fprintf(w, `<p>Fetched nearby, got err %v`, err)
 			continue
 		}
-		fmt.Fprintf(w, ` Fetched nearby, got %v`, len(venues))
 
 		// query the 4sq, geonames API
 		// radiusM: Do we already know many venues nearby?
@@ -161,86 +155,161 @@ func cronFsq(w http.ResponseWriter, r *http.Request) {
 		// If there are many, maybe we should query again nearby.
 		newFound := 0
 
-    // BEGIN
-    // the part of this "4sq" code that actually fetches data from 4square,
-    // except when 4square just horks up an error message
-    if (1 == 1) {
-		formValues := url.Values{
-			"ll":     {fmt.Sprintf("%f,%f", ftd.Lat, ftd.Lng)},
-			"radius": {fmt.Sprintf("%d", radiusM)},
-			"time":   {"any"},
-			"day":    {"any"},
-			"limit":  {"50"},
-		}
-		authUrlValues(&formValues, ctx)
-    fmt.Fprintf(w, `<p>about to fetch https://api.foursquare.com/v2/venues/explore?%s`, formValues.Encode())
-		resp, err := urlfetch.Client(ctx).Get(
-			"https://api.foursquare.com/v2/venues/explore?" +
-				formValues.Encode())
-		if err != nil {
-      fmt.Fprintf(w, `Couldn't fetch 4sq data, got %v`, err)
-			log.Errorf(ctx, "Couldn't fetch 4sq data, got %v", err)
-			continue
-		}
-		defer resp.Body.Close()
-		// Struct specifying which values to salvage from the Json.
-		// https://developer.foursquare.com/docs/venues/explore
-		// https://developer.foursquare.com/docs/responses/venue
-		js := struct {
-			Response struct {
-				Groups []struct {
-					Items []struct {
-						Venue struct {
-							ID           string
-							Name         string
-							CanonicalUrl string
-							Location     struct {
-								Lat float64
-								Lng float64
+		// BEGIN
+		// the part of this "4sq" code that actually fetches data from 4square,
+		// except when 4square just horks up an error message
+		if 1 == 1 {
+			formValues := url.Values{
+				"ll":     {fmt.Sprintf("%f,%f", ftd.Lat, ftd.Lng)},
+				"radius": {fmt.Sprintf("%d", radiusM)},
+				"time":   {"any"},
+				"day":    {"any"},
+				"limit":  {"50"},
+			}
+			authUrlValues(&formValues, ctx)
+			resp, err := urlfetch.Client(ctx).Get(
+				"https://api.foursquare.com/v2/venues/explore?" +
+					formValues.Encode())
+			if err != nil {
+				log.Errorf(ctx, "Couldn't fetch 4sq data, got %v", err)
+				continue
+			}
+			defer resp.Body.Close()
+			// Struct specifying which values to salvage from the Json.
+			// https://developer.foursquare.com/docs/venues/explore
+			// https://developer.foursquare.com/docs/responses/venue
+			js := struct {
+				Response struct {
+					Groups []struct {
+						Items []struct {
+							Venue struct {
+								ID           string
+								Name         string
+								CanonicalUrl string
+								Location     struct {
+									Lat float64
+									Lng float64
+								}
+								Stats map[string]int64
 							}
-							Stats map[string]int64
 						}
 					}
 				}
+			}{}
+			readerBuf := new(bytes.Buffer)
+
+			// could hook up json.Decoder to resp.Body directly instead of this
+			// silly buffer; only reason not to is (unused) printf debugging below.
+			// TODO 2017 if the printf ain't useful anymore
+			readerBuf.ReadFrom(resp.Body)
+
+			err = json.Unmarshal(readerBuf.Bytes(), &js)
+			if err != nil {
+				log.Errorf(ctx, "Couldn't decode 4sq JSON, got %v", err)
+				continue
 			}
-		}{}
-		readerBuf := new(bytes.Buffer)
 
-		// could hook up json.Decoder to resp.Body directly instead of this
-		// silly buffer; only reason not to is (unused) printf debugging below.
-		// TODO 2017 if the printf ain't useful anymore
-		readerBuf.ReadFrom(resp.Body)
+			for _, fgrp := range js.Response.Groups {
+				for _, fitem := range fgrp.Items {
+					jv := fitem.Venue
+					lat := jv.Location.Lat
+					lng := jv.Location.Lng
+					venue := FsqVenue{
+						ID:           jv.ID,
+						Name:         jv.Name,
+						Lat:          lat,
+						Lng:          lng,
+						UsersCount:   jv.Stats["usersCount"],
+						FsqUrl:       jv.CanonicalUrl,
+						RecentUpdate: now,
+					}
+					if venue.Score() < min4sqScore {
+						continue
+					}
+					// Our cheesy map shortcuts break down if too too close to the poles
+					// or the antimeridian. So ignore venues nearby.
+					if math.Abs(lat) > 80.0 || math.Abs(lng) > 179.5 {
+						continue
+					}
+					// Similarly, ignore "null island"
+					if math.Abs(lat) < 0.1 && math.Abs(lng) < 0.1 {
+						continue
+					}
+					_, err := datastore.Put(ctx, venue.Key(ctx), &venue)
+					if err != nil {
+						log.Errorf(ctx, "Couldn't save venue, got %v", err)
+						continue
+					}
 
-		err = json.Unmarshal(readerBuf.Bytes(), &js)
-		if err != nil {
-			log.Errorf(ctx, "Couldn't decode 4sq JSON, got %v", err)
-			continue
-		}
-
-		for _, fgrp := range js.Response.Groups {
-			for _, fitem := range fgrp.Items {
-				jv := fitem.Venue
-				lat := jv.Location.Lat
-				lng := jv.Location.Lng
-				venue := FsqVenue{
-					ID:           jv.ID,
-					Name:         jv.Name,
-					Lat:          lat,
-					Lng:          lng,
-					UsersCount:   jv.Stats["usersCount"],
-					FsqUrl:       jv.CanonicalUrl,
-					RecentUpdate: now,
+					_, found := venues[venue.ID]
+					if !found {
+						newFound++
+					}
+					venues[venue.ID] = venue
 				}
-				if venue.Score() < min4sqScore {
-					continue
+			}
+		}
+		// END
+		// the part of this "4sq" code that actually fetches data from 4square,
+		// except when 4square just horks up an error message
+
+		// BEGIN
+		// the part of this "4sq" code that actually fetches data from geonames
+		{
+			formValues := url.Values{
+				"lat":      {fmt.Sprintf("%f", ftd.Lat)},
+				"lng":      {fmt.Sprintf("%f", ftd.Lng)},
+				"radius":   {fmt.Sprintf("%f", float64(radiusM)/1000.0)},
+				"username": {getConfig("gn_client", ctx)},
+				"maxRows":  {"30"},
+			}
+			resp, err := urlfetch.Client(ctx).Get(
+				"http://api.geonames.org/findNearbyWikipediaJSON?" +
+					formValues.Encode())
+			if err != nil {
+				log.Errorf(ctx, "Couldn't fetch geonames data, got %v", err)
+				continue
+			}
+			defer resp.Body.Close()
+			js := struct {
+				Geonames []struct {
+					Lat          float64
+					Lng          float64
+					Rank         int64
+					Title        string
+					WikipediaUrl string
+				}
+			}{}
+			readerBuf := new(bytes.Buffer)
+
+			// could hook up json.Decoder to resp.Body directly instead of this
+			// silly buffer; only reason not to is (unused) printf debugging below.
+			// TODO 2017 if the printf ain't useful anymore
+			readerBuf.ReadFrom(resp.Body)
+
+			err = json.Unmarshal(readerBuf.Bytes(), &js)
+			if err != nil {
+				log.Errorf(ctx, "Couldn't decode geonames JSON, got %v", err)
+				continue
+			}
+
+			for _, gnitem := range js.Geonames {
+				venue := FsqVenue{
+					ID:           gnitem.WikipediaUrl,
+					Name:         gnitem.Title,
+					Lat:          gnitem.Lat,
+					Lng:          gnitem.Lng,
+					UsersCount:   gnitem.Rank + 30,
+					FsqUrl:       fmt.Sprintf("//%s", gnitem.WikipediaUrl),
+					RecentUpdate: now,
 				}
 				// Our cheesy map shortcuts break down if too too close to the poles
 				// or the antimeridian. So ignore venues nearby.
-				if math.Abs(lat) > 80.0 || math.Abs(lng) > 179.5 {
+				if math.Abs(gnitem.Lat) > 80.0 || math.Abs(gnitem.Lng) > 179.5 {
 					continue
 				}
 				// Similarly, ignore "null island"
-				if math.Abs(lat) < 0.1 && math.Abs(lng) < 0.1 {
+				if math.Abs(gnitem.Lat) < 0.1 && math.Abs(gnitem.Lng) < 0.1 {
 					continue
 				}
 				_, err := datastore.Put(ctx, venue.Key(ctx), &venue)
@@ -248,98 +317,16 @@ func cronFsq(w http.ResponseWriter, r *http.Request) {
 					log.Errorf(ctx, "Couldn't save venue, got %v", err)
 					continue
 				}
-
 				_, found := venues[venue.ID]
 				if !found {
 					newFound++
 				}
 				venues[venue.ID] = venue
 			}
+
 		}
-    }
-    // END
-    // the part of this "4sq" code that actually fetches data from 4square,
-    // except when 4square just horks up an error message
-
-    // BEGIN
-    // the part of this "4sq" code that actually fetches data from geonames
-    {
-      formValues := url.Values{
-        "lat": {fmt.Sprintf("%f", ftd.Lat)},
-        "lng": {fmt.Sprintf("%f", ftd.Lng)},
-        "radius": {fmt.Sprintf("%f", float64(radiusM)/1000.0)},
-        "username": {getConfig("gn_client", ctx)},
-        "maxRows": {"30"},
-      }
-      fmt.Fprintf(w, `<p>about to fetch http://api.geonames.org/findNearbyWikipediaJSON?%s`, formValues.Encode())
-      resp, err := urlfetch.Client(ctx).Get(
-        "http://api.geonames.org/findNearbyWikipediaJSON?" +
-          formValues.Encode())
-      if err != nil {
-        fmt.Fprintf(w, `Couldn't fetch geonames data, got %v`, err)
-        log.Errorf(ctx, "Couldn't fetch geonames data, got %v", err)
-        continue
-      }
-      defer resp.Body.Close()
-      js := struct {
-        Geonames []struct {
-          Lat float64
-          Lng float64
-          Rank int64
-          Title string
-          WikipediaUrl string
-        }
-      }{}
-      readerBuf := new(bytes.Buffer)
-
-      // could hook up json.Decoder to resp.Body directly instead of this
-      // silly buffer; only reason not to is (unused) printf debugging below.
-      // TODO 2017 if the printf ain't useful anymore
-      readerBuf.ReadFrom(resp.Body)
-      fmt.Fprintf(w, `<p>Got response %v`, readerBuf.String())
-
-      err = json.Unmarshal(readerBuf.Bytes(), &js)
-      if err != nil {
-        fmt.Fprintf(w, `<p>Couldn't decode geonames JSON, got %v`, err)
-        log.Errorf(ctx, "Couldn't decode geonames JSON, got %v", err)
-        continue
-      }
-
-      for _, gnitem := range js.Geonames {
-        venue := FsqVenue {
-          ID: gnitem.WikipediaUrl,
-          Name: gnitem.Title,
-          Lat: gnitem.Lat,
-          Lng: gnitem.Lng,
-          UsersCount: gnitem.Rank + 30,
-          FsqUrl: fmt.Sprintf("//%s", gnitem.WikipediaUrl),
-          RecentUpdate: now,
-        }
-        fmt.Fprintf(w, `<p>Got a venue: %v`, venue)
-				// Our cheesy map shortcuts break down if too too close to the poles
-				// or the antimeridian. So ignore venues nearby.        
-        if math.Abs(gnitem.Lat) > 80.0 || math.Abs(gnitem.Lng) > 179.5 {
-          continue
-        }
-        // Similarly, ignore "null island"
-        if math.Abs(gnitem.Lat) < 0.1 && math.Abs(gnitem.Lng) < 0.1 {
-          continue
-        }
-        _, err := datastore.Put(ctx, venue.Key(ctx), &venue)
-        if err != nil {
-					log.Errorf(ctx, "Couldn't save venue, got %v", err)
-					continue
-				}
-        _, found := venues[venue.ID]
-				if !found {
-					newFound++
-				}
-				venues[venue.ID] = venue
-      }
-
-    }
-    // END
-    // the part of this "4sq" code that actually fetches data from geonames
+		// END
+		// the part of this "4sq" code that actually fetches data from geonames
 
 		// 4sq says don't use data more than 30 days old.
 		// Check for (and GC) stale data that we've stored.
@@ -356,11 +343,7 @@ func cronFsq(w http.ResponseWriter, r *http.Request) {
 			rmKeys = append(rmKeys, venue.Key(ctx))
 		}
 		if len(rmKeys) > 0 {
-			fmt.Fprintf(w, ` Found %v old venues, attempting to delete`, len(rmKeys))
 			err = datastore.DeleteMulti(ctx, rmKeys)
-			if err != nil {
-				fmt.Fprintf(w, ` Got err %v`, err)
-			}
 		}
 
 		if newFound > 2 {
@@ -403,23 +386,18 @@ func cronFsq(w http.ResponseWriter, r *http.Request) {
 		if err == datastore.Done {
 			break
 		}
-		fmt.Fprintf(w, `<p>Considering old venue`)
 		if err != nil {
-			fmt.Fprintf(w, ` hit err %v`, err)
 			log.Errorf(ctx, "Looking for old FsqVenues, hit %v", err)
 			break
 		}
 		if alreadyBoxes[latLng2RegionBox(venue.Lat, venue.Lng)] {
-			fmt.Fprintf(w, ` ...but too close`)
 			continue
 		}
 		if rand.Float64() > 0.3 {
-			fmt.Fprintf(w, ` ...but random`)
 			continue
 		}
 		alreadyBoxes[latLng2RegionBox(venue.Lat, venue.Lng)] = true
 		addFsqTodo(ctx, "_oldVen/"+venue.ID, venue.Lat, venue.Lng)
-		fmt.Fprintf(w, ` added`)
 	}
 }
 
@@ -429,9 +407,9 @@ func cronFsq(w http.ResponseWriter, r *http.Request) {
 // v: url.Values to enhance
 func authUrlValues(v *url.Values, ctx context.Context) {
 	fsq_client_id, fsq_client_secret := fsqConfig(ctx)
-  if (fsq_client_id == "") {
-    return
-  }
+	if fsq_client_id == "" {
+		return
+	}
 	v.Add("client_id", fsq_client_id)
 	v.Add("client_secret", fsq_client_secret)
 	v.Add("v", "20160704") // version
@@ -444,9 +422,9 @@ func (v FsqVenue) Score() int64 {
 
 func fsqConfig(ctx context.Context) (ID, Secret string) {
 	clientConfig := getConfig("4sq_client", ctx)
-  if (clientConfig == "") {
-    return "", ""
-  }
+	if clientConfig == "" {
+		return "", ""
+	}
 	fields := strings.Split(clientConfig, "|")
 	return fields[0], fields[1]
 }

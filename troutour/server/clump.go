@@ -3,13 +3,11 @@ package server
 import (
 	"fmt"
 	"golang.org/x/net/context"
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
 	"html/template"
 	"math/rand"
-	"net/http"
 	"time"
 )
 
@@ -296,31 +294,34 @@ func adjifyFindBlockers(adj ClumpAdj, m map[string]ClumpAdj, clumps map[string]*
 	return
 }
 
-func cronClumpAdj(w http.ResponseWriter, r *http.Request) {
-	ctx := appengine.NewContext(r)
-	// Which clumpBoxes have we already messed around near?
-	already := map[int32]bool{}
-	todoList := []ClumpAdjTodo{}
-	catdq := datastore.NewQuery("ClumpAdjTodo").Limit(100)
-	todoKeys, err := catdq.GetAll(ctx, &todoList)
-	if err != nil {
-		log.Errorf(ctx, "fetching to-dos got %v", err)
-	}
-	if len(todoKeys) == 0 {
-		fmt.Fprintf(w, "<p>OMG DONE")
-	} else {
-		fmt.Fprintf(w, "<p>I see at least %d TODOs", len(todoKeys))
-	}
-	doneCount := 0
+func dirtyClumpsMarkDirty(dirtyClumps map[int32]bool, lat float64, lng float64, rangeKm float64) {
+		clumpRanges := nearbyClumpRanges(lat, lng, rangeKm)
+		for _, clumpRange := range clumpRanges {
+			for box := clumpRange[0]; box <= clumpRange[1]; box++ {
+				dirtyClumps[box] = true
+			}
+		}
+}
+
+func cronClumpAdj(ctx context.Context, dirtyClumps map[int32]bool) {
+  ninetySecondsFromStart := time.Now().Add(90 * time.Second)
+  todoList := []ClumpAdjTodo{}
+  catdq := datastore.NewQuery("ClumpAdjTodo").Limit(100)
+  todoKeys, err := catdq.GetAll(ctx, &todoList)
+  if err != nil {
+    log.Errorf(ctx, "fetching to-dos got %v", err)
+  }
 	for ix, catdKey := range todoKeys {
+    if ninetySecondsFromStart.Before(time.Now()) {
+			break
+		}
 		clumpBox := latLng2ClumpBox(todoList[ix].Lat, todoList[ix].Lng)
-		if already[clumpBox] {
+		if dirtyClumps[clumpBox] {
 			continue
 		}
 		stringID := catdKey.StringID()
 		err := computeClumpAdj(stringID, todoList[ix].Lat, todoList[ix].Lng, ctx)
 		if err != nil {
-			fmt.Fprintf(w, "<p>computeClumpAdj hit snag %v", err)
 			continue
 		}
 		err = datastore.Delete(ctx, catdKey)
@@ -328,15 +329,8 @@ func cronClumpAdj(w http.ResponseWriter, r *http.Request) {
 			log.Errorf(ctx, "<p>failed to delete done to-do %v", err)
 			return
 		}
-		doneCount++
-		clumpRanges := nearbyClumpRanges(todoList[ix].Lat, todoList[ix].Lng, 10.0)
-		for _, clumpRange := range clumpRanges {
-			for box := clumpRange[0]; box <= clumpRange[1]; box++ {
-				already[box] = true
-			}
-		}
+    dirtyClumpsMarkDirty(dirtyClumps, todoList[ix].Lat, todoList[ix].Lng, 10.0)
 	}
-	fmt.Fprintf(w, "<p>Did some: %d", doneCount)
 }
 
 func fetchClumps(ctx context.Context, centerLat float64, centerLng float64, rangeKm float64) (err error, m map[string]*Clump) {
@@ -516,11 +510,10 @@ func clumpDownContents(ctx context.Context, clump Clump) (err error, finishedP b
 }
 
 // Maybe add a remove-todo for some randomly-chosen clumps.
-func doomRandClumps(w http.ResponseWriter, ctx context.Context) {
+func doomRandClumps(ctx context.Context) {
 	// Choose a random spot on the globe.
 	// We've indexed our clumps by "ClumpBox".
 	lat, lng := randLatLng()
-  fmt.Fprintf(w, "<p>randLatLng: %v %v", lat, lng)
 	cb := latLng2ClumpBox(lat, lng)
 	cq := datastore.NewQuery("Clump").
 		Filter("ClumpBox >=", cb).
@@ -540,11 +533,9 @@ func doomRandClumps(w http.ResponseWriter, ctx context.Context) {
 			break
 		}
 		if err != nil {
-      fmt.Fprintf(w, "<p>doomRandClumps ERROR FETCHING clumps %v", err)
 			log.Errorf(ctx, "ERROR FETCHING clumps %v", err)
 			return
 		}
-    fmt.Fprintf(w, "<p>doomRandClumps dooms %v", clump.ID)
 		addClumpDownTodo(ctx, clump.ID)
 		if clump.ClumpBox != cb {
 			break
@@ -553,12 +544,10 @@ func doomRandClumps(w http.ResponseWriter, ctx context.Context) {
 	return
 }
 
-func cronClumpDown(w http.ResponseWriter, r *http.Request) {
-	ctx := appengine.NewContext(r)
-	late := time.Now().Add(30 * time.Second)
-	already := map[int32]bool{}
+func cronClumpDown(ctx context.Context, dirtyClumps map[int32]bool) {
+	late := time.Now().Add(90 * time.Second)
+	// already := map[int32]bool{}
 	q := datastore.NewQuery("ClumpDownTodo")
-  fmt.Fprintf(w, "<p>considering todos...")
 	for cursor := q.Run(ctx); ; {
 		cdtd := ClumpDownTodo{}
 		cdtdKey, err := cursor.Next(&cdtd)
@@ -566,7 +555,6 @@ func cronClumpDown(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		if err != nil {
-      fmt.Fprintf(w, "<p>cronClumpDown Next hit error: %v", err)
 			log.Errorf(ctx, "cronClumpDown Next hit error: %v", err)
 			break
 		}
@@ -577,14 +565,11 @@ func cronClumpDown(w http.ResponseWriter, r *http.Request) {
 			datastore.Delete(ctx, cdtdKey)
 			continue
 		}
-		if already[latLng2ClumpBox(clump.Lat, clump.Lng)] {
+    clumpBox := latLng2ClumpBox(clump.Lat, clump.Lng)
+		if dirtyClumps[clumpBox] {
 			continue
 		}
-		for _, clumpRange := range nearbyClumpRanges(clump.Lat, clump.Lng, 2*clumpAdjReachKm) {
-			for ix := clumpRange[0]; ix <= clumpRange[1]; ix++ {
-				already[ix] = true
-			}
-		}
+    dirtyClumpsMarkDirty(dirtyClumps, clump.Lat, clump.Lng,  2*clumpAdjReachKm)
 		finishedP := clumpDown(ctx, clump, late)
 		if !finishedP {
 			continue
@@ -602,14 +587,18 @@ func cronClumpDown(w http.ResponseWriter, r *http.Request) {
 	// Consider zapping a clump at randomly-chosen coords.
 	if !time.Now().Before(late) {
 		return
-  }
-  fmt.Fprintf(w, "<p>considering doom")
-	// This is a cron job running 1/5 minutes.
+	}
+
+  // TODO: should be another fn?
+	// This is a cron job running 1/ minutes.
 	// We don't want it to wipe out everything. So...
-	if rand.Float64() > .10 {
+	if rand.Float64() > 1.1 { // TODO was 0.1
 		return
 	}
-	doomRandClumps(w, ctx)
-  freshLat, freshLng := randLatLngNearCity()
-  addRupTodo(ctx, "doom", freshLat, freshLng)
+	doomRandClumps(ctx)
+
+  // TODO: should be another fn?
+	// to balance against dooming, maybe spawn a new region
+	freshLat, freshLng := randLatLngNearCity()
+	addRupTodo(ctx, "doom", freshLat, freshLng)
 }

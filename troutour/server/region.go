@@ -31,7 +31,7 @@ const (
 
 	regionsTooCloseKm = 0.150
 
-	minRegionsPerClump = 3
+	minRegionsPerClump = 1
 	maxRegionsPerClump = 5
 )
 
@@ -70,34 +70,35 @@ func (r *Region) Save() ([]datastore.Property, error) {
 	return datastore.SaveStruct(r)
 }
 
-func cronRegionUp(w http.ResponseWriter, r *http.Request) {
-	ctx := appengine.NewContext(r)
-	thirtySecondsFromStart := time.Now().Add(30 * time.Second)
+func cronRegionUp(ctx context.Context	, dirtyClumps map[int32]bool) {
+	ninetySecondsFromStart := time.Now().Add(90 * time.Second)
 
-	already := map[int32]bool{}
 	todoList := []RupTodo{}
 	ntdq := datastore.NewQuery("RupTodo").Limit(100)
 	todoKeys, err := ntdq.GetAll(ctx, &todoList)
 	if err != nil {
-		fmt.Fprintf(w, "fetching to-dos got %v", err)
 		log.Errorf(ctx, "fetching to-dos got %v", err)
 		return
 	}
 	for ix, ntd := range todoList {
 		// Ha ha app engine has a 60 second deadline.
-		// ctx, strangely, doesn't know about it
-		if thirtySecondsFromStart.Before(time.Now()) {
+    // TODO: since we moved to task-queue, this deadline is
+    //       now more like 10 minutes.
+		if ninetySecondsFromStart.Before(time.Now()) {
 			break
 		}
-		if already[latLng2RegionBox(ntd.Lat, ntd.Lng)] {
+    clumpBox := latLng2ClumpBox(todoList[ix].Lat, todoList[ix].Lng)
+    if dirtyClumps[clumpBox] {
 			continue
 		}
-		err, addedCount := regionUp(ctx, ntd.Lat, ntd.Lng, w)
+		err, addedCount := regionUp(ctx, ntd.Lat, ntd.Lng)
 		switch err {
 		case errNotEnoughVenues:
 			sid := todoKeys[ix].StringID()
 			addFsqTodo(ctx, sid, ntd.Lat, ntd.Lng)
 			datastore.Delete(ctx, todoKeys[ix]) // if 4sq finds new things, it'll create a todo hereabouts.
+      dirtyClumpsMarkDirty(dirtyClumps, todoList[ix].Lat, todoList[ix].Lng, 7.0)
+
 			continue
 
 		case errNoCloseVenue:
@@ -106,18 +107,14 @@ func cronRegionUp(w http.ResponseWriter, r *http.Request) {
 		case nil:
 			// pass
 		default:
-			fmt.Fprintf(w, "attempted to activate but hit %v", err)
 			log.Errorf(ctx, "attempted to activate but hit %v", err)
 			continue
 		}
 		if addedCount > 0 {
-			for true {
-				ntd.Lat += -0.001 + (rand.Float64() * 0.002)
-				ntd.Lng += -0.001 + (rand.Float64() * 0.002)
-				if !already[latLng2RegionBox(ntd.Lat, ntd.Lng)] {
-					break
-				}
-			}
+      dirtyClumpsMarkDirty(dirtyClumps, todoList[ix].Lat, todoList[ix].Lng, 7.0)
+
+      ntd.Lat += -0.005 + (rand.Float64() * 0.010)
+      ntd.Lng += -0.005 + (rand.Float64() * 0.010)
 			datastore.Put(ctx, todoKeys[ix], &ntd)
 		} else {
 			if rand.Float64() < 0.3 {
@@ -126,7 +123,6 @@ func cronRegionUp(w http.ResponseWriter, r *http.Request) {
 			}
 			err := datastore.Delete(ctx, todoKeys[ix])
 			if err != nil {
-				fmt.Fprintf(w, "couldn't delete todo item, got %v", err)
 				log.Errorf(ctx, "couldn't delete todo item, got %v", err)
 			}
 		}
@@ -202,7 +198,7 @@ func regionUpNascentize(lat float64, lng float64, venues map[string]FsqVenue, re
 	}
 }
 
-func regionUp(ctx context.Context, centerLat float64, centerLng float64, w http.ResponseWriter) (err error, addedCount int) {
+func regionUp(ctx context.Context, centerLat float64, centerLng float64) (err error, addedCount int) {
 	err, regions := fetchRegs(ctx, centerLat, centerLng, regCreateRangeKm+regionsTooCloseKm)
 	if err != nil {
 		return
@@ -217,7 +213,6 @@ func regionUp(ctx context.Context, centerLat float64, centerLng float64, w http.
 		err = errNotEnoughVenues
 		return
 	}
-	fmt.Fprintf(w, "<p>len(venues)=%v", len(venues))
 	closeVenueCount := 0
 	for _, venue := range venues {
 		if dist(venue.Lat, venue.Lng, centerLat, centerLng) < pingMaxRangeKm {
@@ -237,7 +232,6 @@ func regionUp(ctx context.Context, centerLat float64, centerLng float64, w http.
 			nascentCount++
 		}
 	}
-	fmt.Fprintf(w, "<p>nascentCount=%v", nascentCount)
 	if nascentCount < minRegionsPerClump {
 		if closeVenueCount < 1 {
 			err = errNoCloseVenue
@@ -316,14 +310,11 @@ func regionUp(ctx context.Context, centerLat float64, centerLng float64, w http.
 		if clump.Tmp != 1 {
 			continue
 		}
-		fmt.Fprintf(w, "<p>Potential new clump kids=%v dist=%v ", len(clump.Kids), dist(centerLat, centerLng, clump.Lat, clump.Lng))
 		if len(clump.Kids) < minRegionsPerClump ||
 			len(clump.Kids) > maxRegionsPerClump {
-			fmt.Fprintf(w, "bad # of kids")
 			continue
 		}
 		if dist(centerLat, centerLng, clump.Lat, clump.Lng) > clumpCreateRangeKm {
-			fmt.Fprintf(w, "too far")
 			continue
 		}
 
@@ -343,7 +334,6 @@ func regionUp(ctx context.Context, centerLat float64, centerLng float64, w http.
 			}
 		}
 		if wouldInterfereWithExistingClump {
-			fmt.Fprintf(w, "would interfere")
 			continue
 		}
 

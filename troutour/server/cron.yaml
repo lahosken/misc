@@ -1,35 +1,41 @@
 cron:
 
-- description: "RegionUp"
-  # promote some dormant regions -> nascent regions
-  url: /cron/rup
-  schedule: every 5 minutes
-  timezone: America/Los_Angeles
-  target: cycle
-
-- description: "Fsq"
-  # update 4sq venue info
-  url: /cron/fsq
-  schedule: every 1 minutes
-  timezone: America/Los_Angeles
-  target: cycle
-
-- description: "WorkingForTheClumpDown"
-  # remove marked-for-destruction clumps
-  url: /cron/clumpdown
-  schedule: every 5 minutes
-  timezone: America/Los_Angeles
-  target: cycle
-
-- description: "ConnectClumps"
-  # figure out which clumps are adjacent to others
-  url: /cron/clumpadj
+- description: "Enqueue"
+  url: /cron/enqueue
   schedule: every 1 minutes
   target: cycle
 
-- description: "CleanupCheckins"
-  # We only care about recent checkins < 1 hour old, so scrub older
-  url: /cron/ccc
-  schedule: every 25 minutes from 0:04 to 23:59
-  timezone: America/Los_Angeles
-  target: cycle
+# - description: "RegionUp"
+#   # promote some dormant regions -> nascent regions
+#   url: /cron/rup
+#   schedule: every 5 minutes
+#   timezone: America/Los_Angeles
+#   target: cycle
+
+# - description: "Fsq"
+#   # update 4sq venue info
+#   url: /cron/fsq
+#   schedule: every 1 minutes
+#   timezone: America/Los_Angeles
+#   target: cycle
+
+# - description: "WorkingForTheClumpDown"
+#   # remove marked-for-destruction clumps
+#   url: /cron/clumpdown
+#   schedule: every 5 minutes
+#   timezone: America/Los_Angeles
+#   target: cycle
+
+#- description: "ConnectClumps"
+#  # figure out which clumps are adjacent to others
+#  url: /cron/clumpadj
+#  schedule: every 1 minutes
+#  target: cycle
+
+# - description: "CleanupCheckins"
+#   # We only care about recent checkins < 1 hour old, so scrub older
+#   url: /cron/ccc
+#   schedule: every 25 minutes from 0:04 to 23:59
+#   timezone: America/Los_Angeles
+#   target: cycle
+
