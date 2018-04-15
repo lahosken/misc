@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"golang.org/x/net/context"
-	//	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/urlfetch"
@@ -154,104 +153,6 @@ func cronFsq(ctx context.Context) {
 		// Count new venues discovered by this query.
 		// If there are many, maybe we should query again nearby.
 		newFound := 0
-
-		// BEGIN
-		// the part of this "4sq" code that actually fetches data from 4square,
-		// except when 4square just horks up an error message
-		if 1 == 1 {
-			formValues := url.Values{
-				"ll":     {fmt.Sprintf("%f,%f", ftd.Lat, ftd.Lng)},
-				"radius": {fmt.Sprintf("%d", radiusM)},
-				"time":   {"any"},
-				"day":    {"any"},
-				"limit":  {"50"},
-			}
-			authUrlValues(&formValues, ctx)
-			resp, err := urlfetch.Client(ctx).Get(
-				"https://api.foursquare.com/v2/venues/explore?" +
-					formValues.Encode())
-			if err != nil {
-				log.Errorf(ctx, "Couldn't fetch 4sq data, got %v", err)
-				continue
-			}
-			defer resp.Body.Close()
-			// Struct specifying which values to salvage from the Json.
-			// https://developer.foursquare.com/docs/venues/explore
-			// https://developer.foursquare.com/docs/responses/venue
-			js := struct {
-				Response struct {
-					Groups []struct {
-						Items []struct {
-							Venue struct {
-								ID           string
-								Name         string
-								CanonicalUrl string
-								Location     struct {
-									Lat float64
-									Lng float64
-								}
-								Stats map[string]int64
-							}
-						}
-					}
-				}
-			}{}
-			readerBuf := new(bytes.Buffer)
-
-			// could hook up json.Decoder to resp.Body directly instead of this
-			// silly buffer; only reason not to is (unused) printf debugging below.
-			// TODO 2017 if the printf ain't useful anymore
-			readerBuf.ReadFrom(resp.Body)
-
-			err = json.Unmarshal(readerBuf.Bytes(), &js)
-			if err != nil {
-				log.Errorf(ctx, "Couldn't decode 4sq JSON, got %v", err)
-				continue
-			}
-
-			for _, fgrp := range js.Response.Groups {
-				for _, fitem := range fgrp.Items {
-					jv := fitem.Venue
-					lat := jv.Location.Lat
-					lng := jv.Location.Lng
-					venue := FsqVenue{
-						ID:           jv.ID,
-						Name:         jv.Name,
-						Lat:          lat,
-						Lng:          lng,
-						UsersCount:   jv.Stats["usersCount"],
-						FsqUrl:       jv.CanonicalUrl,
-						RecentUpdate: now,
-					}
-					if venue.Score() < min4sqScore {
-						continue
-					}
-					// Our cheesy map shortcuts break down if too too close to the poles
-					// or the antimeridian. So ignore venues nearby.
-					if math.Abs(lat) > 80.0 || math.Abs(lng) > 179.5 {
-						continue
-					}
-					// Similarly, ignore "null island"
-					if math.Abs(lat) < 0.1 && math.Abs(lng) < 0.1 {
-						continue
-					}
-					_, err := datastore.Put(ctx, venue.Key(ctx), &venue)
-					if err != nil {
-						log.Errorf(ctx, "Couldn't save venue, got %v", err)
-						continue
-					}
-
-					_, found := venues[venue.ID]
-					if !found {
-						newFound++
-					}
-					venues[venue.ID] = venue
-				}
-			}
-		}
-		// END
-		// the part of this "4sq" code that actually fetches data from 4square,
-		// except when 4square just horks up an error message
 
 		// BEGIN
 		// the part of this "4sq" code that actually fetches data from geonames
