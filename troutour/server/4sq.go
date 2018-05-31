@@ -24,6 +24,7 @@ import (
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/urlfetch"
 	"hash/adler32"
+	"hash/fnv"
 	"math"
 	"math/rand"
 	// "net/http"
@@ -97,17 +98,11 @@ func fetchFsqVenues(ctx context.Context, lat float64, lng float64, rangeKm float
 
 // We have a "todo" list of lat/lngs. For each of those,
 // query 4sq API. Record new data. GC stale data.
-func cronFsq(ctx context.Context) {
+func cronFsq(ctx context.Context, dirtyClumps map[int32]bool) {
 	// ctx := appengine.NewContext(r)
 
-	// RegionBox values of requests we've handled this time.
-	// We don't want an impatient user in one city mashing their phone button
-	// to block up the pipeline and "starve" users in other cities.
-	// If we see many "todo" items in one RegionBox, only handle one of them
-	// this time; leave the rest for next time.
-	alreadyBoxes := map[int32]bool{}
-
 	now := time.Now()
+	late := now.Add(90 * time.Second)
 	rand.Seed(time.Now().Unix())
 
 	// 4sq says don't use things more than 30 days old
@@ -117,6 +112,9 @@ func cronFsq(ctx context.Context) {
 	 * Loop through our "todo"s
 	 */
 	for cursor := datastore.NewQuery("FsqTodo").Run(ctx); ; {
+		if !time.Now().Before(late) {
+			return
+		}
 		ftd := FsqTodo{}
 		key, err := cursor.Next(&ftd)
 		if err == datastore.Done {
@@ -127,14 +125,29 @@ func cronFsq(ctx context.Context) {
 			continue
 		}
 
-		if alreadyBoxes[latLng2RegionBox(ftd.Lat, ftd.Lng)] {
+		if dirtyClumps[latLng2ClumpBox(ftd.Lat, ftd.Lng)] {
 			continue
 		}
-		alreadyBoxes[latLng2RegionBox(ftd.Lat, ftd.Lng)] = true
+		dirtyClumpsMarkDirty(dirtyClumps, ftd.Lat, ftd.Lng, 10.0)
 
 		// What venues nearby do we already know about?
 		venues, err := fetchFsqVenues(ctx, ftd.Lat, ftd.Lng, 3.0)
 		if err != nil {
+			continue
+		}
+		sawTombstone := false
+		for _, venue := range venues {
+			if (venue.FsqUrl == "about:tombstone") &&
+				(dist(ftd.Lat, ftd.Lng, venue.Lat, venue.Lng) < 0.5) {
+				sawTombstone = true
+				break
+			}
+		}
+		if sawTombstone {
+			// We saw a "tombstone" venue, a fake venue that says
+			// we've previously asked GeoNames for venues around here and
+			// got no results
+			datastore.Delete(ctx, key)
 			continue
 		}
 
@@ -155,7 +168,7 @@ func cronFsq(ctx context.Context) {
 		newFound := 0
 
 		// BEGIN
-		// the part of this "4sq" code that actually fetches data from geonames
+		// the part of this "4sq" code that fetches data from geonames
 		{
 			formValues := url.Values{
 				"lat":      {fmt.Sprintf("%f", ftd.Lat)},
@@ -194,37 +207,58 @@ func cronFsq(ctx context.Context) {
 				continue
 			}
 
-			for _, gnitem := range js.Geonames {
+			if len(js.Geonames) > 0 {
+				for _, gnitem := range js.Geonames {
+					venueIDString := fmt.Sprintf("%s:%s (%f.%f)", gnitem.WikipediaUrl, gnitem.Title, gnitem.Lat, gnitem.Lng)
+					hasher := fnv.New64()
+					hasher.Write([]byte(venueIDString))
+					venue := FsqVenue{
+						ID:           fmt.Sprintf("%v", hasher.Sum64()),
+						Name:         gnitem.Title,
+						Lat:          gnitem.Lat,
+						Lng:          gnitem.Lng,
+						UsersCount:   gnitem.Rank + 30,
+						FsqUrl:       fmt.Sprintf("//%s", gnitem.WikipediaUrl),
+						RecentUpdate: now,
+					}
+					// Our cheesy map shortcuts break down if too too close to the poles
+					// or the antimeridian. So ignore venues nearby.
+					if math.Abs(gnitem.Lat) > 80.0 || math.Abs(gnitem.Lng) > 179.5 {
+						continue
+					}
+					// Similarly, ignore "null island"
+					if math.Abs(gnitem.Lat) < 0.1 && math.Abs(gnitem.Lng) < 0.1 {
+						continue
+					}
+					_, err := datastore.Put(ctx, venue.Key(ctx), &venue)
+					if err != nil {
+						log.Errorf(ctx, "Couldn't save venue, got %v", err)
+						continue
+					}
+					_, found := venues[venue.ID]
+					if !found {
+						newFound++
+					}
+					venues[venue.ID] = venue
+				}
+			} else {
+				// We got nuthin'. So save a "tombstone", a fake venue
+				// that later on tells us there's no point repeatedly
+				// searching around here.
 				venue := FsqVenue{
-					ID:           gnitem.WikipediaUrl,
-					Name:         gnitem.Title,
-					Lat:          gnitem.Lat,
-					Lng:          gnitem.Lng,
-					UsersCount:   gnitem.Rank + 30,
-					FsqUrl:       fmt.Sprintf("//%s", gnitem.WikipediaUrl),
+					ID:           fmt.Sprintf("tomb:%v,%v", ftd.Lat, ftd.Lng),
+					Name:         "",
+					Lat:          ftd.Lat,
+					Lng:          ftd.Lng,
+					UsersCount:   0,
+					FsqUrl:       fmt.Sprintf("about:tombstone"),
 					RecentUpdate: now,
-				}
-				// Our cheesy map shortcuts break down if too too close to the poles
-				// or the antimeridian. So ignore venues nearby.
-				if math.Abs(gnitem.Lat) > 80.0 || math.Abs(gnitem.Lng) > 179.5 {
-					continue
-				}
-				// Similarly, ignore "null island"
-				if math.Abs(gnitem.Lat) < 0.1 && math.Abs(gnitem.Lng) < 0.1 {
-					continue
 				}
 				_, err := datastore.Put(ctx, venue.Key(ctx), &venue)
 				if err != nil {
-					log.Errorf(ctx, "Couldn't save venue, got %v", err)
-					continue
+					log.Errorf(ctx, "Couldn't save tombstone, got %v", err)
 				}
-				_, found := venues[venue.ID]
-				if !found {
-					newFound++
-				}
-				venues[venue.ID] = venue
 			}
-
 		}
 		// END
 		// the part of this "4sq" code that actually fetches data from geonames
@@ -260,11 +294,12 @@ func cronFsq(ctx context.Context) {
 				// random-walk
 				ftd.Lat += -0.01 + (0.02 * rand.Float64())
 				ftd.Lng += -0.01 + (0.02 * rand.Float64())
-				if !alreadyBoxes[latLng2RegionBox(ftd.Lat, ftd.Lng)] {
-					break
-				}
 			}
-			addFsqTodo(ctx, username, ftd.Lat, ftd.Lng)
+			addFsqTodo(
+				ctx,
+				username,
+				ftd.Lat-0.01+(0.02*rand.Float64()),
+				ftd.Lng-0.01+(0.02*rand.Float64()))
 		}
 
 		// We handled this todo, so rm it
@@ -275,13 +310,13 @@ func cronFsq(ctx context.Context) {
 	 * Look for stale stored venue data.
 	 * Find some? Create "todo" items to look at next time.
 	 */
-	if len(alreadyBoxes) > 0 {
-		return
-	}
 	oldFVQ := datastore.NewQuery("FsqVenue").
 		Filter("RecentUpdate <", thirtyDaysAgo).
 		Limit(100)
 	for cursor := oldFVQ.Run(ctx); ; {
+		if !time.Now().Before(late) {
+			return
+		}
 		venue := FsqVenue{}
 		_, err := cursor.Next(&venue)
 		if err == datastore.Done {
@@ -291,14 +326,6 @@ func cronFsq(ctx context.Context) {
 			log.Errorf(ctx, "Looking for old FsqVenues, hit %v", err)
 			break
 		}
-		if alreadyBoxes[latLng2RegionBox(venue.Lat, venue.Lng)] {
-			continue
-		}
-		if rand.Float64() > 0.3 {
-			continue
-		}
-		alreadyBoxes[latLng2RegionBox(venue.Lat, venue.Lng)] = true
-		addFsqTodo(ctx, "_oldVen/"+venue.ID, venue.Lat, venue.Lng)
 	}
 }
 

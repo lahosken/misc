@@ -220,11 +220,11 @@ var bigCities = [...][]float64{
 	[]float64{36.170, -115.144}, // Las Vegas
 	[]float64{36.736, -119.786}, // Fresno
 	[]float64{36.846, -76.290},  // Norfolk
-	[]float64{37.210, -93.290},  // Springfield Missouri
-	[]float64{37.430, -122.169}, // Stanford
-	[]float64{37.542, -77.434},  // Richmond Virginia
-	[]float64{37.570, 126.988},  // Seoul
-	[]float64{37.872, -122.260}, // Cal
+	// []float64{37.210, -93.290},  // Springfield Missouri
+	// []float64{37.430, -122.169}, // Stanford
+	// []float64{37.542, -77.434},  // Richmond Virginia
+	// []float64{37.570, 126.988},  // Seoul
+	// []float64{37.872, -122.260}, // Cal
 	[]float64{38.258, -85.760},  // Louisville
 	[]float64{38.576, -121.480}, // Sacramento
 	[]float64{38.632, -90.200},  // St Louis
@@ -292,7 +292,7 @@ var bigCities = [...][]float64{
 
 func randLatLngNearCity() (lat, lng float64) {
 	whichCity := rand.Intn(len(bigCities))
-	lat = bigCities[whichCity][0] + rand.Float64()*0.5*(rand.Float64()-0.5)
-	lng = bigCities[whichCity][1] + rand.Float64()*0.5*(rand.Float64()-0.5)
+	lat = bigCities[whichCity][0] + rand.Float64()*(rand.Float64()-0.5)
+	lng = bigCities[whichCity][1] + rand.Float64()*(rand.Float64()-0.5)
 	return
 }

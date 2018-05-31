@@ -776,7 +776,8 @@ function drawMapRegions(gl) {
     if (distanceSortedList.length > 0 && distanceSortedList[distanceSortedList.length-1].dist < 1.0) {
 	closestLoc = distanceSortedList[distanceSortedList.length-1]
 	nearRegionID = closestLoc.id;
-	var fsqURL = 'https://foursquare.com/explore?mode=url&ll=' + closestLoc.lat + ',' + closestLoc.lng;
+	// var fsqURL = 'https://foursquare.com/explore?mode=url&ll=' + closestLoc.lat + ',' + closestLoc.lng;
+	var fsqURL = 'https://www.google.com/maps/@?api=1&map_action=map&center=' + closestLoc.lat + ',' + closestLoc.lng;
 	if (closestLoc.fsq) {
 	    fsqURL = closestLoc.fsq;
 	}

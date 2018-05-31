@@ -510,10 +510,10 @@ func clumpDownContents(ctx context.Context, clump Clump) (err error, finishedP b
 }
 
 // Maybe add a remove-todo for some randomly-chosen clumps.
-func doomRandClumps(ctx context.Context) {
+func doomRandClumps(ctx context.Context, dirtyClumps map[int32]bool) {
 	// Choose a random spot on the globe.
 	// We've indexed our clumps by "ClumpBox".
-	lat, lng := randLatLng()
+	lat, lng := randLatLngNearCity()
 	cb := latLng2ClumpBox(lat, lng)
 	cq := datastore.NewQuery("Clump").
 		Filter("ClumpBox >=", cb).
@@ -536,6 +536,13 @@ func doomRandClumps(ctx context.Context) {
 			log.Errorf(ctx, "ERROR FETCHING clumps %v", err)
 			return
 		}
+		if rand.Float64() > 0.3 {
+			continue
+		}
+		if dirtyClumps[latLng2ClumpBox(clump.Lat, clump.Lng)] {
+			continue
+		}
+		dirtyClumpsMarkDirty(dirtyClumps, clump.Lat, clump.Lng, 10.0)
 		addClumpDownTodo(ctx, clump.ID)
 		if clump.ClumpBox != cb {
 			break
@@ -588,14 +595,6 @@ func cronClumpDown(ctx context.Context, dirtyClumps map[int32]bool) {
 	if !time.Now().Before(late) {
 		return
 	}
-
-	// TODO: should be another fn?
-	// This is a cron job running 1/ minutes.
-	// We don't want it to wipe out everything. So...
-	if rand.Float64() > 1.1 { // TODO was 0.1
-		return
-	}
-	doomRandClumps(ctx)
 
 	// TODO: should be another fn?
 	// to balance against dooming, maybe spawn a new region

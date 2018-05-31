@@ -36,8 +36,9 @@ const (
 )
 
 var (
-	errNotEnoughVenues = errors.New("too few venues even semi-near")
-	errNoCloseVenue    = errors.New("no venue within pinging distance")
+	errNoVenuesButTombstone = errors.New("no close venues; we've queried for them before tho")
+	errNotEnoughVenues      = errors.New("too few venues even semi-near")
+	errNoCloseVenue         = errors.New("no venue within pinging distance")
 )
 
 type Region struct {
@@ -81,9 +82,6 @@ func cronRegionUp(ctx context.Context, dirtyClumps map[int32]bool) {
 		return
 	}
 	for ix, ntd := range todoList {
-		// Ha ha app engine has a 60 second deadline.
-		// TODO: since we moved to task-queue, this deadline is
-		//       now more like 10 minutes.
 		if ninetySecondsFromStart.Before(time.Now()) {
 			break
 		}
@@ -138,6 +136,9 @@ func regionUpNascentize(lat float64, lng float64, venues map[string]FsqVenue, re
 	for vid, venue := range venues {
 		_, already := regions[vid]
 		if already {
+			continue
+		}
+		if venue.FsqUrl == "about:tombstone" {
 			continue
 		}
 		if dist(venue.Lat, venue.Lng, lat, lng) > regCreateRangeKm {

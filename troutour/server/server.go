@@ -24,12 +24,7 @@ func init() {
 	http.HandleFunc("/oauth2_callback_goog", Sessionate(oauth2CallbackGoog))
 	http.HandleFunc("/logout", Sessionate(logout))
 
-	http.HandleFunc("/configstore", configstore) // key/cert/etc storage
-	// http.HandleFunc("/cron/fsq", cronFsq)             // query 4square
-	// http.HandleFunc("/cron/rup", cronRegionUp)        // create regions
-	// http.HandleFunc("/cron/clumpadj", cronClumpAdj)   // compute "close" regions
-	// http.HandleFunc("/cron/clumpdown", cronClumpDown) // destroy regions
-	// http.HandleFunc("/cron/ccc", cronCleanupCheckins) // GC checkins
+	http.HandleFunc("/configstore", configstore)  // key/cert/etc storage
 	http.HandleFunc("/cron/enqueue", cronEnqueue) // post job to task queue
 }
 
@@ -53,11 +48,28 @@ func topscreen(w http.ResponseWriter, r *http.Request, userID string, sessionID 
 }
 
 func doQueue(ctx context.Context) {
+	late := time.Now().Add(8 * time.Minute)
 	dirtyClumps := map[int32]bool{}
 	cronClumpAdj(ctx, dirtyClumps)
+	if !time.Now().Before(late) {
+		return
+	}
 	cronRegionUp(ctx, dirtyClumps)
+	if !time.Now().Before(late) {
+		return
+	}
 	cronClumpDown(ctx, dirtyClumps)
-	cronFsq(ctx)
+	if !time.Now().Before(late) {
+		return
+	}
+	cronFsq(ctx, dirtyClumps)
+	if !time.Now().Before(late) {
+		return
+	}
+	doomRandClumps(ctx, dirtyClumps)
+	if !time.Now().Before(late) {
+		return
+	}
 	cronCleanupCheckins(ctx)
 	time.Sleep(30 * time.Second)
 }

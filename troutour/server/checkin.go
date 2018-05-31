@@ -163,18 +163,33 @@ func fetchRoutableRegionIDs(ctx context.Context, thisRegion Region, regions map[
 			routables = append(routables, kid)
 		}
 	}
+	// suffle. alas, don't have rand.Shuffle yet
+	for i, v := range rand.Perm(len(routables)) {
+		routables[i], routables[v] = routables[v], routables[i]
+	}
 	return
 }
 
 // trade in prisms for routes; don't persist
-func checkinPrisms2Routes(thisRegion Region, newRoutes *[]Route, routableRegionIDs *[]string, userID string, inventory *UserInventory) {
+func checkinPrisms2Routes(thisRegion Region, newRoutes *[]Route, routableRegionIDs *[]string, userID string, inventory *UserInventory, connectedRegions map[string]int, regions map[string]Region) {
+	clumpsAlreadyConnected := map[string]bool{}
 	for rrix := len(*routableRegionIDs) - 1; rrix >= 0; rrix-- {
 		routableRegionID := (*routableRegionIDs)[rrix]
+		// if already kinda-closely connected, don't be eager to add new route
+		if connectedRegions[routableRegionID] > 0 && connectedRegions[routableRegionID] < 4 {
+			continue
+		}
+		if clumpsAlreadyConnected[regions[routableRegionID].Clump] {
+			continue
+		}
 		for pix, prism := range inventory.Prisms {
 			if prism == routableRegionID {
 				*newRoutes = append(*newRoutes, Route{userID, []string{thisRegion.ID, routableRegionID}})
 				inventory.Prisms = append(inventory.Prisms[:pix], inventory.Prisms[pix+1:]...)
 				*routableRegionIDs = append((*routableRegionIDs)[:rrix], (*routableRegionIDs)[rrix+1:]...)
+				if regions[routableRegionID].Clump != "" {
+					clumpsAlreadyConnected[regions[routableRegionID].Clump] = true
+				}
 				break
 			}
 		}
@@ -382,7 +397,7 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 		log.Errorf(ctx, "fetchRoutableRegionIDs got err %v", err)
 	}
 	newRoutes := []Route{}
-	checkinPrisms2Routes(thisRegion, &newRoutes, &routableRegionIDs, userID, &inventory)
+	checkinPrisms2Routes(thisRegion, &newRoutes, &routableRegionIDs, userID, &inventory, connectedRegions, regions)
 	// If user didn't have many (or any?) routes yet, worth reporting.
 	if len(newRoutes)*4 > len(routes) {
 		if len(newRoutes) == 1 {
@@ -391,6 +406,17 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 			s += fmt.Sprintf(`/&nbsp;Established %d new ⛗<em>Routes</em>&nbsp;/`, len(newRoutes))
 		}
 		drama = true
+	}
+
+	for bix, bountyID := range inventory.Bounties {
+		if thisRegion.ID != bountyID {
+			continue
+		}
+		inventory.Trophies++
+		inventory.Bounties = append(inventory.Bounties[:bix], inventory.Bounties[bix+1:]...)
+		drama = true
+		s += fmt.Sprintf("/Picked up that 🏆Trophy, now have %d/", inventory.Trophies)
+		break
 	}
 
 	/*
@@ -403,15 +429,29 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 		wildcardIx := rand.Intn(len(routableRegionIDs))
 		wildcard := routableRegionIDs[wildcardIx]
 		routableRegionIDs = append(routableRegionIDs[:wildcardIx], routableRegionIDs[wildcardIx+1:]...)
-		region, found := regions[wildcard]
-		if found {
-			s += fmt.Sprintf("/ traded in some old 💎Prisms for ⛗Route to %s /", html.EscapeString(region.Name))
-		} else {
-			s += fmt.Sprintf("/ traded in some old 💎Prisms for new ⛗Route /")
-		}
-		inventory.Prisms = inventory.Prisms[10:]
-		drama = true
 		newRoutes = append(newRoutes, Route{userID, []string{thisRegion.ID, wildcard}})
+		foundInInventory := false
+		// we say "trade in 10 old prisms", but if we have the
+		// appropriate prism for this region, just use it instead
+		// of trading in 10
+		for pix, prism := range inventory.Prisms {
+			if prism == wildcard {
+				inventory.Prisms = append(inventory.Prisms[:pix], inventory.Prisms[pix+1:]...)
+				foundInInventory = true
+				break
+			}
+
+		}
+		if !foundInInventory {
+			region, found := regions[wildcard]
+			if found {
+				s += fmt.Sprintf("/ traded in some old 💎Prisms for ⛗Route to %s /", html.EscapeString(region.Name))
+			} else {
+				s += fmt.Sprintf("/ traded in some old 💎Prisms for new ⛗Route /")
+			}
+			inventory.Prisms = inventory.Prisms[10:]
+			drama = true
+		}
 	}
 
 	unloadedRegions := []Region{}
@@ -456,17 +496,6 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 			drama = true
 		}
 		inventory.Prisms = append(inventory.Prisms, thisRegion.ID)
-	}
-
-	for bix, bountyID := range inventory.Bounties {
-		if thisRegion.ID != bountyID {
-			continue
-		}
-		inventory.Trophies++
-		inventory.Bounties = append(inventory.Bounties[:bix], inventory.Bounties[bix+1:]...)
-		drama = true
-		s += fmt.Sprintf("/Picked up that 🏆Trophy, now have %d/", inventory.Trophies)
-		break
 	}
 
 	if !drama {
