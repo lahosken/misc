@@ -3,16 +3,17 @@ package server
 import (
 	"golang.org/x/net/context"
 	"testing"
+  "time"
 )
 
 // A parallelogram of clumps.
 // The potential-adjs nw-se and ne-sw intersect; the nw-se adj is shorter
 // than ne-sw and should "win".
 var fakeClumpDataParallelogram map[string]*Clump = map[string]*Clump{
-	"sw": &Clump{"sw", 0, 110, 210, .011, .021, 0, []string{}},
-	"nw": &Clump{"nw", 0, 120, 220, .012, .022, 0, []string{}},
-	"se": &Clump{"se", 0, 110, 230, .011, .023, 0, []string{}},
-	"ne": &Clump{"ne", 0, 120, 240, .012, .024, 0, []string{}},
+	"sw": &Clump{"sw", 0, 110, 210, .011, .021, 0, []string{}, time.Now()},
+	"nw": &Clump{"nw", 0, 120, 220, .012, .022, 0, []string{}, time.Now()},
+	"se": &Clump{"se", 0, 110, 230, .011, .023, 0, []string{}, time.Now()},
+	"ne": &Clump{"ne", 0, 120, 240, .012, .024, 0, []string{}, time.Now()},
 }
 
 func fakeQueryAdjFactory(x []ClumpAdj) func(ctx context.Context, query string) (cas []ClumpAdj, err error) {
