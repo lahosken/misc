@@ -9,8 +9,27 @@ var documentWasHiddenP = false;
 var locs = {};
 var locsByBox = {};
 function locs_addBoxes(boxes) {
+    var resultsIncludeGoogleP = false;
     for (box in boxes) {
 	locsByBox[box] = boxes[box];
+	for (ix in boxes[box]) {
+	    loc = boxes[box][ix];
+	    if (loc.fsq && loc.fsq.includes('google')) {
+		resultsIncludeGoogleP = true;
+	    }
+	}
+    }
+    var alreadyHaveGoogleMessage = false;
+    if (resultsIncludeGoogleP) {
+	for (ix in messages) {
+	    msg = messages[ix]
+	    if (msg.includes('powered_by_google_on_non_white.png')) {
+		alreadyHaveGoogleMessage = true;
+	    }
+	}
+	if (!alreadyHaveGoogleMessage) {
+	    newMsg('<img src="/client/powered_by_google_on_non_white.png" style="background-color: rgb(51, 51, 51);"> This game uses location data from Google Maps');
+	}
     }
     locs_updateFromByBox();
     try {
@@ -156,7 +175,7 @@ function messages_add(htmlStringOrListOfHtmlStrings) {
     messages = htmlStringOrListOfHtmlStrings.concat(messages);
 }
 function messages_forget() {
-    if (messages.length > 20) {
+    if (messages.length > 100) {
 	messages.length = Math.floor( messages.length / 2);
     }
 }
@@ -262,6 +281,9 @@ function ingest(j) { // crunch the data we got from the server
     if (j.chkn) {
 	ingestCheckins(j.chkn);
     }
+    if (j.rmregs) {
+	ingestRemovedRegions(j.rmregs);
+    }
     if (j.regs) {
 	ingestRegs(j.regs);
     }
@@ -297,6 +319,30 @@ function ingestMessages(msgs) {
 function ingestRegs(newregs) {
     locs_addBoxes(newregs);
     locs_updateGridCoords();
+}
+
+function ingestRemovedRegions(goneregs) {
+    for (grix in goneregs) {
+	var goneId = goneregs[grix];
+	for (rix in knownRts) {
+	    rt = knownRts[rix];
+	    if (goneId == rt.ends[0] || goneId == rt.ends[1]) {
+		delete(knownRts[rix]);
+	    }
+	}
+	if (!locs[goneId]) {
+	    continue
+	}
+	for (boxid in locsByBox) {
+	    for (rix in locsByBox[boxid]) {
+		var regid = locsByBox[boxid][rix].id;
+		if (regid == goneId) {
+		    delete(locsByBox[boxid]);
+		    break;
+		}
+	    }
+	}
+    }
 }
 
 function ingestInventory(i) {
@@ -784,6 +830,9 @@ function drawMapRegions(gl) {
 	var pingdom = $('<div><a id="fsq" class="ui-corner-all">4sq</a><span class="reg"></span></div>');
 	if (fsqURL.includes('wikipedia')) {
 	    pingdom = $('<div><a id="fsq" class="ui-corner-all">Wi</a><span class="reg"></span></div>');
+	}
+	if (fsqURL.includes('google')) {
+	    pingdom = $('<div><a id="fsq" class="ui-corner-all">G</a><span class="reg"></span></div>');
 	}
 	pingdom.find('a#fsq').attr('href', fsqURL);
 	pingdom.find('span.reg').append(locDom(closestLoc));

@@ -1,13 +1,14 @@
 package server
 
 import (
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/delay"
-	//	"google.golang.org/appengine/datastore"
 	"fmt"
 	"golang.org/x/net/context"
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/delay"
 	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/taskqueue"
 	"html/template"
+	"math/rand"
 	"net/http"
 	"time"
 )
@@ -58,7 +59,7 @@ func doQueue(ctx context.Context) {
 	if !time.Now().Before(late) {
 		return
 	}
-	cronClumpDown(ctx, dirtyClumps)
+	downedClumpCount := cronClumpDown(ctx, dirtyClumps)
 	if !time.Now().Before(late) {
 		return
 	}
@@ -66,7 +67,13 @@ func doQueue(ctx context.Context) {
 	if !time.Now().Before(late) {
 		return
 	}
-	doomRandClumps(ctx, dirtyClumps)
+	if downedClumpCount < 1 {
+		doomCount := doomClumps(ctx, dirtyClumps)
+		if float64(1+doomCount)*rand.Float64() > 0.95 {
+			randLat, randLng := randLatLngNearCity()
+			addRupTodo(ctx, "doom", randLat, randLng)
+		}
+	}
 	if !time.Now().Before(late) {
 		return
 	}
@@ -78,17 +85,34 @@ var delayedDoQueueFunc = delay.Func("whatDoesKeyDo", doQueue)
 
 func cronEnqueue(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
+	stats, err := taskqueue.QueueStats(ctx, []string{"default"})
+	if err != nil {
+		log.Errorf(ctx, "Tried to check queue stats, got %v", err)
+		return
+	}
+	if len(stats) < 1 {
+		log.Errorf(ctx, "Tried to check queue stats, got no stats")
+		return
+	}
+	if stats[0].Tasks > 0 {
+		// something's already queued, so don't pile on
+		return
+	}
 	delayedDoQueueFunc.Call(ctx)
 }
 
 // Handy function for one-time admin tasks.
 func magic(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
-	err, addedCount := regionUp(ctx, 37.7746, -122.4101)
+	queueNames := []string{"default"}
+	stats, err := taskqueue.QueueStats(ctx, queueNames)
 	if err != nil {
-		fmt.Fprintf(w, "<p>Magic sees err = %v", err)
+		fmt.Fprintf(w, "<p>I see ERR %v", err)
+	} else {
+		fmt.Fprintf(w, "<p>I see stats %v", stats)
 	}
-	fmt.Fprintf(w, "<p>Magic sees addedCount = %v", addedCount)
+	// taskqueue.Purge(ctx, "whatDoesKeyDo")
+
 	/*
 		thirtySecondsFromStart := time.Now().Add(30 * time.Second)
 		types := []string{"FsqVenue", "Region", "NPC", "Route", "Clump", "ClumpAdj"}

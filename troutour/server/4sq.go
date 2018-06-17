@@ -16,7 +16,6 @@ package server
  */
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/net/context"
@@ -112,6 +111,7 @@ func cronFsq(ctx context.Context, dirtyClumps map[int32]bool) {
 	 * Loop through our "todo"s
 	 */
 	for cursor := datastore.NewQuery("FsqTodo").Run(ctx); ; {
+		log.Infof(ctx, "cronFsq")
 		if !time.Now().Before(late) {
 			return
 		}
@@ -125,6 +125,7 @@ func cronFsq(ctx context.Context, dirtyClumps map[int32]bool) {
 			continue
 		}
 
+		log.Infof(ctx, "cronFsq ALOHA %v %v", ftd.Lat, ftd.Lng)
 		if dirtyClumps[latLng2ClumpBox(ftd.Lat, ftd.Lng)] {
 			continue
 		}
@@ -135,10 +136,11 @@ func cronFsq(ctx context.Context, dirtyClumps map[int32]bool) {
 		if err != nil {
 			continue
 		}
+		log.Infof(ctx, "cronFsq BUENO %v", len(venues))
 		sawTombstone := false
 		for _, venue := range venues {
 			if (venue.FsqUrl == "about:tombstone") &&
-				(dist(ftd.Lat, ftd.Lng, venue.Lat, venue.Lng) < 0.5) {
+				(dist(ftd.Lat, ftd.Lng, venue.Lat, venue.Lng) < 0.75) {
 				sawTombstone = true
 				break
 			}
@@ -150,8 +152,9 @@ func cronFsq(ctx context.Context, dirtyClumps map[int32]bool) {
 			datastore.Delete(ctx, key)
 			continue
 		}
+		log.Infof(ctx, "cronFsq CRIMSON")
 
-		// query the 4sq, geonames API
+		// query the geonames, google APIs
 		// radiusM: Do we already know many venues nearby?
 		//  If so, choose small radius, get "denser" knowledge of venues.
 		//  If not, choose large radius, find semi-nearby venues.
@@ -194,18 +197,12 @@ func cronFsq(ctx context.Context, dirtyClumps map[int32]bool) {
 					WikipediaUrl string
 				}
 			}{}
-			readerBuf := new(bytes.Buffer)
-
-			// could hook up json.Decoder to resp.Body directly instead of this
-			// silly buffer; only reason not to is (unused) printf debugging below.
-			// TODO 2017 if the printf ain't useful anymore
-			readerBuf.ReadFrom(resp.Body)
-
-			err = json.Unmarshal(readerBuf.Bytes(), &js)
+			err = json.NewDecoder(resp.Body).Decode(&js)
 			if err != nil {
 				log.Errorf(ctx, "Couldn't decode geonames JSON, got %v", err)
 				continue
 			}
+			log.Infof(ctx, "cronFsq GEONAMES %v", js)
 
 			if len(js.Geonames) > 0 {
 				for _, gnitem := range js.Geonames {
@@ -230,6 +227,7 @@ func cronFsq(ctx context.Context, dirtyClumps map[int32]bool) {
 					if math.Abs(gnitem.Lat) < 0.1 && math.Abs(gnitem.Lng) < 0.1 {
 						continue
 					}
+					log.Infof(ctx, "cronFsq GEONAMES %v, %v", gnitem.Lat, gnitem.Lng)
 					_, err := datastore.Put(ctx, venue.Key(ctx), &venue)
 					if err != nil {
 						log.Errorf(ctx, "Couldn't save venue, got %v", err)
@@ -241,27 +239,117 @@ func cronFsq(ctx context.Context, dirtyClumps map[int32]bool) {
 					}
 					venues[venue.ID] = venue
 				}
-			} else {
-				// We got nuthin'. So save a "tombstone", a fake venue
-				// that later on tells us there's no point repeatedly
-				// searching around here.
-				venue := FsqVenue{
-					ID:           fmt.Sprintf("tomb:%v,%v", ftd.Lat, ftd.Lng),
-					Name:         "",
-					Lat:          ftd.Lat,
-					Lng:          ftd.Lng,
-					UsersCount:   0,
-					FsqUrl:       fmt.Sprintf("about:tombstone"),
-					RecentUpdate: now,
-				}
-				_, err := datastore.Put(ctx, venue.Key(ctx), &venue)
-				if err != nil {
-					log.Errorf(ctx, "Couldn't save tombstone, got %v", err)
-				}
 			}
 		}
 		// END
 		// the part of this "4sq" code that actually fetches data from geonames
+
+		log.Infof(ctx, "cronFsq NEWFOUND %v", newFound)
+		// BEGIN
+		// the part of this "4sq" code that fetches data from google maps
+		if newFound < 4 {
+			formValues := url.Values{
+				"key":      {getConfig("google_places_api", ctx)},
+				"location": {fmt.Sprintf("%f,%f", ftd.Lat, ftd.Lng)},
+				"radius":   {fmt.Sprintf("%d", radiusM)},
+			}
+
+			resp, err := urlfetch.Client(ctx).Get(
+				"https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
+					formValues.Encode())
+
+			if err != nil {
+				log.Errorf(ctx, "Couldn't fetch goog data, got %v", err)
+				continue
+			}
+			defer resp.Body.Close()
+			js := struct {
+				Html_Attributions []string
+				Results           []struct {
+					Geometry struct {
+						Location struct {
+							Lat float64
+							Lng float64
+						}
+					}
+					Name     string
+					Place_Id string
+				}
+			}{}
+			err = json.NewDecoder(resp.Body).Decode(&js)
+			if err != nil {
+				log.Errorf(ctx, "Couldn't decode goog JSON, got %v", err)
+				continue
+			}
+			log.Infof(ctx, "cronFsq GMAPS %v", js)
+
+			// If there are html_attributions, google license says we
+			// have to display them "with results". but since we don't
+			// really display results as such, we can't do that. so...
+			// if html_attributions is filled in, discard these unusable results
+			if len(js.Html_Attributions) == 0 && len(js.Results) > 0 {
+				ranking := len(js.Results) + 1
+				for _, gItem := range js.Results {
+					// Our cheesy map shortcuts break down if too too close to the poles
+					// or the antimeridian. So ignore venues nearby.
+					if math.Abs(gItem.Geometry.Location.Lat) > 80.0 || math.Abs(gItem.Geometry.Location.Lng) > 179.5 {
+						continue
+					}
+					// Similarly, ignore "null island"
+					if math.Abs(gItem.Geometry.Location.Lat) < 0.1 && math.Abs(gItem.Geometry.Location.Lng) < 0.1 {
+						continue
+					}
+					ranking -= 1
+					venueIDString := fmt.Sprintf("g:%s", gItem.Place_Id)
+					hasher := fnv.New64()
+					hasher.Write([]byte(venueIDString))
+					venue := FsqVenue{
+						ID:           fmt.Sprintf("%v", hasher.Sum64()),
+						Name:         gItem.Name,
+						Lat:          gItem.Geometry.Location.Lat,
+						Lng:          gItem.Geometry.Location.Lng,
+						UsersCount:   int64(ranking),
+						FsqUrl:       fmt.Sprintf("https://www.google.com/maps/search/?api=1&query_place_id=%s&query=%s", gItem.Place_Id, gItem.Name),
+						RecentUpdate: now,
+					}
+					_, err := datastore.Put(ctx, venue.Key(ctx), &venue)
+					if err != nil {
+						log.Errorf(ctx, "Couldn't save venue, got %v", err)
+						continue
+					}
+					log.Infof(ctx, "cronFsq GMAPS %v %v", venue.Lat, venue.Lng)
+					_, found := venues[venue.ID]
+					if !found {
+						newFound++
+					}
+					venues[venue.ID] = venue
+				}
+			}
+		}
+		// END
+		// the part of this "4sq" code that actually fetches data from google maps
+
+		log.Infof(ctx, "cronFsq NEWFOUND %v", newFound)
+
+		if newFound < 1 {
+			// We got nuthin'. So save a "tombstone", a fake venue
+			// that later on tells us there's no point repeatedly
+			// searching around here.
+			venue := FsqVenue{
+				ID:           fmt.Sprintf("tomb:%v,%v", ftd.Lat, ftd.Lng),
+				Name:         "",
+				Lat:          ftd.Lat,
+				Lng:          ftd.Lng,
+				UsersCount:   0,
+				FsqUrl:       fmt.Sprintf("about:tombstone"),
+				RecentUpdate: now,
+			}
+			log.Infof(ctx, "cronFsq TOMB")
+			_, err := datastore.Put(ctx, venue.Key(ctx), &venue)
+			if err != nil {
+				log.Errorf(ctx, "Couldn't save tombstone, got %v", err)
+			}
+		}
 
 		// 4sq says don't use data more than 30 days old.
 		// Check for (and GC) stale data that we've stored.
@@ -270,39 +358,38 @@ func cronFsq(ctx context.Context, dirtyClumps map[int32]bool) {
 			if thirtyDaysAgo.Before(venue.RecentUpdate) { // not stale, don't rm
 				continue
 			}
-			// Maybe wasn't updated just because outside 4sq explore radius?
-			// If so, don't GC it.
-			if dist(ftd.Lat, ftd.Lng, venue.Lat, venue.Lng) > float64(radiusM)/1000.0 {
-				continue
-			}
+			log.Infof(ctx, "cronFsq STALE")
 			rmKeys = append(rmKeys, venue.Key(ctx))
 		}
 		if len(rmKeys) > 0 {
 			err = datastore.DeleteMulti(ctx, rmKeys)
 		}
 
-		if newFound > 2 {
-			// We found new venues. Good idea to create new regions around here.
-			username := strings.Split(key.StringID(), ":")[0]
-			if !strings.HasPrefix(username, "_4sq/") {
-				username = "_4sq/" + username
+		/*
+			if newFound > 2 {
+				// We found new venues. Good idea to create new regions around here.
+				username := strings.Split(key.StringID(), ":")[0]
+				if !strings.HasPrefix(username, "_4sq/") {
+					username = "_4sq/" + username
+				}
+				addRupTodo(ctx, username, ftd.Lat, ftd.Lng)
+				// We found new venues. Maybe more lurk nearby?
+				// Tweak this todo's coords and try it again next time.
+				for true {
+					// random-walk
+					ftd.Lat += -0.01 + (0.02 * rand.Float64())
+					ftd.Lng += -0.01 + (0.02 * rand.Float64())
+				}
+				addFsqTodo(
+					ctx,
+					username,
+					ftd.Lat-0.01+(0.02*rand.Float64()),
+					ftd.Lng-0.01+(0.02*rand.Float64()))
 			}
-			addRupTodo(ctx, username, ftd.Lat, ftd.Lng)
-			// We found new venues. Maybe more lurk nearby?
-			// Tweak this todo's coords and try it again next time.
-			for true {
-				// random-walk
-				ftd.Lat += -0.01 + (0.02 * rand.Float64())
-				ftd.Lng += -0.01 + (0.02 * rand.Float64())
-			}
-			addFsqTodo(
-				ctx,
-				username,
-				ftd.Lat-0.01+(0.02*rand.Float64()),
-				ftd.Lng-0.01+(0.02*rand.Float64()))
-		}
+		*/
 
 		// We handled this todo, so rm it
+		log.Infof(ctx, "cronFsq DEL")
 		datastore.Delete(ctx, key)
 	}
 

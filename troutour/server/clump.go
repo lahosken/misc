@@ -17,14 +17,15 @@ const (
 
 // A Clump refers to some nearby Regions
 type Clump struct {
-	ID        string `datastore:",noindex"`
-	ClumpBox  int32
-	LatX10000 int32   `datastore:",noindex"`
-	LngX10000 int32   `datastore:",noindex"`
-	Lat       float64 `datastore:"-"`
-	Lng       float64 `datastore:"-"`
-	Tmp       int     `datastore:"-"`
-	Kids      []string
+	ID          string `datastore:",noindex"`
+	ClumpBox    int32
+	LatX10000   int32   `datastore:",noindex"`
+	LngX10000   int32   `datastore:",noindex"`
+	Lat         float64 `datastore:"-"`
+	Lng         float64 `datastore:"-"`
+	Tmp         int     `datastore:"-"`
+	Kids        []string
+	CreatedTime time.Time
 }
 
 func (clump *Clump) SetID() {
@@ -65,6 +66,7 @@ func (c *Clump) Save() ([]datastore.Property, error) {
 	c.LatX10000 = int32(c.Lat * 10000.0)
 	c.LngX10000 = int32(c.Lng * 10000.0)
 	c.ClumpBox = latLng2ClumpBox(c.Lat, c.Lng)
+	c.CreatedTime = time.Now()
 	return datastore.SaveStruct(c)
 }
 
@@ -444,6 +446,7 @@ func clumpDownContents(ctx context.Context, clump Clump) (err error, finishedP b
 				Category:    memoCatRDown,
 				Details: map[string]string{
 					"region.Name": template.HTMLEscapeString(kidRegion.Name),
+					"region.ID":   kidRegion.ID,
 					"object":      "route",
 				},
 				When: time.Now(),
@@ -509,17 +512,37 @@ func clumpDownContents(ctx context.Context, clump Clump) (err error, finishedP b
 	return
 }
 
+// Maybe add a remove-todo for some clumps.
+func doomClumps(ctx context.Context, dirtyClumps map[int32]bool) (doomCount int) {
+	if rand.Float64() < 0.5 {
+		log.Infof(ctx, "doom chose rand")
+		return doomRandClumps(ctx, dirtyClumps)
+	} else {
+		log.Infof(ctx, "doom chose age")
+		return doomOldClumps(ctx, dirtyClumps)
+	}
+}
+
 // Maybe add a remove-todo for some randomly-chosen clumps.
-func doomRandClumps(ctx context.Context, dirtyClumps map[int32]bool) {
+func doomRandClumps(ctx context.Context, dirtyClumps map[int32]bool) (doomCount int) {
+	if rand.Float64() > 0.6 { // maybe do nothing
+		return
+	}
 	// Choose a random spot on the globe.
 	// We've indexed our clumps by "ClumpBox".
-	lat, lng := randLatLngNearCity()
-	cb := latLng2ClumpBox(lat, lng)
+	var lat, lng float64
+	if rand.Float64() < 0.5 {
+		lat, lng = randLatLngNearCity()
+	} else {
+		lat, lng = randLatLngNearCity()
+	}
+	cb := latLng2ClumpBox(lat+1.0, lng)
 	cq := datastore.NewQuery("Clump").
 		Filter("ClumpBox >=", cb).
 		Order("ClumpBox").
 		Limit(10)
 	if rand.Float64() > 0.5 {
+		cb = latLng2ClumpBox(lat-1.0, lng)
 		cq = datastore.NewQuery("Clump").
 			Filter("ClumpBox <=", cb).
 			Order("-ClumpBox").
@@ -543,15 +566,46 @@ func doomRandClumps(ctx context.Context, dirtyClumps map[int32]bool) {
 			continue
 		}
 		dirtyClumpsMarkDirty(dirtyClumps, clump.Lat, clump.Lng, 10.0)
+		log.Infof(ctx, "doomRandClumps: DOOM")
+		doomCount++
 		addClumpDownTodo(ctx, clump.ID)
-		if clump.ClumpBox != cb {
-			break
-		}
 	}
 	return
 }
 
-func cronClumpDown(ctx context.Context, dirtyClumps map[int32]bool) {
+// Maybe add a remove-todo for some created-long-ago clumps.
+func doomOldClumps(ctx context.Context, dirtyClumps map[int32]bool) (doomCount int) {
+
+	// 4sq and Google say don't use things more than 30 days old
+	thirtyDaysAgo := time.Now().Add(-30 * 24 * time.Hour)
+
+	cq := datastore.NewQuery("Clump").
+		Filter("CreatedTime <", thirtyDaysAgo).
+		Order("CreatedTime").
+		Limit(10)
+	for cursor := cq.Run(ctx); ; {
+		clump := Clump{}
+		_, err := cursor.Next(&clump)
+		if err == datastore.Done {
+			err = nil
+			break
+		}
+		if err != nil {
+			log.Errorf(ctx, "ERROR FETCHING clumps %v", err)
+			return
+		}
+		if dirtyClumps[latLng2ClumpBox(clump.Lat, clump.Lng)] {
+			continue
+		}
+		dirtyClumpsMarkDirty(dirtyClumps, clump.Lat, clump.Lng, 10.0)
+		log.Infof(ctx, "doomOldClumps: DOOM")
+		doomCount++
+		addClumpDownTodo(ctx, clump.ID)
+	}
+	return
+}
+
+func cronClumpDown(ctx context.Context, dirtyClumps map[int32]bool) (downedClumpCount int) {
 	late := time.Now().Add(90 * time.Second)
 	// already := map[int32]bool{}
 	q := datastore.NewQuery("ClumpDownTodo")
@@ -561,6 +615,7 @@ func cronClumpDown(ctx context.Context, dirtyClumps map[int32]bool) {
 		if err == datastore.Done {
 			break
 		}
+		log.Infof(ctx, "cronClumpDown %v", cdtdKey)
 		if err != nil {
 			log.Errorf(ctx, "cronClumpDown Next hit error: %v", err)
 			break
@@ -577,6 +632,7 @@ func cronClumpDown(ctx context.Context, dirtyClumps map[int32]bool) {
 			continue
 		}
 		dirtyClumpsMarkDirty(dirtyClumps, clump.Lat, clump.Lng, 2*clumpAdjReachKm)
+		downedClumpCount++
 		finishedP := clumpDown(ctx, clump, late)
 		if !finishedP {
 			continue
@@ -591,13 +647,5 @@ func cronClumpDown(ctx context.Context, dirtyClumps map[int32]bool) {
 		continue
 	}
 
-	// Consider zapping a clump at randomly-chosen coords.
-	if !time.Now().Before(late) {
-		return
-	}
-
-	// TODO: should be another fn?
-	// to balance against dooming, maybe spawn a new region
-	freshLat, freshLng := randLatLngNearCity()
-	addRupTodo(ctx, "doom", freshLat, freshLng)
+	return
 }

@@ -85,6 +85,7 @@ func cronRegionUp(ctx context.Context, dirtyClumps map[int32]bool) {
 		if ninetySecondsFromStart.Before(time.Now()) {
 			break
 		}
+		log.Infof(ctx, "cronRegionUp %v", ix)
 		clumpBox := latLng2ClumpBox(todoList[ix].Lat, todoList[ix].Lng)
 		if dirtyClumps[clumpBox] {
 			continue
@@ -245,7 +246,7 @@ func regionUp(ctx context.Context, centerLat float64, centerLng float64) (err er
 	tcid := func() string {
 		return fmt.Sprintf("temp%d", tempClumpNum)
 	}
-	clumps[tcid()] = &Clump{tcid(), 0, 0, 0, centerLat, centerLng, 1, []string{}}
+	clumps[tcid()] = &Clump{tcid(), 0, 0, 0, centerLat, centerLng, 1, []string{}, time.Now()}
 	tempClumpNum++
 	maxIters := 16
 	for iter := 0; iter < maxIters; iter++ {
@@ -257,7 +258,7 @@ func regionUp(ctx context.Context, centerLat float64, centerLng float64) (err er
 			if len(clump.Kids) > maxRegionsPerClump {
 				lat := regions[clump.Kids[maxRegionsPerClump/2]].Lat
 				lng := regions[clump.Kids[maxRegionsPerClump/2]].Lng
-				clumps[tcid()] = &Clump{tcid(), 0, 0, 0, lat, lng, 1, []string{}}
+				clumps[tcid()] = &Clump{tcid(), 0, 0, 0, lat, lng, 1, []string{}, time.Now()}
 				tempClumpNum++
 			}
 			// if we're exactly halfway done, try to "jiggle" away too-small clumps
@@ -450,14 +451,16 @@ func pace(w http.ResponseWriter, r *http.Request, userID string, sessionID strin
 		addRupTodo(ctx, userID, centerLat, centerLng)
 	}
 
-	_, messages := fetchMemos(ctx, userID)
+	_, messages, goneRegs := fetchMemos(ctx, userID)
 
 	js, err := json.Marshal(struct {
 		Regions  map[string]([]ResponseRegion) `json:"regs"`
 		Messages []string                      `json:"msgs,omitempty"`
+		GoneRegs []string                      `json:"rmregs,omitempty"`
 	}{
 		regionBoxes,
 		messages,
+		goneRegs,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

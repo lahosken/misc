@@ -46,12 +46,16 @@ func (m *Memo) Save() ([]datastore.Property, error) {
 	return datastore.SaveStruct(m)
 }
 
-func RenderMemos(memos []Memo) (htmls []string) {
+func RenderMemos(memos []Memo) (htmls []string, goneRegs []string) {
 	already := map[string]bool{}
 	for ix, memo := range memos {
 		switch memo.Category {
 		case memoCatRDown:
 			regionName := memo.Details["region.Name"]
+			regionId := memo.Details["region.ID"]
+			if regionId != "" {
+				goneRegs = append(goneRegs, regionId)
+			}
 			alreadyID := fmt.Sprintf("%d:%s", memoCatRDown, regionName)
 			if already[alreadyID] {
 				continue
@@ -100,7 +104,7 @@ func RenderMemos(memos []Memo) (htmls []string) {
 	return
 }
 
-func fetchMemos(ctx context.Context, userID string) (err error, htmls []string) {
+func fetchMemos(ctx context.Context, userID string) (err error, htmls []string, goneRegs []string) {
 	if userID == "" {
 		return
 	}
@@ -115,7 +119,7 @@ func fetchMemos(ctx context.Context, userID string) (err error, htmls []string) 
 	if len(keys) < 1 {
 		return
 	}
-	htmls = RenderMemos(memos)
+	htmls, goneRegs = RenderMemos(memos)
 	err = datastore.DeleteMulti(ctx, keys)
 	return
 }

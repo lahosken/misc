@@ -760,6 +760,7 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 // func cronCleanupCheckins(w http.ResponseWriter, r *http.Request) {
 // 	ctx := appengine.NewContext(r)
 func cronCleanupCheckins(ctx context.Context) {
+	log.Infof(ctx, "cronCleanupCheckins START")
 	now := time.Now()
 	anHourAgo := now.Add(-time.Hour)
 	rcq := datastore.NewQuery("RecentCheckin").
@@ -771,6 +772,8 @@ func cronCleanupCheckins(ctx context.Context) {
 		log.Errorf(ctx, "Can't get keys to clean up, hit err %v", err)
 	}
 	for _, key := range keys {
+		log.Infof(ctx, "cronCleanupCheckins DEL")
 		datastore.Delete(ctx, key)
 	}
+	log.Infof(ctx, "cronCleanupCheckins END")
 }
