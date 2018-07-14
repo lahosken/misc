@@ -401,6 +401,7 @@ func clumpDown(ctx context.Context, clump Clump, late time.Time) (finishedP bool
 // might get halted by a deadline. So do things in such a way that
 // we can pick up where we left off.
 func clumpDownContents(ctx context.Context, clump Clump) (err error, finishedP bool) {
+	finishedP = true
 	oneErr := error(nil) // some errors, we keep going but know we should give up eventually. keep one around so we can fail on it at the end.
 	for _, kidID := range clump.Kids {
 		kidRegion := Region{}
@@ -411,11 +412,13 @@ func clumpDownContents(ctx context.Context, clump Clump) (err error, finishedP b
 		}
 		if err != nil {
 			log.Errorf(ctx, "Failed to load kid region, got %v", err)
+			finishedP = false
 			return
 		}
 		// try to mark kid region as no longer active to dissuade more things
 		// from being associated with it
 		if kidRegion.LifecycleState == rlsActive {
+			finishedP = false
 			kidRegion.LifecycleState = rlsEbbing
 			datastore.Put(ctx, kidKey, &kidRegion)
 			memcache.Delete(ctx, fmt.Sprintf("rgs/%d", latLng2RegionBox(kidRegion.Lat, kidRegion.Lng)))
@@ -433,6 +436,7 @@ func clumpDownContents(ctx context.Context, clump Clump) (err error, finishedP b
 				log.Errorf(ctx, "ERROR FETCHING routes to remove %v", err)
 				return err, false
 			}
+			finishedP = false
 			err = datastore.Delete(ctx, routeKey)
 			if err != nil {
 				// If we fail to remove a route, it's a little messy, but
@@ -469,6 +473,7 @@ func clumpDownContents(ctx context.Context, clump Clump) (err error, finishedP b
 				log.Errorf(ctx, "ERROR FETCHING NPCs to remove %v", err)
 				return err, false
 			}
+			finishedP = false
 			err = datastore.Delete(ctx, npcKey)
 			if err != nil {
 				// If we fail to remove an NPC, it's a little messy, but
@@ -507,8 +512,6 @@ func clumpDownContents(ctx context.Context, clump Clump) (err error, finishedP b
 	if oneErr != nil {
 		return oneErr, false
 	}
-
-	finishedP = true
 	return
 }
 
@@ -525,9 +528,6 @@ func doomClumps(ctx context.Context, dirtyClumps map[int32]bool) (doomCount int)
 
 // Maybe add a remove-todo for some randomly-chosen clumps.
 func doomRandClumps(ctx context.Context, dirtyClumps map[int32]bool) (doomCount int) {
-	if rand.Float64() > 0.6 { // maybe do nothing
-		return
-	}
 	// Choose a random spot on the globe.
 	// We've indexed our clumps by "ClumpBox".
 	var lat, lng float64

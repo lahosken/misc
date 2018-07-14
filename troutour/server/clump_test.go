@@ -3,7 +3,7 @@ package server
 import (
 	"golang.org/x/net/context"
 	"testing"
-  "time"
+	"time"
 )
 
 // A parallelogram of clumps.

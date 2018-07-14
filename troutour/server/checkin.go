@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	overplentifulRoutes = 2000
-	plentifulPrisms     = 50
+	overplentifulRouteStrands = 500
+	plentifulPrisms           = 50
 )
 
 type RecentCheckin struct {
@@ -90,21 +90,30 @@ func computeConnectedRegions(rootID string, routes map[string]Route) (rv map[str
 				continue
 			}
 			for _, rt := range routes {
-				toReg := ""
-				if rt.EndIDs[0] == fromReg {
-					toReg = rt.EndIDs[1]
+				for i := 0; i < len(rt.EndIDs)-1; i++ {
+					if rt.EndIDs[i] == "" {
+						continue
+					}
+					j := i + 1
+					if rt.EndIDs[j] == "" {
+						continue
+					}
+					toReg := ""
+					if rt.EndIDs[i] == fromReg {
+						toReg = rt.EndIDs[j]
+					}
+					if rt.EndIDs[j] == fromReg {
+						toReg = rt.EndIDs[i]
+					}
+					if toReg == "" {
+						continue
+					}
+					if rv[toReg] > 0 { // if we already visited, don't revisit
+						continue
+					}
+					rv[toReg] = iter + 1
+					found = true
 				}
-				if rt.EndIDs[1] == fromReg {
-					toReg = rt.EndIDs[0]
-				}
-				if toReg == "" {
-					continue
-				}
-				if rv[toReg] > 0 { // if we already visited, don't revisit
-					continue
-				}
-				rv[toReg] = iter + 1
-				found = true
 			}
 		}
 		if !found {
@@ -114,7 +123,7 @@ func computeConnectedRegions(rootID string, routes map[string]Route) (rv map[str
 	return
 }
 
-func fetchRoutableRegionIDs(ctx context.Context, thisRegion Region, regions map[string]Region, existingRoutes map[string]Route) (routables []string, err error) {
+func fetchRoutableRegionIDs(ctx context.Context, thisRegion Region, regions map[string]Region, existingRoutes map[string]Route, connectedRegions map[string]int) (routables []string, err error) {
 	clumpKeys := []*datastore.Key{datastore.NewKey(ctx, "Clump", thisRegion.Clump, 0, nil)}
 	cas, err := fetchClumpAdjsByEndID(ctx, thisRegion.Clump)
 	if err != nil {
@@ -145,18 +154,7 @@ func fetchRoutableRegionIDs(ctx context.Context, thisRegion Region, regions map[
 			if regions[kid].LifecycleState == rlsEbbing {
 				continue
 			}
-			alreadyHasRoute := false
-			for _, route := range existingRoutes {
-				if route.EndIDs[0] == kid && route.EndIDs[1] == thisRegion.ID {
-					alreadyHasRoute = true
-					break
-				}
-				if route.EndIDs[1] == kid && route.EndIDs[0] == thisRegion.ID {
-					alreadyHasRoute = true
-					break
-				}
-			}
-			if alreadyHasRoute {
+			if connectedRegions[kid] == 1 { // if we already have a direct route, not add-able
 				continue
 			}
 
@@ -171,7 +169,7 @@ func fetchRoutableRegionIDs(ctx context.Context, thisRegion Region, regions map[
 }
 
 // trade in prisms for routes; don't persist
-func checkinPrisms2Routes(thisRegion Region, newRoutes *[]Route, routableRegionIDs *[]string, userID string, inventory *UserInventory, connectedRegions map[string]int, regions map[string]Region) {
+func checkinPrisms2Routes(thisRegion Region, oldRoutes map[string]Route, newRoutes map[string]Route, appendedRoutes map[string]Route, routableRegionIDs *[]string, userID string, inventory *UserInventory, connectedRegions map[string]int, regions map[string]Region) {
 	clumpsAlreadyConnected := map[string]bool{}
 	for rrix := len(*routableRegionIDs) - 1; rrix >= 0; rrix-- {
 		routableRegionID := (*routableRegionIDs)[rrix]
@@ -184,7 +182,21 @@ func checkinPrisms2Routes(thisRegion Region, newRoutes *[]Route, routableRegionI
 		}
 		for pix, prism := range inventory.Prisms {
 			if prism == routableRegionID {
-				*newRoutes = append(*newRoutes, Route{userID, []string{thisRegion.ID, routableRegionID}})
+				appendedRoute := false
+				for oldRouteKey, oldRoute := range oldRoutes {
+					if len(oldRoute.EndIDs) > 9 { // don't keep appending to "long" strand
+						continue
+					}
+					if oldRoute.EndIDs[len(oldRoute.EndIDs)-1] == routableRegionID {
+						oldRoute.EndIDs = append(oldRoute.EndIDs, thisRegion.ID)
+						appendedRoutes[oldRouteKey] = oldRoute
+						appendedRoute = true
+						break
+					}
+				}
+				if !appendedRoute {
+					newRoutes[routableRegionID] = Route{userID, []string{routableRegionID, thisRegion.ID}}
+				}
 				inventory.Prisms = append(inventory.Prisms[:pix], inventory.Prisms[pix+1:]...)
 				*routableRegionIDs = append((*routableRegionIDs)[:rrix], (*routableRegionIDs)[rrix+1:]...)
 				if regions[routableRegionID].Clump != "" {
@@ -353,12 +365,12 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 
 	drama := false // if true, "enough" "interesting" things have happened and we shouldn't encourage any more
 
-	routes, err := fetchUsersOwnRoutes(ctx, userID)
+	routes, routeKeys, err := fetchUsersOwnRoutes(ctx, userID)
 	if err != nil {
 		s = fmt.Sprintf("<p><b>ERROR</b> FETCHING user's own routes %v", err) + s
 		// keep going, I guess?
 	}
-	if len(routes) > overplentifulRoutes {
+	if len(routes) > overplentifulRouteStrands {
 		checkinDoomBusyRegion(ctx, routes, regions)
 	}
 
@@ -392,18 +404,19 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 	/*
 	 * Trade in prisms for routes.
 	 */
-	routableRegionIDs, err := fetchRoutableRegionIDs(ctx, thisRegion, regions, routes)
+	routableRegionIDs, err := fetchRoutableRegionIDs(ctx, thisRegion, regions, routes, connectedRegions)
 	if err != nil {
 		log.Errorf(ctx, "fetchRoutableRegionIDs got err %v", err)
 	}
-	newRoutes := []Route{}
-	checkinPrisms2Routes(thisRegion, &newRoutes, &routableRegionIDs, userID, &inventory, connectedRegions, regions)
+	newRoutes := map[string]Route{}
+	appendedRoutes := map[string]Route{}
+	checkinPrisms2Routes(thisRegion, routes, newRoutes, appendedRoutes, &routableRegionIDs, userID, &inventory, connectedRegions, regions)
 	// If user didn't have many (or any?) routes yet, worth reporting.
 	if len(newRoutes)*4 > len(routes) {
-		if len(newRoutes) == 1 {
+		if len(newRoutes)+len(appendedRoutes) == 1 {
 			s += `/&nbsp;Established new ⛗<em>Route</em>&nbsp;/`
 		} else {
-			s += fmt.Sprintf(`/&nbsp;Established %d new ⛗<em>Routes</em>&nbsp;/`, len(newRoutes))
+			s += fmt.Sprintf(`/&nbsp;Established %d new ⛗<em>Routes</em>&nbsp;/`, len(newRoutes)+len(appendedRoutes))
 		}
 		drama = true
 	}
@@ -423,13 +436,13 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 	 * If a surplus of prisms, maybe turn in 10 of them to a place
 	 * we don't have an actual prism for.
 	 */
-	if !drama && len(newRoutes) == 0 &&
+	if !drama && len(newRoutes) == 0 && len(appendedRoutes) == 0 &&
 		len(inventory.Prisms) > plentifulPrisms &&
 		len(routableRegionIDs) > 0 {
 		wildcardIx := rand.Intn(len(routableRegionIDs))
 		wildcard := routableRegionIDs[wildcardIx]
 		routableRegionIDs = append(routableRegionIDs[:wildcardIx], routableRegionIDs[wildcardIx+1:]...)
-		newRoutes = append(newRoutes, Route{userID, []string{thisRegion.ID, wildcard}})
+		newRoutes[wildcard] = Route{userID, []string{thisRegion.ID, wildcard}}
 		foundInInventory := false
 		// we say "trade in 10 old prisms", but if we have the
 		// appropriate prism for this region, just use it instead
@@ -455,8 +468,7 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 	}
 
 	unloadedRegions := []Region{}
-	for ix := len(newRoutes) - 1; ix >= 0; ix-- {
-		route := newRoutes[ix]
+	for routeKey, route := range newRoutes {
 		for _, end := range route.EndIDs {
 			_, found := regions[end]
 			if !found {
@@ -466,7 +478,7 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 				if rerr != nil || r.LifecycleState != rlsActive {
 					// TODO better error handling? (seen no such entity once)
 					log.Infof(ctx, "canceling Route to unloaded region %v, got rerr %v Lifecycle %v", end, rerr, r.LifecycleState)
-					newRoutes = append(newRoutes[:ix], newRoutes[ix+1:]...)
+					delete(newRoutes, routeKey)
 					break
 				}
 				unloadedRegions = append(unloadedRegions, r)
@@ -694,6 +706,15 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 				return err
 			}
 		}
+		for k, route := range appendedRoutes {
+			routeKey := routeKeys[k]
+			_, err = datastore.Put(ctx, routeKey, &route)
+			if err != nil {
+				log.Errorf(ctx, "error saving appended route, hit %v", err)
+				s = s + fmt.Sprintf("<p>Couldn't save appended route, got err %v", err)
+				return err
+			}
+		}
 		return nil
 	}, nil)
 
@@ -704,18 +725,26 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 		newReportedRoutes = append(newReportedRoutes, ResponseRoute{
 			[]string{route.EndIDs[0], route.EndIDs[1]}})
 	}
+	for _, route := range appendedRoutes {
+		l := len(route.EndIDs)
+		newReportedRoutes = append(newReportedRoutes, ResponseRoute{
+			[]string{route.EndIDs[l-2], route.EndIDs[l-1]}})
+	}
 	oldReportedRoutes := []ResponseRoute{}
 	for _, route := range routes {
-		e0, found0 := regions[route.EndIDs[0]]
-		e1, found1 := regions[route.EndIDs[1]]
-		if e0.LifecycleState != rlsActive || e1.LifecycleState != rlsActive {
-			continue
+		for i := 0; i < len(route.EndIDs)-1; i++ {
+			j := i + 1
+			e0, found0 := regions[route.EndIDs[i]]
+			e1, found1 := regions[route.EndIDs[j]]
+			if !(found0 || found1) {
+				continue
+			}
+			if e0.LifecycleState != rlsActive || e1.LifecycleState != rlsActive {
+				continue
+			}
+			oldReportedRoutes = append(oldReportedRoutes, ResponseRoute{
+				[]string{route.EndIDs[i], route.EndIDs[j]}})
 		}
-		if !(found0 || found1) {
-			continue
-		}
-		oldReportedRoutes = append(oldReportedRoutes, ResponseRoute{
-			[]string{route.EndIDs[0], route.EndIDs[1]}})
 	}
 
 	reportedNPCs := makeResponseNPCs(npcs, regions, userID)
