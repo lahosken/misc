@@ -182,7 +182,7 @@ func checkinPrisms2Routes(thisRegion Region, crap CheckinRoutesPersistable, rout
 		}
 		for pix, prism := range inventory.Prisms {
 			if prism == routableRegionID {
-        crapAddLeg(crap, thisRegion.ID, routableRegionID, userID)
+				crapAddLeg(crap, thisRegion.ID, routableRegionID, userID)
 				inventory.Prisms = append(inventory.Prisms[:pix], inventory.Prisms[pix+1:]...)
 				*routableRegionIDs = append((*routableRegionIDs)[:rrix], (*routableRegionIDs)[rrix+1:]...)
 				if regions[routableRegionID].Clump != "" {
@@ -397,7 +397,7 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 	checkinPrisms2Routes(thisRegion, routePile, &routableRegionIDs, userID, &inventory, connectedRegions, regions)
 	// If user didn't have many (or any?) routes yet, worth reporting.
 	if len(routePile.NewRoutes)*4 > len(routePile.Routes) {
-    s += `/&nbsp;Established new ⛗<em>Route</em>&nbsp;/`
+		s += `/&nbsp;Established new ⛗<em>Route</em>&nbsp;/`
 		drama = true
 	}
 
@@ -422,7 +422,7 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 		wildcardIx := rand.Intn(len(routableRegionIDs))
 		wildcard := routableRegionIDs[wildcardIx]
 		routableRegionIDs = append(routableRegionIDs[:wildcardIx], routableRegionIDs[wildcardIx+1:]...)
-    crapAddLeg(routePile, thisRegion.ID, wildcard, userID)
+		crapAddLeg(routePile, thisRegion.ID, wildcard, userID)
 		foundInInventory := false
 		// we say "trade in 10 old prisms", but if we have the
 		// appropriate prism for this region, just use it instead
@@ -521,17 +521,17 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 		}
 	}
 
-  if !drama && len(thisRegionNPCs) > 0 && rand.Float64() < 0.01 && rand.Float64() < inventory.Cred-0.5 {
-    s += fmt.Sprintf("/&nbsp;🎤&nbsp;Client here produces <em>weird</em> art; area is doomed to fall off the entertainment circuit.&nbsp;/")
-    addClumpDownTodo(ctx, thisRegion.Clump)
-    drama = true
-  }
+	if !drama && len(thisRegionNPCs) > 0 && rand.Float64() < 0.01 && rand.Float64() < inventory.Cred-0.5 {
+		s += fmt.Sprintf("/&nbsp;🎤&nbsp;Client here produces <em>weird</em> art; area is doomed to fall off the entertainment circuit.&nbsp;/")
+		addClumpDownTodo(ctx, thisRegion.Clump)
+		drama = true
+	}
 
 	if !drama && len(travelingNPCs) > 0 && len(thisRegionNPCs) == 0 && rand.Float64() < 0.5 {
 		npc := travelingNPCs[rand.Intn(len(travelingNPCs))]
 		npc.RegionID = thisRegion.ID
 		npc.RegionBox = thisRegion.RegionBox
-    s += fmt.Sprintf("/&nbsp;🎤&nbsp;Client settles down here.&nbsp;/")
+		s += fmt.Sprintf("/&nbsp;🎤&nbsp;Client settles down here.&nbsp;/")
 		drama = true
 	}
 
@@ -678,18 +678,18 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 			s = s + fmt.Sprintf("<p>Couldn't save inventory, got err %v", err)
 			return err
 		}
-    err = crapPersist(ctx, routePile, userID)
-    if err != nil {
+		err = crapPersist(ctx, routePile, userID)
+		if err != nil {
 			s = s + fmt.Sprintf("<p>Couldn't save route, got err %v", err)
-      return err
-    }
+			return err
+		}
 		return nil
 	}, nil)
 
 	s = fmt.Sprintf(`At region %s./`, html.EscapeString(thisRegion.Name)) + s
-  s += fmt.Sprintf(
-    ` / Rts:&nbsp;%v NewRts:&nbsp;%v AppRts:&nbsp;%v /`,
-    len(routePile.Routes), len(routePile.NewRoutes), len(routePile.AppendedRoutes))
+	s += fmt.Sprintf(
+		` / Rts:&nbsp;%v NewRts:&nbsp;%v AppRts:&nbsp;%v /`,
+		len(routePile.Routes), len(routePile.NewRoutes), len(routePile.AppendedRoutes))
 
 	newReportedRoutes := []ResponseRoute{}
 	for _, route := range routePile.NewRoutes {

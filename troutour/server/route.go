@@ -14,10 +14,10 @@ import (
  * during checkin.
  */
 type CheckinRoutesPersistable struct {
-  Routes map[string]Route
-  RouteKeys map[string]*datastore.Key
-  NewRoutes map[string]Route
-  AppendedRoutes map[string]Route
+	Routes         map[string]Route
+	RouteKeys      map[string]*datastore.Key
+	NewRoutes      map[string]Route
+	AppendedRoutes map[string]Route
 }
 
 type Route struct {
@@ -38,13 +38,13 @@ func newRouteKey(ctx context.Context, builderID string, endpoint1 string, endpoi
 }
 
 func hasNewRoutesP(crap CheckinRoutesPersistable) (newP bool) {
-  return len(crap.NewRoutes) + len(crap.AppendedRoutes) > 0
+	return len(crap.NewRoutes)+len(crap.AppendedRoutes) > 0
 }
 
 func fetchUsersOwnRoutes(ctx context.Context, userID string) (crap CheckinRoutesPersistable, err error) {
 	crap.Routes = map[string]Route{}
 	crap.RouteKeys = map[string]*datastore.Key{}
-  crap.NewRoutes = map[string]Route{}
+	crap.NewRoutes = map[string]Route{}
 	crap.AppendedRoutes = map[string]Route{}
 	userKey := newUserKey(ctx, userID)
 	rtQ := datastore.NewQuery("Route").
@@ -68,41 +68,41 @@ func fetchUsersOwnRoutes(ctx context.Context, userID string) (crap CheckinRoutes
 }
 
 func crapAddLeg(crap CheckinRoutesPersistable, hereRegionID string, thereRegionID string, userID string) {
-  appendedRoute := false
-  for oldRouteKey, oldRoute := range crap.Routes {
-    if len(oldRoute.EndIDs) > 9 { // don't keep appending to "long" strand
-      continue
-    }
-    if oldRoute.EndIDs[len(oldRoute.EndIDs)-1] == thereRegionID {
-      oldRoute.EndIDs = append(oldRoute.EndIDs, hereRegionID)
-      crap.AppendedRoutes[oldRouteKey] = oldRoute
-      appendedRoute = true
-      break
-    }
-  }
-  if !appendedRoute {
-    crap.NewRoutes[thereRegionID] = Route{userID, []string{thereRegionID, hereRegionID}}
-  }
+	appendedRoute := false
+	for oldRouteKey, oldRoute := range crap.Routes {
+		if len(oldRoute.EndIDs) > 9 { // don't keep appending to "long" strand
+			continue
+		}
+		if oldRoute.EndIDs[len(oldRoute.EndIDs)-1] == thereRegionID {
+			oldRoute.EndIDs = append(oldRoute.EndIDs, hereRegionID)
+			crap.AppendedRoutes[oldRouteKey] = oldRoute
+			appendedRoute = true
+			break
+		}
+	}
+	if !appendedRoute {
+		crap.NewRoutes[thereRegionID] = Route{userID, []string{thereRegionID, hereRegionID}}
+	}
 }
 
 func crapPersist(ctx context.Context, crap CheckinRoutesPersistable, userID string) (err error) {
-  for _, route := range crap.NewRoutes {
-    routeKey := newRouteKey(ctx, userID, route.EndIDs[0], route.EndIDs[1])
-    _, err = datastore.Put(ctx, routeKey, &route)
-    if err != nil {
-      log.Errorf(ctx, "error saving new route, hit %v", err)
-      return
-    }
-  }
-  for k, route := range crap.AppendedRoutes {
-    routeKey := crap.RouteKeys[k]
-    _, err = datastore.Put(ctx, routeKey, &route)
-    if err != nil {
-      log.Errorf(ctx, "error saving appended route, hit %v", err)
-      return
-    }
-  }
-  return
+	for _, route := range crap.NewRoutes {
+		routeKey := newRouteKey(ctx, userID, route.EndIDs[0], route.EndIDs[1])
+		_, err = datastore.Put(ctx, routeKey, &route)
+		if err != nil {
+			log.Errorf(ctx, "error saving new route, hit %v", err)
+			return
+		}
+	}
+	for k, route := range crap.AppendedRoutes {
+		routeKey := crap.RouteKeys[k]
+		_, err = datastore.Put(ctx, routeKey, &route)
+		if err != nil {
+			log.Errorf(ctx, "error saving appended route, hit %v", err)
+			return
+		}
+	}
+	return
 }
 
 func routeListRemove(before []string, remove []string) (after []string) {
