@@ -951,6 +951,21 @@ function receivedCurPos(pos) {
     } else {
 	drawMap();
     }
+
+    // The geolocation API is giving us an olllld location, but didn't
+    // give us an error message or anything. What a scamp! 
+    if (new Date().getTime() - pos.timestamp > 9 * 1000) { // age is over 9000ms
+	// Maybe we should retry? Maybe?
+	// (An earlier implementation always retried, w/short delay. That
+        //  pretty much locked up my phone when I went through a tunnel, so
+        //  that wasn't a good handler. Maybe some number of retries with
+        //  some kind of backoff? But I don't really know what kind of pattern
+        //  I'm trying to work around so... uhm, randomly maybe retry with
+        //  some random delay or something.)
+	if (Math.random() < 0.7) {
+	    setTimeout(fetchCurPos, 1000 * (Math.random() + 0.01));
+	}
+    }
 }
 
 var botGoalLat = 34.072;

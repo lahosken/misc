@@ -1,11 +1,3 @@
-"weird" performers: places you already "own" instead of new
-
-CLIENT: keep hashes of recently-seen coords. notice if "new" gps is really old
-
-now, a "wildcard" (10 prisms or whatever) can only create new route-strand,
-can't append to existing route-strand. some way to pull that mess out into
-a new function or something? or else copy-paste?
-
 tombstones: google might tell us about region "san francisco" even if we're
 far from its center, just because it's big and we're in it. if the only things
 we get from google are further away than our radius,
@@ -18,3 +10,5 @@ so we know to turn the thingy red and when to bring it back
 when announcing a gone-region, if the message is going to say
 'the region "" went away' (empty region name), maybe don't bother to
 say it, right?
+
+CLIENT: that link to wikipedia should go to another tab
