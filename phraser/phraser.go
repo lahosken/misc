@@ -42,7 +42,7 @@ var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to file")
 const (
 	tmpFilenameFormat         = "p-%s-%012d.txt"
 	dictTampThreshholdEntries = 6000000
-	dictOutputThreshhold      = 20000000
+	dictOutputThreshhold      = 10000000
 	lowScore                  = 5 // TODO instead of magic constant, could compute histogram in persist()
 )
 
@@ -709,7 +709,7 @@ func Reduce(tmpPath string, outPath string) {
 	// things mmmostly wouldn't appear in the first 1M phrases, so good enough
 	// for our purposes.
 
-	magicNumber := 5
+	magicNumber := 30
 
 	// First pass
 	for _, tmpFilename := range tmpFilenames {
