@@ -37,15 +37,15 @@ func newRouteKey(ctx context.Context, builderID string, endpoint1 string, endpoi
 	return datastore.NewKey(ctx, "Route", stringID, 0, builderKey)
 }
 
-func hasNewRoutesP(crap CheckinRoutesPersistable) (newP bool) {
-	return len(crap.NewRoutes)+len(crap.AppendedRoutes) > 0
+func hasNewRoutesP(crp CheckinRoutesPersistable) (newP bool) {
+	return len(crp.NewRoutes)+len(crp.AppendedRoutes) > 0
 }
 
-func fetchUsersOwnRoutes(ctx context.Context, userID string) (crap CheckinRoutesPersistable, err error) {
-	crap.Routes = map[string]Route{}
-	crap.RouteKeys = map[string]*datastore.Key{}
-	crap.NewRoutes = map[string]Route{}
-	crap.AppendedRoutes = map[string]Route{}
+func fetchUsersOwnRoutes(ctx context.Context, userID string) (crp CheckinRoutesPersistable, err error) {
+	crp.Routes = map[string]Route{}
+	crp.RouteKeys = map[string]*datastore.Key{}
+	crp.NewRoutes = map[string]Route{}
+	crp.AppendedRoutes = map[string]Route{}
 	userKey := newUserKey(ctx, userID)
 	rtQ := datastore.NewQuery("Route").
 		Ancestor(userKey)
@@ -58,35 +58,35 @@ func fetchUsersOwnRoutes(ctx context.Context, userID string) (crap CheckinRoutes
 		}
 		if err != nil {
 			log.Errorf(ctx, "ERROR FETCHING user's own routes %v", err)
-			return crap, err
+			return crp, err
 		}
 		sid := rtKey.StringID()
-		crap.Routes[sid] = route
-		crap.RouteKeys[sid] = rtKey
+		crp.Routes[sid] = route
+		crp.RouteKeys[sid] = rtKey
 	}
 	return
 }
 
-func crapAddLeg(crap CheckinRoutesPersistable, hereRegionID string, thereRegionID string, userID string) {
+func crpAddLeg(crp CheckinRoutesPersistable, hereRegionID string, thereRegionID string, userID string) {
 	appendedRoute := false
-	for oldRouteKey, oldRoute := range crap.Routes {
+	for oldRouteKey, oldRoute := range crp.Routes {
 		if len(oldRoute.EndIDs) > 9 { // don't keep appending to "long" strand
 			continue
 		}
 		if oldRoute.EndIDs[len(oldRoute.EndIDs)-1] == thereRegionID {
 			oldRoute.EndIDs = append(oldRoute.EndIDs, hereRegionID)
-			crap.AppendedRoutes[oldRouteKey] = oldRoute
+			crp.AppendedRoutes[oldRouteKey] = oldRoute
 			appendedRoute = true
 			break
 		}
 	}
 	if !appendedRoute {
-		crap.NewRoutes[thereRegionID] = Route{userID, []string{thereRegionID, hereRegionID}}
+		crp.NewRoutes[thereRegionID] = Route{userID, []string{thereRegionID, hereRegionID}}
 	}
 }
 
-func crapPersist(ctx context.Context, crap CheckinRoutesPersistable, userID string) (err error) {
-	for _, route := range crap.NewRoutes {
+func crpPersist(ctx context.Context, crp CheckinRoutesPersistable, userID string) (err error) {
+	for _, route := range crp.NewRoutes {
 		routeKey := newRouteKey(ctx, userID, route.EndIDs[0], route.EndIDs[1])
 		_, err = datastore.Put(ctx, routeKey, &route)
 		if err != nil {
@@ -94,8 +94,8 @@ func crapPersist(ctx context.Context, crap CheckinRoutesPersistable, userID stri
 			return
 		}
 	}
-	for k, route := range crap.AppendedRoutes {
-		routeKey := crap.RouteKeys[k]
+	for k, route := range crp.AppendedRoutes {
+		routeKey := crp.RouteKeys[k]
 		_, err = datastore.Put(ctx, routeKey, &route)
 		if err != nil {
 			log.Errorf(ctx, "error saving appended route, hit %v", err)
