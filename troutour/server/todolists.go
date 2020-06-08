@@ -52,6 +52,9 @@ func RenderMemos(memos []Memo) (htmls []string, goneRegs []string) {
 		switch memo.Category {
 		case memoCatRDown:
 			regionName := memo.Details["region.Name"]
+			if len(regionName) < 1 {
+				continue
+			}
 			regionId := memo.Details["region.ID"]
 			if regionId != "" {
 				goneRegs = append(goneRegs, regionId)

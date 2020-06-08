@@ -241,7 +241,7 @@ func adjLen(adj ClumpAdj, m map[string]*Clump) float64 {
 	if !found {
 		return 1.0e+21
 	}
-	return dist(e1.Lat, e1.Lng, e2.Lat, e2.Lng)
+	return distKm(e1.Lat, e1.Lng, e2.Lat, e2.Lng)
 }
 
 // given a clump and a map[clump ID string]Clump of clumps, return a list of clump IDs
@@ -250,10 +250,10 @@ func clumpIDsByDistance(lat float64, lng float64, clumps map[string]*Clump) []st
 	retval := []string{}
 	for _, clump := range clumps {
 		insertedP := false
-		d := dist(lat, lng, clump.Lat, clump.Lng)
+		d := distKm(lat, lng, clump.Lat, clump.Lng)
 		for insertAt, otherClumpKey := range retval {
 			otherClump := clumps[otherClumpKey]
-			if d < dist(lat, lng, otherClump.Lat, otherClump.Lng) {
+			if d < distKm(lat, lng, otherClump.Lat, otherClump.Lng) {
 				retval = append(retval, "")
 				copy(retval[insertAt+1:], retval[insertAt:])
 				retval[insertAt] = clump.ID
@@ -528,14 +528,17 @@ func doomClumps(ctx context.Context, dirtyClumps map[int32]bool) (doomCount int)
 
 // Maybe add a remove-todo for some randomly-chosen clumps.
 func doomRandClumps(ctx context.Context, dirtyClumps map[int32]bool) (doomCount int) {
+	if rand.Float64() > 0.01 {
+		return
+	}
 	// Choose a random spot on the globe.
-	// We've indexed our clumps by "ClumpBox".
 	var lat, lng float64
 	if rand.Float64() < 0.5 {
 		lat, lng = randLatLngNearCity()
 	} else {
 		lat, lng = randLatLngNearCity()
 	}
+	// We've indexed our clumps by "ClumpBox".
 	cb := latLng2ClumpBox(lat+1.0, lng)
 	cq := datastore.NewQuery("Clump").
 		Filter("ClumpBox >=", cb).

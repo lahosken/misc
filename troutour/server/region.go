@@ -142,7 +142,7 @@ func regionUpNascentize(lat float64, lng float64, venues map[string]FsqVenue, re
 		if venue.FsqUrl == "about:tombstone" {
 			continue
 		}
-		if dist(venue.Lat, venue.Lng, lat, lng) > regCreateRangeKm {
+		if distKm(venue.Lat, venue.Lng, lat, lng) > regCreateRangeKm {
 			continue
 		}
 		if rand.Float64() > 0.5 {
@@ -170,15 +170,15 @@ func regionUpNascentize(lat float64, lng float64, venues map[string]FsqVenue, re
 				otherRegion.LifecycleState == rlsActive) {
 				continue
 			}
-			if dist(venue.Lat, venue.Lng, otherRegion.Lat, otherRegion.Lng) < regionsTooCloseKm {
+			if distKm(venue.Lat, venue.Lng, otherRegion.Lat, otherRegion.Lng) < regionsTooCloseKm {
 				reject = true
 				break
 			}
 			if otherRegion.LifecycleState == rlsActive {
 				clump, found := clumps[otherRegion.Clump]
 				if found {
-					thisClumpDist := dist(venue.Lat, venue.Lng, clump.Lat, clump.Lng)
-					rClumpDist := dist(otherRegion.Lat, otherRegion.Lng, clump.Lat, clump.Lng)
+					thisClumpDist := distKm(venue.Lat, venue.Lng, clump.Lat, clump.Lng)
+					rClumpDist := distKm(otherRegion.Lat, otherRegion.Lng, clump.Lat, clump.Lng)
 					if thisClumpDist < rClumpDist {
 						reject = true
 						break
@@ -201,11 +201,23 @@ func regionUpNascentize(lat float64, lng float64, venues map[string]FsqVenue, re
 }
 
 func regionUp(ctx context.Context, centerLat float64, centerLng float64) (err error, addedCount int) {
+	// fetch already-existing regions
 	err, regions := fetchRegs(ctx, centerLat, centerLng, regCreateRangeKm+regionsTooCloseKm)
 	if err != nil {
 		return
 	}
-	venues, err := fetchFsqVenues(ctx, centerLat, centerLng, regCreateRangeKm)
+	fetchRangeKm := regCreateRangeKm
+	if len(regions) > 0 {
+		near, foundP := nearestRegion(centerLat, centerLng, regions)
+		if foundP {
+			fetchRangeKm = distKm(centerLat, centerLng, near.Lat, near.Lng)
+		}
+	}
+	if fetchRangeKm < 0.3 {
+		fetchRangeKm = 0.3
+	}
+
+	venues, err := fetchPlaces(ctx, centerLat, centerLng, fetchRangeKm)
 	if err != nil {
 		log.Errorf(ctx, "ERROR FETCHING venues %v", err)
 		return
@@ -217,7 +229,7 @@ func regionUp(ctx context.Context, centerLat float64, centerLng float64) (err er
 	}
 	closeVenueCount := 0
 	for _, venue := range venues {
-		if dist(venue.Lat, venue.Lng, centerLat, centerLng) < pingMaxRangeKm {
+		if distKm(venue.Lat, venue.Lng, centerLat, centerLng) < pingMaxRangeKm {
 			closeVenueCount++
 		}
 	}
@@ -286,7 +298,7 @@ func regionUp(ctx context.Context, centerLat float64, centerLng float64) (err er
 			if clump.Tmp != 1 {
 				continue
 			}
-			if dist(region.Lat, region.Lng, clump.Lat, clump.Lng) > clumpMaxRadiusKm {
+			if distKm(region.Lat, region.Lng, clump.Lat, clump.Lng) > clumpMaxRadiusKm {
 				continue
 			}
 			clumps[clumpIDsByDist[0]].Kids = append(clump.Kids, region.ID)
@@ -316,7 +328,7 @@ func regionUp(ctx context.Context, centerLat float64, centerLng float64) (err er
 			len(clump.Kids) > maxRegionsPerClump {
 			continue
 		}
-		if dist(centerLat, centerLng, clump.Lat, clump.Lng) > clumpCreateRangeKm {
+		if distKm(centerLat, centerLng, clump.Lat, clump.Lng) > clumpCreateRangeKm {
 			continue
 		}
 
@@ -329,8 +341,8 @@ func regionUp(ctx context.Context, centerLat float64, centerLng float64) (err er
 			if !found {
 				continue
 			}
-			if dist(region.Lat, region.Lng, otherClump.Lat, otherClump.Lng) >
-				dist(region.Lat, region.Lng, clump.Lat, clump.Lng) {
+			if distKm(region.Lat, region.Lng, otherClump.Lat, otherClump.Lng) >
+				distKm(region.Lat, region.Lng, clump.Lat, clump.Lng) {
 				wouldInterfereWithExistingClump = true
 				break
 			}
@@ -442,7 +454,7 @@ func pace(w http.ResponseWriter, r *http.Request, userID string, sessionID strin
 		if region.LifecycleState != rlsActive {
 			continue
 		}
-		if dist(region.Lat, region.Lng, centerLat, centerLng) < closeEnoughKm {
+		if distKm(region.Lat, region.Lng, centerLat, centerLng) < closeEnoughKm {
 			atLeastOneCloseEnough = true
 			break
 		}
@@ -486,7 +498,7 @@ func probe(w http.ResponseWriter, r *http.Request, userID string, sessionID stri
 		if region.LifecycleState != rlsActive {
 			continue
 		}
-		if dist(region.Lat, region.Lng, centerLat, centerLng) < closeEnoughKm {
+		if distKm(region.Lat, region.Lng, centerLat, centerLng) < closeEnoughKm {
 			atLeastOneCloseEnough = true
 			break
 		}

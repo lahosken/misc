@@ -220,8 +220,11 @@ function probes_tooCloseP(lat, lng) {
 }
 
 var checkins = {};
-checkins_add = function(id) {
-    checkins[id] = Date.now()
+checkins_add = function(id, when) {
+    if (!when) {
+	when = Date.now();
+    }
+    checkins[id] = when;
 }
 checkins_forget = function() {
     var hourAgo = Date.now() - (60 * 60 * 1000);
@@ -253,7 +256,28 @@ function distanceGrid(x1, y1, x2, y2) {
     return Math.sqrt((dX * dX) + (dY * dY));
 }
 
-function ingestCheckins(cs) {
+function ingestNewCheckins(cs) {
+    for (var ix = 0; ix < cs.length; ix++) {
+	checkins_add(cs[ix].R, new Date(cs[ix].T * 1000));
+	var loc = locs[cs[ix].R];
+	if (!loc) {
+	    // We checked into a location we didn't know about.
+	    // It was probably created just seconds ago.
+	    // This would be a good time to fetch the latest loc data:
+	    setTimeout(pace, 1);
+	}
+	if (loc && loc.lat && loc.lng) {
+	    diary_add({
+		category: 'checkin',
+		lat: loc.lat,
+		lng: loc.lng,
+	    });
+	    particles_add(new CheckinParticleSystem(loc));
+	}
+    }
+}
+
+function ingestOldCheckins(cs) {
     for (var ix = 0; ix < cs.length; ix++) {
 	checkins_add(cs[ix]);
 	var loc = locs[cs[ix]];
@@ -272,14 +296,14 @@ function ingestCheckins(cs) {
 	    particles_add(new CheckinParticleSystem(loc));
 	}
     }
-    try {
-	localStorage.checkins = JSON.stringify(checkins);
-    } finally{}
 }
 
 function ingest(j) { // crunch the data we got from the server
-    if (j.chkn) {
-	ingestCheckins(j.chkn);
+//    if (j.chkn) {
+//	ingestOldCheckins(j.chkn);
+//    }
+    if (j.chks) {
+	ingestNewCheckins(j.chks);
     }
     if (j.rmregs) {
 	ingestRemovedRegions(j.rmregs);
@@ -963,7 +987,7 @@ function receivedCurPos(pos) {
         //  I'm trying to work around so... uhm, randomly maybe retry with
         //  some random delay or something.)
 	if (Math.random() < 0.7) {
-	    setTimeout(fetchCurPos, 1000 * (Math.random() + 0.01));
+	    setTimeout(fetchCurPosDesperate, 1000 * (Math.random() + 0.01));
 	}
     }
 }
@@ -1073,7 +1097,11 @@ function isDev() {
     return userID.startsWith('_dev')
 }
 
-function fetchCurPos() {
+function fetchCurPosDesperate() {
+    fetchCurPos(true);
+}
+
+function fetchCurPos(desperateP) {
     if (isDev()) { // TODO this is weird
 	diary_add({
 	    category: 'curpos-fetch',
@@ -1086,6 +1114,9 @@ function fetchCurPos() {
 	enableHighAccuracy: true,
 	timeout: 1000 * 20,
 	maximumAge: 1000 * 1,
+    }
+    if (desperateP) {
+	options.enableHighAccuracy = false;
     }
     diary_add({
 	category: 'curpos-fetch',
@@ -1397,9 +1428,6 @@ $(document).ready(function() {
     }
     try {
 	if (userID) {
-	    if (localStorage.checkins) {
-		checkins = JSON.parse(localStorage.checkins);
-	    }
 	    if (localStorage.diary) {
 		diary = JSON.parse(localStorage.diary);
 	    }

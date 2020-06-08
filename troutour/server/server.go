@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
@@ -8,8 +9,8 @@ import (
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/taskqueue"
 	"html/template"
-	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -68,11 +69,7 @@ func doQueue(ctx context.Context) {
 		return
 	}
 	if downedClumpCount < 1 {
-		doomCount := doomClumps(ctx, dirtyClumps)
-		if float64(1+doomCount)*rand.Float64() > 0.95 {
-			randLat, randLng := randLatLngNearCity()
-			addRupTodo(ctx, "doom", randLat, randLng)
-		}
+		doomClumps(ctx, dirtyClumps)
 	}
 	if !time.Now().Before(late) {
 		return
@@ -104,42 +101,26 @@ func cronEnqueue(w http.ResponseWriter, r *http.Request) {
 // Handy function for one-time admin tasks.
 func magic(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
-	queueNames := []string{"default"}
-	stats, err := taskqueue.QueueStats(ctx, queueNames)
-	if err != nil {
-		fmt.Fprintf(w, "<p>I see ERR %v", err)
-	} else {
-		fmt.Fprintf(w, "<p>I see stats %v", stats)
+	w.Header().Set("Content-Type", "application/json")
+	centerLat, _ := strconv.ParseFloat(r.URL.Query().Get("lat"), 64)
+	centerLng, _ := strconv.ParseFloat(r.URL.Query().Get("lng"), 64)
+	if centerLat < 1.0 && centerLat > -1.0 {
+		centerLat = 33.8131
 	}
-	// taskqueue.Purge(ctx, "whatDoesKeyDo")
-
-	/*
-		thirtySecondsFromStart := time.Now().Add(30 * time.Second)
-		types := []string{"FsqVenue", "Region", "NPC", "Route", "Clump", "ClumpAdj"}
-		for {
-			if thirtySecondsFromStart.Before(time.Now()) {
-				break
-			}
-			found := 0
-			for _, t := range types {
-				q := datastore.NewQuery(t).Limit(100).KeysOnly()
-				keys, err := q.GetAll(ctx, nil)
-				if err != nil {
-					fmt.Fprintf(w, "couldn't fetch keys for %s got err %v", t, err)
-					return
-				}
-				err = datastore.DeleteMulti(ctx, keys)
-				if err != nil {
-					fmt.Fprintf(w, "couldn't delete keys for %s got err %v", t, err)
-					return
-				}
-				found += len(keys)
-			}
-			fmt.Fprintf(w, "Deleted %d entities", found)
-			if found < 100 {
-				break
-			}
-		}
-	*/
-
+	if centerLng < 1.0 && centerLng > -1.0 {
+		centerLng = -117.9219
+	}
+	places, err := fetchPlaces(ctx, centerLat, centerLng, 1.0)
+	js, err := json.Marshal(struct {
+		ErrS   string
+		Places map[string]FsqVenue
+	}{
+		fmt.Sprintf("Got err %v", err),
+		places,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(js)
 }

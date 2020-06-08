@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	overplentifulRouteStrands = 500
+	overplentifulRouteStrands = 370 /* ~ 1000 "hops" */
 	plentifulPrisms           = 50
 )
 
@@ -43,7 +43,7 @@ func nearestRegion(centerLat float64, centerLng float64, regions map[string]Regi
 		if region.LifecycleState != rlsActive {
 			continue
 		}
-		d := dist(centerLat, centerLng, region.Lat, region.Lng)
+		d := distKm(centerLat, centerLng, region.Lat, region.Lng)
 		if d < rDist {
 			r = region
 			rDist = d
@@ -168,6 +168,11 @@ func fetchRoutableRegionIDs(ctx context.Context, thisRegion Region, regions map[
 	return
 }
 
+type JSONCheckin struct {
+	R string // region ID
+	T int64  // timestamp
+}
+
 // trade in prisms for routes (don't persist)
 func checkinPrisms2Routes(thisRegion Region, crp CheckinRoutesPersistable, routableRegionIDs *[]string, userID string, inventory *UserInventory, connectedRegions map[string]int, regions map[string]Region) {
 	clumpsAlreadyConnected := map[string]bool{}
@@ -194,20 +199,21 @@ func checkinPrisms2Routes(thisRegion Region, crp CheckinRoutesPersistable, routa
 	}
 }
 
-func checkinAndCheckTooSoon(ctx context.Context, region Region, userID string, recent map[string]RecentCheckin) (tooSoonP bool) {
-	if _, found := recent[region.ID]; found {
-		return true
+func checkinAndCheckTooSoon(ctx context.Context, region Region, userID string, recent map[string]RecentCheckin) (tooSoonP bool, whenDid time.Time) {
+	if rc, found := recent[region.ID]; found {
+		return true, rc.T
 	}
+	now := time.Now()
 	rc := RecentCheckin{
 		RegionID: region.ID,
 		UserID:   userID,
-		T:        time.Now(),
+		T:        now,
 	}
 	rcKey := datastore.NewKey(ctx, "RecentCheckin", "", 0, nil)
 	if _, err := datastore.Put(ctx, rcKey, &rc); err != nil {
 		log.Errorf(ctx, "Couldn't save recent checkin, got %v", err)
 	}
-	return false
+	return false, now
 }
 
 func fetchUserRecentCheckins(ctx context.Context, userID string) (m map[string]RecentCheckin, err error) {
@@ -242,14 +248,14 @@ func predictProjection(lat, lng float64, checkins map[string]RecentCheckin, this
 		if !found {
 			continue
 		}
-		d := dist(thisRegion.Lat, thisRegion.Lng, thatRegion.Lat, thatRegion.Lng)
+		d := distKm(thisRegion.Lat, thisRegion.Lng, thatRegion.Lat, thatRegion.Lng)
 		if d < regionsTooCloseKm {
 			continue
 		}
 		offsetLat += (thisRegion.Lat - thatRegion.Lat) / d
 		offsetLng += (thisRegion.Lng - thatRegion.Lng) / d
 	}
-	d := dist(lat, lng, lat+offsetLat, lng+offsetLng)
+	d := distKm(lat, lng, lat+offsetLat, lng+offsetLng)
 	if d < 0.001 {
 		return
 	}
@@ -335,7 +341,8 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 	}
 
 	recentCheckins, _ := fetchUserRecentCheckins(ctx, userID)
-	if checkinAndCheckTooSoon(ctx, thisRegion, userID, recentCheckins) {
+	tooSoon, whenDid := checkinAndCheckTooSoon(ctx, thisRegion, userID, recentCheckins)
+	if tooSoon {
 		// Maybe the client didn't get our previous response and is retrying?
 		// (_Probably_ it's just the user being impatient and mashing buttons, but
 		//  _maybe_ this is a retry?) Check to see if we have a cached response:
@@ -344,7 +351,15 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 			w.Write(item.Value) // It's a retry! Spew cached JSON
 		} else {
 			// It's an impatient user. Counsel patience.
-			w.Write(statusJson(fmt.Sprintf(`⌛&nbsp;I was here (%s) less than an hour&nbsp;ago.`, html.EscapeString(thisRegion.Name))))
+			response := struct {
+				Checkins []JSONCheckin `json:"chks,omitempty"`
+				Messages []string      `json:"msgs,omitempty"`
+			}{
+				[]JSONCheckin{JSONCheckin{thisRegion.ID, whenDid.Unix()}},
+				[]string{fmt.Sprintf(`⌛&nbsp;I was here (%s) less than an hour&nbsp;ago.`, html.EscapeString(thisRegion.Name))},
+			}
+			js, _ := json.Marshal(response)
+			w.Write(js)
 		}
 		return
 	}
@@ -687,9 +702,6 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 	}, nil)
 
 	s = fmt.Sprintf(`At region %s./`, html.EscapeString(thisRegion.Name)) + s
-	s += fmt.Sprintf(
-		` / Rts:&nbsp;%v NewRts:&nbsp;%v AppRts:&nbsp;%v /`,
-		len(crp.Routes), len(crp.NewRoutes), len(crp.AppendedRoutes))
 
 	newReportedRoutes := []ResponseRoute{}
 	for _, route := range crp.NewRoutes {
@@ -721,6 +733,7 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 	reportedNPCs := makeResponseNPCs(npcs, regions, userID)
 
 	response := struct {
+		Checkins  []JSONCheckin                 `json:"chks,omitempty"`
 		Checkin   []string                      `json:"chkn,omitempty"`
 		Regions   map[string]([]ResponseRegion) `json:"regs,omitempty"`
 		OldRoutes []ResponseRoute               `json:"orts,omitempty"`
@@ -729,6 +742,7 @@ func checkin(w http.ResponseWriter, r *http.Request, userID string, sessionID st
 		Inventory ResponseUserInventory         `json:"inv"`
 		NPCs      []ResponseNPC                 `json:"npcs,omitempty"`
 	}{
+		[]JSONCheckin{JSONCheckin{thisRegion.ID, whenDid.Unix()}},
 		[]string{thisRegion.ID},
 		unloadedResponseRegions,
 		oldReportedRoutes,

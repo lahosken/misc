@@ -1,14 +1,13 @@
-tombstones: google might tell us about region "san francisco" even if we're
-far from its center, just because it's big and we're in it. if the only things
-we get from google are further away than our radius,
-we should create a tombstone nonetheless
-
-if user tries to check in but it's been less than an hour, don't just
-say "can't check in". say {"can't check in", but you can at time=123456789}
-so we know to turn the thingy red and when to bring it back
-
-when announcing a gone-region, if the message is going to say
-'the region "" went away' (empty region name), maybe don't bother to
-say it, right?
-
 CLIENT: that link to wikipedia should go to another tab
+
+not using memo-ized "4sq" places anymore (except TOMBSTONEs)
+probably can clean up some of the 4sq cron logic accordingly, yes?
+it has a lot of code to deal with "todos" that won't happen.
+
+nowadays the 4sq datastore just holds tombstones. (well, new
+things as of sep 19 2018. there's 30-day stuff in there that's
+not tombstones for now... but should eventually get cleaned out)
+It used to be place data. the relevant struct has a bunch of
+fields for that place data. So... maybe a new datastore that's
+just { lat, lng, datetime } . and wipe out the old thusly-unused
+datastore.

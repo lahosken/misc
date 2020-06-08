@@ -22,7 +22,7 @@ func kmPerLng(lat float64) float64 {
 	return 111.1 * cos
 }
 
-func dist(lat0, lng0, lat1, lng1 float64) float64 {
+func distKm(lat0, lng0, lat1, lng1 float64) float64 {
 	meanLat := (lat0 + lat1) / 2.0
 	dX := kmPerLng(meanLat) * (lng0 - lng1)
 	dY := kmPerLat() * (lat0 - lat1)
