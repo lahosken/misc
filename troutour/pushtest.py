@@ -23,7 +23,7 @@ def Template2Go():
   template = infile.read()
   infile.close()
   tdotgo = codecs.open("server/templates.go", "w", "utf-8")
-  tdotgo.write('''package server
+  tdotgo.write('''package main
 
 // Don't edit this file. It's automatically generated!
 
@@ -40,7 +40,7 @@ def Main():
     except OSError:
       os.remove(old)
   Template2Go()
-  for p in glob.glob("server/*.go") + glob.glob("server/*.yaml"):
+  for p in glob.glob("server/*.*"):
       if p.endswith("_test.go"): continue
       Copy(p)
   for p in glob.glob("client/*"):

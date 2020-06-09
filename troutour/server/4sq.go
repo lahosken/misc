@@ -1,4 +1,4 @@
-package server
+package main
 
 /*
  * Regions (places in the game) are based on 4square data. We query 4sq and

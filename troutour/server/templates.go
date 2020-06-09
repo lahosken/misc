@@ -1,4 +1,4 @@
-package server
+package main
 
 // Don't edit this file. It's automatically generated!
 

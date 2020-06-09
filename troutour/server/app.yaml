@@ -1,5 +1,5 @@
-runtime: go
-api_version: go1
+runtime: go111
+# obsolete field: api_version: go1
 
 # TODO this is silly.
 default_expiration: "1m"
@@ -12,4 +12,4 @@ handlers:
   static_dir: client
 
 - url: /.*
-  script: _go_app
+  script: auto

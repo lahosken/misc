@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"bytes"
@@ -209,7 +209,7 @@ func oauth2CallbackGoog(w http.ResponseWriter, r *http.Request, userID string, s
 }
 
 func logout(w http.ResponseWriter, r *http.Request, userID string, sessionID string) {
-	ctx := appengine.NewContext(r)
+	ctx := context.Background()
 	userID = ""
 	updatedSession := Session{time.Now(), userID}
 	key := datastore.NewKey(ctx, "Session", sessionID, 0, nil)

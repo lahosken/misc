@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"encoding/json"
@@ -10,11 +10,12 @@ import (
 	"google.golang.org/appengine/taskqueue"
 	"html/template"
 	"net/http"
+  "os"
 	"strconv"
 	"time"
 )
 
-func init() {
+func main() {
 	http.HandleFunc("/", Sessionate(topscreen))
 	http.HandleFunc("/a/pace", Sessionate(pace))       // player wants nearby info
 	http.HandleFunc("/a/probe", Sessionate(probe))     // player info 1km "ahead"
@@ -28,6 +29,16 @@ func init() {
 
 	http.HandleFunc("/configstore", configstore)  // key/cert/etc storage
 	http.HandleFunc("/cron/enqueue", cronEnqueue) // post job to task queue
+
+  appengine.Main()
+
+  port := os.Getenv("PORT")
+  if port == "" {
+    port = "8080"
+  }
+  if err := http.ListenAndServe(":"+port, nil); err != nil {
+    return
+  }
 }
 
 // Show the main screen.
