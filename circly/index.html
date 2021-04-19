@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">    
+    <title>Circly</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <center>
+      <h2><a href="..">Programs</a>: Circly</h2>
+      <div style="float: right">
+	<button id=toggle>&#9432;</button>
+      </div>
+      <div id=presets></div>
+      <div>
+	<label for=sparse>Scraggliness:</label>
+	<input type=range id=sparse name=sparse min=2 max=6 value=4>
+      </div>
+      <div id=about style="display:none; position: absolute; z-index: 1; background-color: white; color: black; border: 2px solid blue; width: 90%;">
+	<h2>About</h2>
+	<div style="text-align: left; max-width: 40em;">
+	<p>
+	  <tt>Circly</tt> distorts images in an aesthetically-pleasing-to-me
+	  way. Little circly fractalish fragments of the image lace-likely
+	  overlay other fragments.
+	  
+	<p>
+	  It started out as a <a href="circly_py.txt">little Python script</a>
+	  that uses the Pillow image library. But I thought it might be fun
+	  to watch it do its thing as an animation, and thus this JS-powered
+	  web page.
+
+	<p>
+	  Its algorithm is:
+	  <ul>
+	    <li>You start with an original image and a blank
+	        drawing space. Choose a big circle size.
+	    <li>Repeat:
+	      <ul>
+		<li>Is the circle size now absurdly small? If so, stop.
+		<li>
+		  Choose a point in the drawing space.  Does it now
+		  have a color quite different than the original image?
+		  If not, move on. But if so, draw a circle using the
+		  current circle size in the color from the original image.
+		<li>
+		  Have you drawn many circles at the current circle size?
+		  If so, reduce the circle size a skoonch.
+	      </ul>
+	  </ul>
+	</div>
+	<p>⚫⚈⚫●⚫⬤⚉⚫</p>
+      </div>
+      <canvas id=drawcnv></canvas>
+
+      <canvas id=origcnv style="display:none"></canvas>
+      <img id=origimg src="ped-xing.jpg" style="display:none;">
+      <img id=preloadimg style="display:none;">
+
+    <h2>Gallery</h2>
+
+    <p>
+      <img src="loading.gif" id=gaal><br>
+      <a href="https://www.moma.org/collection/works/79032">American Landscape, Charles Sheeler</a>
+
+    <p>
+      <img src="loading.gif" id=gabl><br>
+      <a href="https://jenbartel.shop/products/blackbird-print">Illustration from <i>Blackbird</i>, Jen Bartel</a>
+
+    <p>
+      <img src="loading.gif" id=gach><br>
+      <a href="https://www.artic.edu/artworks/111442/the-child-s-bath">The Child's Bath, Mary Cassatt</a>
+
+    <p>
+      <img src="loading.gif" id=gado><br>
+      <a href="https://en.wikipedia.org/wiki/Doge_(meme)">Doge image meme, Atsuko Satō <i>et alii</i></a>
+
+    <p>
+      <img src="loading.gif" id=gape><br>
+      <a href="https://www.carollay.com/illustration">The Persistence of Kat Klocks, Carol Lay</a>
+
+    <p>
+      <img src="loading.gif" id=gare><br>
+      <a href="http://yayoi-kusama.jp/">Red Dots, 草間 彌生 (Yayoi Kusuma)</a>
+
+    <p>
+      <img src="loading.gif" id=gase><br>
+      <a href="https://www.albrightknox.org/artworks/1966910-self-portrait-monkey">Self-portrait with Monkey, Frida Kahlo</a>
+
+    <p>
+      <img src="loading.gif" id=gasl><br>
+      <a href="https://www.gocomics.com/nancy/2018/09/03">"Sluggo is lit.", Olivia Jaimes</a>
+    </center>
+    <script src="circly.js"></script>
+  </body>
+</html>
