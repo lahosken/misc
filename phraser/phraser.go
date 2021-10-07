@@ -641,7 +641,7 @@ func readXWdLists(fodderPath, tmpPath string) {
 			// So fake it: if we see a long "word" with no spaces,
 			// don't boost its score so much:
 			if len(phrase) > 5 && !strings.Contains(phrase, " ") {
-				score /= 2
+				score /= len(phrase)
 			}
 			if score < 10 {
 				continue
