@@ -41,7 +41,7 @@ def main():
     candidates = []
     probes = {}
     for _, word in sortable:
-        if len(candidates) < 1800 and is_root(word):
+        if len(candidates) < 1800 and collab[word] > 30 and is_root(word):
             candidates.append(word)
         probes[word] = True
         if len(candidates) >= 1800 and len(probes) >= 5000:
