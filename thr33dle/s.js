@@ -107,15 +107,12 @@ function choose_suggestion() {
 	winnowed_candidates[1].length +
 	winnowed_candidates[2].length > 300) {
 	some_probes = [
-	    "arose", "blare", "broil",
-	    "could", "crate", "craze",
-	    "flare", "flour", "glory", "grate",
-	    "irate", "irony", "joist", "juicy", "later",
-	    "minor", "parse", "quirk", "quote", "raise",
-	    "saute", "scorn", "scour", "share", "shorn",
-	    "slink", "snare", "solid", "spoil", "swirl",
-	    "taker", "tamer", "teary", "trade", "unzip",
-	    "valet", "visor", "water",
+	    "arose", "close", "carol", "clout", "crone",
+	    "dealt", "irate", "irony", "lance", "large",
+	    "place", "raise", "roast", "round",
+	    "saint", "salty", "slant", "slate", "slide",
+	    "snail", "solar",
+	    "talon", "trace", "trade", "trail", "tried",
 	];
     }
     var best_probe = 'raise';

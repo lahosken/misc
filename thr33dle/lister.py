@@ -14,6 +14,11 @@ def load_words():
         words[word] = score_i
     return words
 
+def load_fives():
+    words = {}
+    for line in open("/home/lahosken/fives.txt"): words[line.strip()] = True
+    return words
+
 def load_collab():
     d = defaultdict(int)
     for line in open("/home/lahosken/the_game/ref/collabWL.txt"):
@@ -34,10 +39,14 @@ def is_root(s):
 def main():
     many_words = load_words()
     collab = load_collab()
+    fives = load_fives()
     sortable = []
     for word in many_words:
         score = (1 + many_words[word]) * (1 + collab[word])
+        if word in fives: score *= 2
         sortable.append((score, word))
+    sortable.sort()
+    sortable.reverse()
     candidates = []
     probes = {}
     for _, word in sortable:
