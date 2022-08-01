@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<title>bewordled</title>
+<style>
+body { font-size: large; }
+td { font-size: 160%; font-weight: bold; width: 2em; height: 2em; background-color: #dec0de; text-align: center; border: 1px solid white; }
+.sel { background-color: #deface; }
+.mark { background-color: #feeb1e; }
+.button { border: 1px solid gray; background-color: #aaaaaa; margin: 2px; padding: 2px; }
+.suggestr { border-right: 2px dotted blue; }
+.suggestb { border-bottom: 2px dotted blue; }
+</style>
+<script src="vocab.js"></script>
+<script src="s.js"></script>
+<meta content="width=device-width" name="viewport" />
+</head>
+<body>
+  <h1><a href="../">Program</a>: bewordled</h1>
+  <center>
+<table>
+  <caption>Swap tiles to form three-tile words<br>
+  Jostle&nbsp;🧨 to clear tile (and maybe surrounding too)</caption>
+<tbody id="gridtbody">
+</tbody></table>
+</center>
+
+<p><span id="complaints"></span></p>
+<p><b>Score: </b><span id="score"></span></p>
+<p>
+<span class="button" onclick="suggest();">Suggest</span>
+<span class="button" onclick="newGame();">New Game</span>
+
+<p>
+<span class="button" onclick="wider(+1)">Wider</span>
+<span class="button" onclick="wider(-1)">Narrower</span>
+<span class="button" onclick="taller(+1)">Taller</span>
+<span class="button" onclick="taller(-1)">Shorter</span>
+
+<div id="debug"></div>
+<p>To swap tiles <small>(pretty much all there is to the game)</small>:
+Click on a tile.
+Click on an adjacent tile.
+
+</p><p>Legal Words: <span id="words"></span>.
+<script>newGame();</script>
+</p></body>
+</html>
