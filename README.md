@@ -1,7 +1,7 @@
 # misc
 
-Things I wanted to put up on github, things too tiny to warrant their own repos.
-Set this up so I could share code to project "phraser", but
-anticipated that there would be future tiny projects.
-Let's hope I didn't just jinx that.
+Some little projects I wanted to get under version control and/or share on
+teh internets.  No one of them seemed big enough to to warrant its own repo;
+but together they're fine, like three feral raccoons in a trenchcoat making
+their way through human society.
 
