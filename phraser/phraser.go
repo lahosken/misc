@@ -646,7 +646,7 @@ func readXWdLists(fodderPath, tmpPath string) {
 			if score < 10 {
 				continue
 			}
-			found.boost(phrase, uint64(score*score*score*10))
+			found.boost(phrase, uint64(score*score*score*score))
 		}
 		tallySnippets(&tally, found)
 	}
