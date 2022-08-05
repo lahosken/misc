@@ -41,8 +41,8 @@ var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to file")
 
 const (
 	tmpFilenameFormat         = "p-%s-%012d.txt"
-	dictTampThreshholdEntries = 8000000
-	dictOutputThreshhold      = 10000000
+	dictTampThreshholdEntries = 7000000
+	dictOutputThreshhold      = 8000000
 	lowScore                  = 5 // TODO instead of magic constant, could compute histogram in persist()
 )
 
@@ -601,8 +601,9 @@ func readTextFiles(fodderPath, tmpPath string) {
 
 func readXWdLists(fodderPath, tmpPath string) {
 	inFilePaths, _ := filepath.Glob(filepath.Join(fodderPath, "*.txt"))
-	tally := counter{}
 	for _, inFilePath := range inFilePaths {
+		tally := counter{}
+		shortName := strings.Split(filepath.Base(inFilePath), ".")[0]
 		log.Printf("READING %v", inFilePath)
 		fodderF, err := os.Open(inFilePath)
 		if err != nil {
@@ -646,12 +647,12 @@ func readXWdLists(fodderPath, tmpPath string) {
 			if score < 10 {
 				continue
 			}
-			found.boost(phrase, uint64(score*score*score*score))
+			found.boost(phrase, uint64(score*score*score*20))
 		}
 		tallySnippets(&tally, found)
+		tallyPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, "XwdLs-"+shortName, 0))
+		tally.persist(tallyPath)
 	}
-	tallyPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, "XwdLs", 0))
-	tally.persist(tallyPath)
 }
 
 // readWikis reads data from wikis, write it to tmp files.
