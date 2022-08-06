@@ -105,7 +105,7 @@ function animFrame() {
 	ui_state = false;
     } else {
 	const bombCount = gr2j.split(/\?/).length - 1;
-	if (Math.random() * bombCount < 0.01 * GRID_W * GRID_H) {
+	if (Math.random() * (bombCount + 0.25) < 0.002 * GRID_W * GRID_H) {
 	    var i = Math.floor((Math.random() + Math.random()) * GRID_H / 2);
 	    var j = Math.floor((Math.random() + Math.random()) * GRID_W / 2);
 	    gr2[j][i] = '?';
