@@ -50,23 +50,100 @@ function copyGrid() {
     return JSON.parse(JSON.stringify(grid))
 }
 
+function randChoice(l) {
+    return l[Math.floor(Math.random() * l.length)];
+}
+
 function fillOneTopCell(gr) {
     const offset = Math.floor(Math.random() * GRID_W);
     for (var jj = 0; jj < GRID_W; jj++) {
 	const j = (offset + jj) % GRID_W;
 	if (gr[j][0]) { continue }
-	var gram_o = {};
-	for (var ix in GRAMS) { gram_o[GRAMS[ix]] = true; }
-	for (var ix = 0; ix < GRID_H * GRID_W; ix++) {
-	    var ii = Math.floor(Math.random() * GRID_H);
-	    var jj = Math.floor(Math.random() * GRID_W);
-	    if (gram_o[grid[jj][ii]]) {
-		delete gram_o[grid[jj][ii]];
-		if (Object.keys(gram_o).length < 2) { break }
+	var gramO = {}; // dict of grams we're considering dropping
+	for (var ix in GRAMS) { gramO[GRAMS[ix]] = true; }
+	/*
+	 * Try to avoid dropping tiles already overrepresented:
+         * randomly look at a few tiles from the grid and remove
+         * them from consideration
+	 */
+	for (var ix = 0; ix < GRAMS.length; ix++) {
+	    var g = randChoice(randChoice(gr))
+	    if (gramO[g]) {
+		delete gramO[g];
 	    }
 	}
-	    
-	gr[j][0] = Object.keys(gram_o)[Math.floor(Math.random() * Object.keys(gram_o).length)];
+	/*
+         *  If we drop a 'c' on top of 'at', that gives the player
+         *  a word "for free." Hardcore players might find this too
+         *  easy, so try to detect this case and wriggle out of it.
+         */
+	var colTop = "";
+	var colTopCount = 0;
+	for (var i = 0; i < gr[j].length; i++) {
+	    if (gr[j][i].match(/[a-z]/)) {
+		colTop += gr[j][i];
+		colTopCount += 1;
+		if (colTopCount >= 2) { break }
+	    }
+	}
+	for (var ix = 0; ix < GRAMS.length; ix++) {
+	    const g = GRAMS[ix];
+	    if (!gramO[g]) { continue }
+	    if (WORDS[g + colTop]) {
+		delete gramO[g];
+	    }
+	}
+
+	// Wriggle out of many "lucky" horizontal words, part 1
+	// Don't drop a tile which would be the first tile in a "lucky" word
+	if (j < gr.length - 2) {
+	    for (var i = 0; i < gr[j].length; i++) {
+		if (gr[j][i].match(/[a-z]/)) { break }
+		for (var ix = 0; ix < GRAMS.length; ix++) {
+		    const g = GRAMS[ix];
+		    if (!gramO[g]) { continue }
+		    if (WORDS[g + gr[j+1][i] + gr[j+2][i]]) {
+			delete gramO[g];
+		    }
+		}
+	    }
+	}
+
+	// Wriggle out of many "lucky" horizontal words, part 2
+	// Don't drop a tile which would be the middle tile in a "lucky" word
+	if (j >= 1 && j < gr.length - 1) {
+	    for (var i = 0; i < gr[j].length; i++) {
+		if (gr[j][i].match(/[a-z]/)) { break }
+		for (var ix = 0; ix < GRAMS.length; ix++) {
+		    const g = GRAMS[ix];
+		    if (!gramO[g]) { continue }
+		    if (WORDS[gr[j-1][i] + g + gr[j+1][i]]) {
+			delete gramO[g];
+		    }
+		}
+	    }
+	}
+
+	// Wriggle out of many "lucky" horizontal words, part 3
+	// Don't drop a tile which would be the last tile in a "lucky" word
+	if (j >= 2) {
+	    for (var i = 0; i < gr[j].length; i++) {
+		if (gr[j][i].match(/[a-z]/)) { break }
+		for (var ix = 0; ix < GRAMS.length; ix++) {
+		    const g = GRAMS[ix];
+		    if (!gramO[g]) { continue }
+		    if (WORDS[gr[j-2][i] + gr[j-1][i] + g]) {
+			delete gramO[g];
+		    }
+		}
+	    }
+	}
+
+	if (Object.keys(gramO).length) {
+	    gr[j][0] = randChoice(Object.keys(gramO));
+	} else {
+	    gr[j][0] = randChoice(GRAMS);
+	}
 	return true
     }
     return false
