@@ -169,6 +169,22 @@ function newGame() {
     display();
 }
 
+// maybe replace one tile with firecracker
+function maybeAddExplosives(gr) {
+    grj = JSON.stringify(gr);
+    
+    // how many firecrackers already out there?
+    const alreadyCount = grj.split(/\?/).length - 1;
+
+    // should we do it or no?
+    if (Math.random() * (alreadyCount + 0.25) > 0.1) { return }
+
+    // tend to add firecracker in the middle
+    var i = Math.floor((Math.random() + Math.random()) * GRID_H / 2);
+    var j = Math.floor((Math.random() + Math.random()) * GRID_W / 2);
+    gr[j][i] = '?';
+}
+
 function animFrame() {
     var gr2 = physicsTick(grid);
     gridj = JSON.stringify(grid);
@@ -181,12 +197,7 @@ function animFrame() {
 	setTimeout(animFrame, TICK_TIME);
 	ui_state = false;
     } else {
-	const bombCount = gr2j.split(/\?/).length - 1;
-	if (Math.random() * (bombCount + 0.25) < 0.002 * GRID_W * GRID_H) {
-	    var i = Math.floor((Math.random() + Math.random()) * GRID_H / 2);
-	    var j = Math.floor((Math.random() + Math.random()) * GRID_W / 2);
-	    gr2[j][i] = '?';
-	}
+	maybeAddExplosives(gr2);
 	TICK_TIME = BASE_TICK_TIME;
 	scoreBoost = Math.max(1.0 * score / 200.0, 1.0);
 	ui_state = true;
@@ -203,10 +214,16 @@ function display() {
 	for (var j = 0; j < GRID_W; j++) {
 	    var td = document.createElement('td');
 	    var s = grid[j][i];
-	    if (s == '!') { s = '🌩'; }
-	    if (s == '!!') { s = '💥'; }
-	    if (s == '?') { s = '🧨'; }
-	    td.appendChild(document.createTextNode(s));
+	    if (s == '!') { s = 'twemoji_cloud.png'; }
+	    if (s == '!!') { s = 'twemoji_collision.png'; }
+	    if (s == '?') { s = 'twemoji_firecracker.png'; }
+	    if (s.match(/png/)) {
+		var png = document.createElement('img');
+		png.src = s;
+		td.appendChild(png);
+	    } else {
+		td.appendChild(document.createTextNode(s));
+	    }
 	    td.onclick = cellClicked;
 	    td.i = i;
 	    td.j = j;
@@ -408,3 +425,10 @@ function physicsTick(gr) {
     });   
     return nex;
 }
+
+// how modern does a browser gotta be to support script defer? oh well...
+window.addEventListener('load', function(e) {
+    document.getElementById('suggestBtn').onclick = suggest;
+    document.getElementById('newGameBtn').onclick = newGame;
+    newGame();
+});
