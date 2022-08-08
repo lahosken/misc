@@ -11,6 +11,7 @@ td { font-size: 160%; font-weight: bold; width: 2em; height: 2em; background-col
 .button { border: 1px solid gray; background-color: #aaaaaa; margin: 2px; padding: 2px; }
 .suggestr { border-right: 2px dotted blue; }
 .suggestb { border-bottom: 2px dotted blue; }
+#gridtbody img { max-width: 75%; }
 </style>
 <script src="vocab.js"></script>
 <script src="s.js"></script>
@@ -21,7 +22,8 @@ td { font-size: 160%; font-weight: bold; width: 2em; height: 2em; background-col
   <center>
 <table>
   <caption>Swap tiles to form three-tile words<br>
-  Jostle&nbsp;🧨 to clear tile (and maybe surrounding too)</caption>
+    Jostle&nbsp;<img src="twemoji_firecracker.png" style="height:12px;">
+    to clear tile <small><br>(and surrounding tiles too)</small></caption>
 <tbody id="gridtbody">
 </tbody></table>
 </center>
@@ -29,8 +31,8 @@ td { font-size: 160%; font-weight: bold; width: 2em; height: 2em; background-col
 <p><span id="complaints"></span></p>
 <p><b>Score: </b><span id="score"></span></p>
 <p>
-<span class="button" onclick="suggest();">Suggest</span>
-<span class="button" onclick="newGame();">New Game</span>
+<span class="button" id="suggestBtn">Suggest</span>
+<span class="button" id="newGameBtn">New Game</span>
 
 <p>
 <span class="button" onclick="wider(+1)">Wider</span>
@@ -43,7 +45,20 @@ td { font-size: 160%; font-weight: bold; width: 2em; height: 2em; background-col
 Click on a tile.
 Click on an adjacent tile.
 
-</p><p>Legal Words: <span id="words"></span>.
-<script>newGame();</script>
-</p></body>
+</p>
+
+<p>Legal Words: <span id="words"></span>.
+</p>
+
+<hr>
+
+  <p>Pretty graphics
+    (<img src="twemoji_firecracker.png" style="height:12px;">
+    <img src="twemoji_cloud.png" style="height:12px;">
+    <img src="twemoji_collision.png" style="height:12px;">)
+      from Twitter's excellent
+      <a href="https://github.com/twitter/twemoji"><tt>twemoji</tt> library</a>
+     licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+
+</body>
 </html>
