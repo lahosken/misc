@@ -34,3 +34,5 @@ but it overlooks some other things. _E.g._, by this measure, the movie
 "Wheel of Fortune and Fantasy" (2021) (which I never heard of),
 ranks much _much_ higher than the long-running TV show "Wheel of Fortune."
 Apparently, IMDB users don't tend to write reviews for TV game shows.
+
+I [blogged some notes about the IMDB data](https://lahosken.san-francisco.ca.us/new/2022/08/25/crunching-imdb-data-imdb-internet-movie-database/).
