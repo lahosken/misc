@@ -34,6 +34,7 @@ func init() {
 var wikiFodderPath = flag.String("wikipath", "", "Dir full of wiki-export .xml files")
 var txtFodderPath = flag.String("txtpath", "", "Dir full of .txt files")
 var ngramFodderPath = flag.String("ngrampath", "", "Dir full of Google Ngram files")
+var prebakedFodderPath = flag.String("prebakedpath", "", "Dir full of previously-generated Phraser lists")
 var xwdFodderPath = flag.String("xwdpath", "", "Dir full of crossword scored word-list files")
 var tmpPath = flag.String("tmppath", "", "Don't parse wikis/textfiles. Instead, read from previously-generated tmp dir")
 var outPath = flag.String("outpath", "", "Instead of writing to ~/Phrases_20160419_131415.txt, write to this path")
@@ -41,7 +42,7 @@ var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to file")
 
 const (
 	tmpFilenameFormat         = "p-%s-%012d.txt"
-	dictTampThreshholdEntries = 7000000
+	dictTampThreshholdEntries = 5000000
 	dictOutputThreshhold      = 8000000
 	lowScore                  = 5 // TODO instead of magic constant, could compute histogram in persist()
 )
@@ -407,7 +408,7 @@ func line2snippets(line string, snippets *counter) {
 
 // readNgrams reads data from Google N-gram files, write it to tmp files.
 //
-// Ngrams: http://storage.googleapis.com/books/ngrams/books/datasetsv2.html
+// Ngrams: https://storage.googleapis.com/books/ngrams/books/datasetsv3.html
 //
 // I've only ever used this on Ngram files that I'd previously winnowed
 // down (removing low-frequency entries). Dunno how/if it would work on
@@ -430,6 +431,7 @@ func readNgrams(fodderPath, tmpPath string) {
 			log.Printf(" OPEN ERR %v", err)
 			continue
 		}
+    defer fodderF.Close()
 		gUnzipper, err := gzip.NewReader(fodderF)
 		if err != nil {
 			log.Fatalf("GZip reader has a sad: %v", err)
@@ -540,6 +542,7 @@ func readTextFiles(fodderPath, tmpPath string) {
 		if err != nil {
 			log.Fatalf("couldn't open txt file %s %v", inFilePath, err)
 		}
+    defer fodderF.Close()
 		found := counter{}
 		fodderScan := bufio.NewScanner(fodderF)
 		para := ""
@@ -600,7 +603,7 @@ func readTextFiles(fodderPath, tmpPath string) {
 }
 
 func readXWdLists(fodderPath, tmpPath string) {
-	inFilePaths, _ := filepath.Glob(filepath.Join(fodderPath, "*.txt"))
+	inFilePaths, _ := filepath.Glob(filepath.Join(fodderPath, "*t"))
 	for _, inFilePath := range inFilePaths {
 		tally := counter{}
 		shortName := strings.Split(filepath.Base(inFilePath), ".")[0]
@@ -609,6 +612,7 @@ func readXWdLists(fodderPath, tmpPath string) {
 		if err != nil {
 			log.Fatalf("couldn't open txt file %s %v", inFilePath, err)
 		}
+    defer fodderF.Close()
 		found := counter{}
 		fodderScan := bufio.NewScanner(fodderF)
 		for {
@@ -655,6 +659,46 @@ func readXWdLists(fodderPath, tmpPath string) {
 	}
 }
 
+func readPrebaked(fodderPath, tmpPath string) {
+	inFilePaths, _ := filepath.Glob(filepath.Join(fodderPath, "*.txt"))
+  fileCount := 0
+	for _, inPath := range inFilePaths {
+    fileCount += 1
+		nickName := strings.Split(filepath.Base(inPath), ".")[0]
+		outPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, nickName, fileCount))
+    inF, err := os.Open(inPath)
+		if err != nil {
+			log.Fatalf("couldn't open prebaked file %s %v", inPath, err)
+		}
+    defer inF.Close()
+    os.MkdirAll(filepath.Dir(outPath), 0776)
+    outF, err := os.Create(outPath)
+    if err != nil {
+      log.Fatalf("couldn't open tmp file %v %v", outPath, err)
+    }
+    defer outF.Close()
+    scan := bufio.NewScanner(inF)
+    lineRE := regexp.MustCompile(`(\d+)\t(.*)`)
+    for {
+			if fileNotDone := scan.Scan(); !fileNotDone {
+				break
+			}
+			line := scan.Text()
+      match := lineRE.FindStringSubmatch(line)
+			if match == nil {
+				log.Fatal("weird prebaked file line %s %s", inPath, line)
+			}
+      sqrtScore, err := strconv.Atoi(match[1])
+			if err != nil {
+				log.Fatal("weird prebaked file line (non-int score?) %s %s", inPath, line)
+			}
+      score := uint64(math.Pow(float64(sqrtScore), 2))
+      phrase := match[2]
+      outF.WriteString(fmt.Sprintf("%d\t%s\n", score, phrase))
+    }
+  }
+}
+
 // readWikis reads data from wikis, write it to tmp files.
 func readWikis(fodderPath, tmpPath string) {
 	pageCount := 0
@@ -667,6 +711,7 @@ func readWikis(fodderPath, tmpPath string) {
 		if err != nil {
 			log.Fatalf("couldn't open wiki file %s %v", inFilePath, err)
 		}
+    defer fodderF.Close()
 		var co *counter = new(counter)
 		tampCount := 0
 		fodderScan := bufio.NewScanner(fodderF)
@@ -740,6 +785,7 @@ func Reduce(tmpPath string, outPath string) {
 		if err != nil {
 			log.Fatalf("couldn't open tmp file %s %v", tmpFilename, err)
 		}
+    defer tmpF.Close()
 		scan := bufio.NewScanner(tmpF)
 		for {
 			fileNotDone := scan.Scan()
@@ -770,6 +816,7 @@ func Reduce(tmpPath string, outPath string) {
 		if err != nil {
 			log.Fatalf("couldn't open tmp file %s %v", tmpFilename, err)
 		}
+    defer tmpF.Close()
 		scan := bufio.NewScanner(tmpF)
 		for {
 			if fileNotDone := scan.Scan(); !fileNotDone {
@@ -830,13 +877,16 @@ func main() {
 			u.HomeDir,
 			fmt.Sprintf("Phrases_%s.txt", nowPath))
 	}
-	if *tmpPath == "" && *wikiFodderPath == "" && *ngramFodderPath == "" && *txtFodderPath == "" && *xwdFodderPath == "" {
-		log.Fatal("none of --wikipath, --ngrampath, --txtpath, --xwdpath set. No input, nothing to do!")
+	if *tmpPath == "" && *wikiFodderPath == "" && *ngramFodderPath == "" && *txtFodderPath == "" && *prebakedFodderPath == "" && *xwdFodderPath == "" {
+		log.Fatal("none of --wikipath, --ngrampath, --prebakedpath --txtpath, --xwdpath set. No input, nothing to do!")
 	}
 	if *tmpPath == "" {
 		*tmpPath = filepath.Join(os.TempDir(), "phraser", nowPath)
 		if *ngramFodderPath != "" {
 			readNgrams(*ngramFodderPath, *tmpPath) // read ngrams, write tmp files
+		}
+		if *prebakedFodderPath != "" {
+			readPrebaked(*prebakedFodderPath, *tmpPath) // read previously-generated files, write tmp files
 		}
 		if *txtFodderPath != "" {
 			readTextFiles(*txtFodderPath, *tmpPath) // read txts, write tmp files
