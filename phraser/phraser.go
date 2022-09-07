@@ -162,6 +162,7 @@ func (c counter) persist(outPath string) {
 		log.Printf("   SORT...")
 	}
 	sortMe := map[uint64]([]string){}
+  bigScores := []string{}
 	maxScore := uint64(0)
 	for phrase, score := range c.d {
 		if score > maxScore {
@@ -169,6 +170,9 @@ func (c counter) persist(outPath string) {
 		}
 		if sortMe[score] == nil {
 			sortMe[score] = []string{}
+      if score > 1000000 {
+        bigScores = append(bigScores, fmt.Sprintf("% 20d", score))
+      }
 		}
 		sortMe[score] = append(sortMe[score], phrase)
 	}
@@ -182,6 +186,29 @@ func (c counter) persist(outPath string) {
 	}
 	writtenCount := 0
 	lastSync := 0
+  sort.Sort(sort.Reverse(sort.StringSlice(bigScores)))
+  for _, scoreS := range bigScores {
+    score, err := strconv.ParseUint(strings.TrimSpace(scoreS), 10, 64)
+    if err != nil {
+      log.Fatalf("couldn't parse a score %s %v", scoreS, err)
+    }
+		sort.Sort(sort.StringSlice(sortMe[score]))
+		for _, phrase := range sortMe[score] {
+			outF.WriteString(fmt.Sprintf("%d\t%s\n", score, phrase))
+			writtenCount += 1
+		}
+		delete(sortMe, score)
+		if writtenCount > dictOutputThreshhold {
+			break
+		}
+		if writtenCount > lastSync+50000 {
+			outF.Sync()
+			lastSync = writtenCount
+		}
+  }
+  if maxScore > 1000000 {
+    maxScore = 1000000
+  }
 	for score := maxScore; score > 0; score -= 1 {
 		if sortMe[score] == nil {
 			continue
@@ -651,7 +678,7 @@ func readXWdLists(fodderPath, tmpPath string) {
 			if score < 10 {
 				continue
 			}
-			found.boost(phrase, uint64(score*score*score*20))
+			found.boost(phrase, uint64(score*score*score*score*2000))
 		}
 		tallySnippets(&tally, found)
 		tallyPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, "XwdLs-"+shortName, 0))
