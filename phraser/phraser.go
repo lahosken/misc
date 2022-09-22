@@ -42,9 +42,9 @@ var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to file")
 
 const (
 	tmpFilenameFormat         = "p-%s-%012d.txt"
-	dictTampThreshholdEntries = 5000000
-	dictOutputThreshhold      = 8000000
-	lowScore                  = 5 // TODO instead of magic constant, could compute histogram in persist()
+	dictTampThreshholdEntries = 160000
+	// counter.d when my PC hit 40% mem full:  27946126
+	dictOutputThreshhold = 10000000
 )
 
 var (
@@ -158,11 +158,8 @@ func (c *counter) tamp() {
 // persist writes out contents to a file.
 func (c counter) persist(outPath string) {
 	log.Printf(" PERSIST %v", outPath)
-	if len(c.d) > 5000000 {
-		log.Printf("   SORT...")
-	}
 	sortMe := map[uint64]([]string){}
-  sortableScores := []string{}
+	sortableScores := []string{}
 	maxScore := uint64(0)
 	for phrase, score := range c.d {
 		if score > maxScore {
@@ -170,12 +167,9 @@ func (c counter) persist(outPath string) {
 		}
 		if sortMe[score] == nil {
 			sortMe[score] = []string{}
-      sortableScores = append(sortableScores, fmt.Sprintf("% 20d", score))
+			sortableScores = append(sortableScores, fmt.Sprintf("% 20d", score))
 		}
 		sortMe[score] = append(sortMe[score], phrase)
-	}
-	if len(c.d) > 5000000 {
-		log.Printf("   BIG SORT DONE SIZE=%v", len(c.d))
 	}
 	os.MkdirAll(filepath.Dir(outPath), 0776)
 	outF, err := os.Create(outPath)
@@ -184,12 +178,12 @@ func (c counter) persist(outPath string) {
 	}
 	writtenCount := 0
 	lastSync := 0
-  sort.Sort(sort.Reverse(sort.StringSlice(sortableScores)))
-  for _, scoreS := range sortableScores {
-    score, err := strconv.ParseUint(strings.TrimSpace(scoreS), 10, 64)
-    if err != nil {
-      log.Fatalf("couldn't parse a score %s %v", scoreS, err)
-    }
+	sort.Sort(sort.Reverse(sort.StringSlice(sortableScores)))
+	for _, scoreS := range sortableScores {
+		score, err := strconv.ParseUint(strings.TrimSpace(scoreS), 10, 64)
+		if err != nil {
+			log.Fatalf("couldn't parse a score %s %v", scoreS, err)
+		}
 		sort.Sort(sort.StringSlice(sortMe[score]))
 		for _, phrase := range sortMe[score] {
 			outF.WriteString(fmt.Sprintf("%d\t%s\n", score, phrase))
@@ -203,7 +197,7 @@ func (c counter) persist(outPath string) {
 			outF.Sync()
 			lastSync = writtenCount
 		}
-  }
+	}
 	outF.Close()
 }
 
@@ -232,9 +226,9 @@ func tokenize(snippet string) (tokens []string) {
 
 // Given mediawiki blob, ingestWikiPage boosts score of found phrases.
 func ingestWikiPage(page string, co *counter) {
+	found := new(counter)
 	page = strings.ToLower(page)
 	textModeP := false // are we in the page's <text> element?
-	found := new(counter)
 	title := ""
 	for _, line := range strings.Split(page, "\n") {
 		if !textModeP {
@@ -253,6 +247,8 @@ func ingestWikiPage(page string, co *counter) {
 					return
 				}
 				title = titleREMatch[1]
+				line2snippetsPastBrackets(title, found)
+				line2snippetsPastBrackets(title, found)
 				line2snippetsPastBrackets(title, found)
 				line2snippetsPastBrackets(title, found)
 				continue
@@ -275,7 +271,14 @@ func ingestWikiPage(page string, co *counter) {
 			line2snippets(line, found)
 		}
 	}
-	tallySnippets(co, *found)
+	interestingP := strings.Contains(page, "puzzle") || strings.Contains(page, "latin-script") || strings.Contains(page, "cipher") || strings.Contains(page, "recreational math") || strings.Contains(page, "hidden messages") || strings.Contains(page, "idiomatic")
+	for snippet, score := range found.d {
+		if interestingP {
+			co.boost(snippet, score*10)
+		} else {
+			co.boost(snippet, score)
+		}
+	}
 }
 
 // helper function for line2snippets.
@@ -423,11 +426,8 @@ func readNgrams(fodderPath, tmpPath string) {
 	inFilePaths, _ := filepath.Glob(filepath.Join(fodderPath, "*-winnowed.gz"))
 	found := counter{}
 	for _, inFilePath := range inFilePaths {
-		shortName := strings.Split(filepath.Base(inFilePath), ".")[0]
-		if strings.Contains(shortName, "-_") {
-			// we ignore _ADJ_, _NOUN_, etc. ngrams, which these "_" files are full of, so...
-			continue
-		}
+		baseName := strings.Split(filepath.Base(inFilePath), ".")[0]
+		shortName := strings.ReplaceAll(baseName, "winnowed", "w")
 		is1gramP := strings.HasPrefix(shortName, "1-")
 		log.Printf("READING %v", inFilePath)
 		fodderF, err := os.Open(inFilePath)
@@ -435,7 +435,7 @@ func readNgrams(fodderPath, tmpPath string) {
 			log.Printf(" OPEN ERR %v", err)
 			continue
 		}
-    defer fodderF.Close()
+		defer fodderF.Close()
 		gUnzipper, err := gzip.NewReader(fodderF)
 		if err != nil {
 			log.Fatalf("GZip reader has a sad: %v", err)
@@ -478,61 +478,47 @@ func readNgrams(fodderPath, tmpPath string) {
 				if err != nil {
 					continue
 				}
-				if volume_count > years_ago {
-					// capital letters are a (weak) indicator of quality.
-					// "The United States of America" is better puzzle-fodder than
-					// "and it can be expressed".
-					frags := strings.Split(ngram, ".")
-					for _, frag := range frags {
-						if (!is1gramP) && (len(tokenize(frag)) < 2) {
-							continue
+
+				// capital letters are a (weak) indicator of quality.
+				// "The United States of America" is better puzzle-fodder than
+				// "and it can be expressed".
+				frags := strings.Split(ngram, ".")
+				for _, frag := range frags {
+					if (!is1gramP) && (len(tokenize(frag)) < 2) {
+						continue
+					}
+					capitalCount := 0.0
+					for _, r := range frag {
+						if unicode.IsUpper(r) {
+							capitalCount += 1.0
 						}
-						capitalCount := 0.0
-						for _, r := range frag {
-							if unicode.IsUpper(r) {
-								capitalCount += 1.0
-							}
-						}
-						score := (3.0 + capitalCount) * math.Sqrt(math.Sqrt(float64(match_count))+float64(volume_count)) / float64(years_ago+1)
-						if score >= 1.0 {
-							found.boost(frag, uint64(score))
-						}
+					}
+					score := (3.0 + capitalCount) * math.Sqrt(math.Sqrt(float64(match_count))+float64(volume_count)) / float64(years_ago+1)
+					if score >= 1.0 {
+						found.boost(frag, uint64(score))
 					}
 				}
 			}
 		}
 		gUnzipper.Close()
 		fodderF.Close()
+		// If we're filling up enough such that we consider tamping,
+		// tamp, write out what we have, and reset the counter.
 		if len(found.d) > dictTampThreshholdEntries {
-			for snippet, score := range found.d {
-				words := strings.Split(snippet, " ")
-				if ngramBadStarts[words[0]] || ngramBadEnds[words[len(words)-1]] {
-					delete(found.d, snippet)
-					if score > 0 {
-						for len(words) > 1 && ngramBadStarts[words[0]] {
-							words = words[1:]
-						}
-						for len(words) > 1 && ngramBadEnds[words[len(words)-1]] {
-							words = words[:len(words)-1]
-						}
-						if len(words) > 1 {
-							subSnippet := strings.Join(words, " ")
-							found.boost(subSnippet, score)
-						}
-					}
-				}
-			}
 			tally := counter{}
 			tallySnippets(&tally, found)
+			tally.tamp()
 			tallyPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, shortName, lineCount))
 			tally.persist(tallyPath)
 			found = counter{}
 		}
 	}
-	tally := counter{}
-	tallySnippets(&tally, found)
-	tallyPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, "googlebooks-eng-all-DONE-winnowed", lineCount))
-	tally.persist(tallyPath)
+	if len(found.d) > 0 {
+		tally := counter{}
+		tallySnippets(&tally, found)
+		tallyPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, "ngrams-DONE", lineCount))
+		tally.persist(tallyPath)
+	}
 }
 
 // readTextFiles reads data from text files, write it to tmp files.
@@ -546,7 +532,7 @@ func readTextFiles(fodderPath, tmpPath string) {
 		if err != nil {
 			log.Fatalf("couldn't open txt file %s %v", inFilePath, err)
 		}
-    defer fodderF.Close()
+		defer fodderF.Close()
 		found := counter{}
 		fodderScan := bufio.NewScanner(fodderF)
 		para := ""
@@ -578,11 +564,23 @@ func readTextFiles(fodderPath, tmpPath string) {
 				para = para + " " + line
 				found.inc(para)
 				if strings.Contains(para, ".") {
-					for _, sentence := range strings.Split(para, ".") {
+					for _, sentence := range strings.Split(para, ". ") {
 						sentence = strings.TrimSpace(sentence)
 						if strings.Contains(sentence, " ") {
 							found.inc(sentence)
 						}
+					}
+					// If we're filling up enough such that we consider tamping,
+					// write out what we have, and reset the counter.
+					// (Don't actually tamp, tho; that would remove all unique sentences,
+					// i.e., most sentences.)
+					if len(found.d) > dictTampThreshholdEntries {
+						tally := counter{}
+						tallySnippets(&tally, found)
+						tally.tamp()
+						tallyPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, shortName, paraCount))
+						tally.persist(tallyPath)
+						found = counter{}
 					}
 				}
 				para = ""
@@ -616,7 +614,7 @@ func readXWdLists(fodderPath, tmpPath string) {
 		if err != nil {
 			log.Fatalf("couldn't open txt file %s %v", inFilePath, err)
 		}
-    defer fodderF.Close()
+		defer fodderF.Close()
 		found := counter{}
 		fodderScan := bufio.NewScanner(fodderF)
 		for {
@@ -643,19 +641,19 @@ func readXWdLists(fodderPath, tmpPath string) {
 			if score > 100 {
 				score = 100
 			}
-			// Sometimes these lists leave out spaces. E.g.,
+			// Often these lists leave out spaces. E.g.,
 			// you'll see "THEPINKPANTHER" instead of "the pink panther".
 			// Alas, we don't have a great way to detect this and
 			// could thus think there's a word "thepinkpanther".
 			// So fake it: if we see a long "word" with no spaces,
 			// don't boost its score so much:
-			if len(phrase) > 5 && !strings.Contains(phrase, " ") {
-				score /= len(phrase)
+			if !strings.Contains(phrase, " ") {
+				score /= len(phrase) + 2
 			}
-			if score < 10 {
+			if score < 5 {
 				continue
 			}
-			found.boost(phrase, uint64(score*score*score*score*2000))
+			found.boost(phrase, uint64(score*score*score/100))
 		}
 		tallySnippets(&tally, found)
 		tallyPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, "XwdLs-"+shortName, 0))
@@ -665,42 +663,44 @@ func readXWdLists(fodderPath, tmpPath string) {
 
 func readPrebaked(fodderPath, tmpPath string) {
 	inFilePaths, _ := filepath.Glob(filepath.Join(fodderPath, "*.txt"))
-  fileCount := 0
+	fileCount := 0
 	for _, inPath := range inFilePaths {
-    fileCount += 1
+		log.Printf("READING %v", inPath)
+		fileCount += 1
 		nickName := strings.Split(filepath.Base(inPath), ".")[0]
 		outPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, nickName, fileCount))
-    inF, err := os.Open(inPath)
+		inF, err := os.Open(inPath)
 		if err != nil {
 			log.Fatalf("couldn't open prebaked file %s %v", inPath, err)
 		}
-    defer inF.Close()
-    os.MkdirAll(filepath.Dir(outPath), 0776)
-    outF, err := os.Create(outPath)
-    if err != nil {
-      log.Fatalf("couldn't open tmp file %v %v", outPath, err)
-    }
-    defer outF.Close()
-    scan := bufio.NewScanner(inF)
-    lineRE := regexp.MustCompile(`(\d+)\t(.*)`)
-    for {
+		defer inF.Close()
+		log.Printf("PERSISTING %v", outPath)
+		os.MkdirAll(filepath.Dir(outPath), 0776)
+		outF, err := os.Create(outPath)
+		if err != nil {
+			log.Fatalf("couldn't open tmp file %v %v", outPath, err)
+		}
+		defer outF.Close()
+		scan := bufio.NewScanner(inF)
+		lineRE := regexp.MustCompile(`(\d+)\t(.*)`)
+		for {
 			if fileNotDone := scan.Scan(); !fileNotDone {
 				break
 			}
 			line := scan.Text()
-      match := lineRE.FindStringSubmatch(line)
+			match := lineRE.FindStringSubmatch(line)
 			if match == nil {
 				log.Fatal("weird prebaked file line %s %s", inPath, line)
 			}
-      sqrtScore, err := strconv.Atoi(match[1])
+			sqrtScore, err := strconv.Atoi(match[1])
 			if err != nil {
 				log.Fatal("weird prebaked file line (non-int score?) %s %s", inPath, line)
 			}
-      score := uint64(math.Pow(float64(sqrtScore), 2))
-      phrase := match[2]
-      outF.WriteString(fmt.Sprintf("%d\t%s\n", score, phrase))
-    }
-  }
+			score := uint64(math.Pow(float64(sqrtScore), 2))
+			phrase := match[2]
+			outF.WriteString(fmt.Sprintf("%d\t%s\n", score, phrase))
+		}
+	}
 }
 
 // readWikis reads data from wikis, write it to tmp files.
@@ -715,9 +715,8 @@ func readWikis(fodderPath, tmpPath string) {
 		if err != nil {
 			log.Fatalf("couldn't open wiki file %s %v", inFilePath, err)
 		}
-    defer fodderF.Close()
+		defer fodderF.Close()
 		var co *counter = new(counter)
-		tampCount := 0
 		fodderScan := bufio.NewScanner(fodderF)
 		page := ""
 		for {
@@ -733,17 +732,14 @@ func readWikis(fodderPath, tmpPath string) {
 			}
 			if strings.HasPrefix(line, "  </page>") {
 				ingestWikiPage(page, co)
-				if tampCount < 8 && len(co.d) > dictTampThreshholdEntries {
-					tampCount += 1
-					log.Printf(" TAMP %d", tampCount)
-					co.tamp()
-				}
+				// if full, rotate out...
 				if len(co.d) > dictTampThreshholdEntries {
-					// if STILL full, rotate out...
+					tally := counter{}
+					tallySnippets(&tally, *co)
+					tally.tamp()
 					tallyPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, wikiName, pageCount))
-					co.persist(tallyPath)
+					tally.persist(tallyPath)
 					co = new(counter)
-					tampCount = 0
 				}
 				continue
 			}
@@ -754,8 +750,10 @@ func readWikis(fodderPath, tmpPath string) {
 			}
 		}
 		fodderF.Close()
+		tally := counter{}
+		tallySnippets(&tally, *co)
 		tallyPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, wikiName, pageCount))
-		co.persist(tallyPath)
+		tally.persist(tallyPath)
 	}
 }
 
@@ -773,14 +771,14 @@ func Reduce(tmpPath string, outPath string) {
 	//
 	// If we try to pick up ALL the entries, we fill up our memory with
 	// uncommon phrases. Instead, two passes
-	//   first: count everything w/count >15
-	//   second: for items w/ count <=15, "boost" things we saw in 1st pass
+	//   first: count everything w/count >8
+	//   second: for items w/ count <=8, "boost" things we saw in 1st pass
 	//
 	// No, this isn't super-rigorous; it leaves out some things. But those
 	// things mmmostly wouldn't appear in the first 1M phrases, so good enough
 	// for our purposes.
 
-	magicNumber := 15
+	magicNumber := 6
 
 	// First pass
 	for _, tmpFilename := range tmpFilenames {
@@ -789,7 +787,7 @@ func Reduce(tmpPath string, outPath string) {
 		if err != nil {
 			log.Fatalf("couldn't open tmp file %s %v", tmpFilename, err)
 		}
-    defer tmpF.Close()
+		defer tmpF.Close()
 		scan := bufio.NewScanner(tmpF)
 		for {
 			fileNotDone := scan.Scan()
@@ -811,6 +809,16 @@ func Reduce(tmpPath string, outPath string) {
 			phrase := match[2]
 			bigCounter.boost(phrase, uint64(math.Sqrt(float64(score))))
 		}
+		if len(bigCounter.d) > 2*dictOutputThreshhold {
+			magicNumber = (magicNumber * 11 / 10) + 1
+			log.Printf("BIGCOUNTER TOO BIG. BOOSTING THRESHOLD TO %d", magicNumber)
+			delThresh := uint64(math.Sqrt(float64(magicNumber)))
+			for s, score := range bigCounter.d {
+				if score <= uint64(delThresh) {
+					delete(bigCounter.d, s)
+				}
+			}
+		}
 		tmpF.Close()
 	}
 	// Second pass
@@ -820,7 +828,7 @@ func Reduce(tmpPath string, outPath string) {
 		if err != nil {
 			log.Fatalf("couldn't open tmp file %s %v", tmpFilename, err)
 		}
-    defer tmpF.Close()
+		defer tmpF.Close()
 		scan := bufio.NewScanner(tmpF)
 		for {
 			if fileNotDone := scan.Scan(); !fileNotDone {
@@ -845,18 +853,6 @@ func Reduce(tmpPath string, outPath string) {
 			}
 		}
 		tmpF.Close()
-	}
-	if len(bigCounter.d) > dictOutputThreshhold {
-		// Probably our bigCounter is chock-full of stuff and the machine is straining
-		// under the load. Delete low-score entries so that we don't waste time
-		// sorting them and such.
-		log.Printf(" LEN(bigCounter.d)=%v BEFORE lowScore PURGE", len(bigCounter.d))
-		for phrase, score := range bigCounter.d {
-			if score <= lowScore {
-				delete(bigCounter.d, phrase)
-			}
-		}
-		log.Printf(" LEN(bigCounter.d)=%v AFTER lowScore PURGE", len(bigCounter.d))
 	}
 	bigCounter.persist(outPath)
 }
