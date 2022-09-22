@@ -6,6 +6,9 @@ import (
 	"compress/gzip"
 	"flag"
 	"fmt"
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 	"log"
 	"math"
 	"os"
@@ -352,6 +355,26 @@ func tallySnippets(tally *counter, found counter) {
 				tally.boost(key, score)
 				if len(key) > 35 {
 					break
+				}
+			}
+		}
+		// Some puzzles spell it Beyoncé, others spell it Beyonce.
+		// If we're tallying Beyoncé with score 100, also tally
+		// Beyonce with 50, maybe handy if puzzle author spelled it that way
+		// (but maybe misleading when we're making our own puzzles, hmmm)
+		if score > 1 {
+			accentRemover := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
+			accentless, _, err := transform.String(accentRemover, snippet)
+			if err == nil && accentless != snippet {
+				tokens = tokenize(accentless)
+				for startIx, _ := range tokens {
+					for endIx := startIx + 1; endIx <= len(tokens); endIx += 1 {
+						key := strings.Join(tokens[startIx:endIx], " ")
+						tally.boost(key, score/2)
+						if len(key) > 35 {
+							break
+						}
+					}
 				}
 			}
 		}
