@@ -84,6 +84,7 @@ def normalize(s):
     for c in s:
         c = c.lower()
         if c == "'": continue
+        if c == "&": retval += "and"
         if c.isspace() or c == "-":
             if retval[-1] == " ": continue
             retval += " "
