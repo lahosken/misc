@@ -1,7 +1,8 @@
 # rank_imdb.py
 
 This script crunches IMDB data to generate lists of well-known movies, TV shows,
-and people. It generates a couple of crossword-dictionary text files.
+and people. It generates a text file listing several titles and names along
+with ratings; this is suitable for use as a Phraser "prebaked" file.
 
 To use it, grab some data exported from IMDB. This data is documented
 at https://www.imdb.com/interfaces/ . You won't need all of the files listed
