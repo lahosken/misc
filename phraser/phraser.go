@@ -163,11 +163,7 @@ func (c counter) persist(outPath string) {
 	log.Printf(" PERSIST %v", outPath)
 	sortMe := map[uint64]([]string){}
 	sortableScores := []string{}
-	maxScore := uint64(0)
 	for phrase, score := range c.d {
-		if score > maxScore {
-			maxScore = score
-		}
 		if sortMe[score] == nil {
 			sortMe[score] = []string{}
 			sortableScores = append(sortableScores, fmt.Sprintf("% 20d", score))
@@ -250,10 +246,11 @@ func ingestWikiPage(page string, co *counter) {
 					return
 				}
 				title = titleREMatch[1]
-				line2snippetsPastBrackets(title, found)
-				line2snippetsPastBrackets(title, found)
-				line2snippetsPastBrackets(title, found)
-				line2snippetsPastBrackets(title, found)
+				counter10x := counter{}
+				line2snippetsPastBrackets(title, &counter10x)
+				for s, score := range counter10x.d {
+					found.boost(s, 10*score)
+				}
 				continue
 			}
 			if textREMatch := textRE.FindStringSubmatch(line); textREMatch != nil {
@@ -289,6 +286,7 @@ func line2snippetsPastBrackets(line string, snippets *counter) {
 	for _, deleteMeRE := range deleteMeREs {
 		line = deleteMeRE.ReplaceAllString(line, "")
 	}
+	line = strings.Replace(line, " &amp; ", " and ", -1)
 	if cur2REMatches := cur2RE.FindAllStringSubmatch(line, -1); cur2REMatches != nil {
 		for _, cur2REMatch := range cur2REMatches {
 			pipeFields := strings.Split(cur2REMatch[1], "|")
@@ -407,10 +405,12 @@ func line2snippets(line string, snippets *counter) {
 				//   Mahatma Gandhi
 				//   Gandhi
 				//   in 1901, Gandhi stopped in Maritius
-				line2snippetsPastBrackets(pipeFields[0], snippets)
-				// count "Gandhi" double; it's how folks really refer to it
-				line2snippetsPastBrackets(pipeFields[1], snippets)
-				line2snippetsPastBrackets(pipeFields[1], snippets)
+				counter5x := counter{}
+				line2snippetsPastBrackets(pipeFields[0], &counter5x)
+				line2snippetsPastBrackets(pipeFields[1], &counter5x)
+				for s, score := range counter5x.d {
+					snippets.boost(s, 5*score)
+				}
 				// continue, getting the anchor text in context
 				line = strings.Replace(line, bra2REMatch[0], pipeFields[1], 1)
 			} else if len(pipeFields) == 1 {
@@ -419,9 +419,12 @@ func line2snippets(line string, snippets *counter) {
 				//   Indira Gandhi
 				//   prime minister Indira Gandhi of India
 				// count the link triple
-				line2snippetsPastBrackets(pipeFields[0], snippets)
-				line2snippetsPastBrackets(pipeFields[0], snippets)
-				line2snippetsPastBrackets(pipeFields[0], snippets)
+				counter10x := counter{}
+				line2snippetsPastBrackets(pipeFields[0], &counter10x)
+				for s, score := range counter10x.d {
+					snippets.boost(s, 10*score)
+				}
+
 				// continuing, getting anchor text in context
 				line = strings.Replace(line, bra2REMatch[0], pipeFields[0], 1)
 			} else {
@@ -627,18 +630,41 @@ func readTextFiles(fodderPath, tmpPath string) {
 	}
 }
 
-func readXWdLists(fodderPath, tmpPath string) {
-	inFilePaths, _ := filepath.Glob(filepath.Join(fodderPath, "*t"))
+func readXWdLists(fodderPath, tmpPath string, bigCounter *counter) {
+	spacified := map[string]string{}
+	phrasesByScore := map[uint64]([]string){}
+	sortableScores := []string{}
+	for phrase, score := range bigCounter.d {
+		if phrasesByScore[score] == nil {
+			phrasesByScore[score] = []string{}
+			sortableScores = append(sortableScores, fmt.Sprintf("% 20d", score))
+		}
+		phrasesByScore[score] = append(phrasesByScore[score], phrase)
+	}
+	sort.Sort(sort.Reverse(sort.StringSlice(sortableScores)))
+	for _, scoreS := range sortableScores {
+		score, err := strconv.ParseUint(strings.TrimSpace(scoreS), 10, 64)
+		if err != nil {
+			log.Fatalf("couldn't parse a score %s %v", scoreS, err)
+		}
+		for _, phrase := range phrasesByScore[score] {
+			spaceless := strings.Replace(phrase, " ", "", -1)
+			_, already := spacified[spaceless]
+			if !already {
+				spacified[spaceless] = phrase
+			}
+		}
+	}
+
+	inFilePaths, _ := filepath.Glob(filepath.Join(fodderPath, "*.dict"))
+	unfoundCounter := counter{}
 	for _, inFilePath := range inFilePaths {
-		tally := counter{}
-		shortName := strings.Split(filepath.Base(inFilePath), ".")[0]
 		log.Printf("READING %v", inFilePath)
 		fodderF, err := os.Open(inFilePath)
 		if err != nil {
 			log.Fatalf("couldn't open txt file %s %v", inFilePath, err)
 		}
 		defer fodderF.Close()
-		found := counter{}
 		fodderScan := bufio.NewScanner(fodderF)
 		for {
 			fileNotDone := fodderScan.Scan()
@@ -650,38 +676,30 @@ func readXWdLists(fodderPath, tmpPath string) {
 			if !strings.Contains(line, ";") {
 				continue
 			}
-			phraseAndScore := strings.Split(line, ";")
-			phrase := phraseAndScore[0]
-			phrase = strings.ToLower(phrase)
-			phrase = strings.TrimSpace(phrase)
-			score, err := strconv.Atoi(phraseAndScore[1])
+			spacelessPhraseAndScore := strings.Split(line, ";")
+			spacelessPhrase := spacelessPhraseAndScore[0]
+			spacelessPhrase = strings.ToLower(spacelessPhrase)
+			spacelessPhrase = strings.TrimSpace(spacelessPhrase)
+			score, err := strconv.Atoi(spacelessPhraseAndScore[1])
 			if err != nil {
 				continue
 			}
-			if len(phrase) <= 0 {
-				continue
+			if score < 1 {
+				score = 1
 			}
 			if score > 100 {
 				score = 100
 			}
-			// Often these lists leave out spaces. E.g.,
-			// you'll see "THEPINKPANTHER" instead of "the pink panther".
-			// Alas, we don't have a great way to detect this and
-			// could thus think there's a word "thepinkpanther".
-			// So fake it: if we see a long "word" with no spaces,
-			// don't boost its score so much:
-			if !strings.Contains(phrase, " ") {
-				score /= len(phrase) + 2
+			phrase, present := spacified[spacelessPhrase]
+			if present {
+				bigCounter.boost(phrase, uint64(score))
+			} else {
+				unfoundCounter.boost(spacelessPhrase, uint64(score))
 			}
-			if score < 5 {
-				continue
-			}
-			found.boost(phrase, uint64(score*score*score/100))
 		}
-		tallySnippets(&tally, found)
-		tallyPath := filepath.Join(tmpPath, fmt.Sprintf(tmpFilenameFormat, "XwdLs-"+shortName, 0))
-		tally.persist(tallyPath)
 	}
+	unfoundTallyPath := filepath.Join(tmpPath, "x-Xwd_Unfound-01.txt")
+	unfoundCounter.persist(unfoundTallyPath)
 }
 
 func readPrebaked(fodderPath, tmpPath string) {
@@ -780,28 +798,38 @@ func readWikis(fodderPath, tmpPath string) {
 	}
 }
 
-// reduce combines the scores we wrote out to temp files
-func Reduce(tmpPath string, outPath string) {
+// combine temp files into a biiiiig counter
+func LoadBig(tmpPath string) (bigCounter *counter) {
+	bigCounter = new(counter)
+
 	tmpFileGlobPattern := regexp.MustCompile(`%.*?d`).ReplaceAllString(tmpFilenameFormat, "*")
 	tmpFilenames, err := filepath.Glob(filepath.Join(tmpPath, tmpFileGlobPattern))
 	if err != nil {
 		log.Fatal("couldn't glob temp files %v", err)
 	}
-	bigCounter := counter{}
-	lineRE := regexp.MustCompile(`(\d+)\t(.*)`)
 
 	// We make two passes.
 	//
 	// If we try to pick up ALL the entries, we fill up our memory with
 	// uncommon phrases. Instead, two passes
-	//   first: count everything w/count >8
-	//   second: for items w/ count <=8, "boost" things we saw in 1st pass
+	//   first: count everything w/count > magicNumber
+	//   second: for items w/ count <=magicNumber, "boost" things we saw in 1st pass
 	//
 	// No, this isn't super-rigorous; it leaves out some things. But those
 	// things mmmostly wouldn't appear in the first 1M phrases, so good enough
 	// for our purposes.
+	//
+	// If we notice we're trying to keep track of too many phrases,
+	// we up the magicNumber so that we raise our standards of what
+	// to track, and track fewer things. BUT we might thus
+	// double-count some things, counting them on both the first pass and
+	// the second if there score is a little above the starting magic number.
+	// Then again, some perturbations in such low-scored words maybe isn't
+	// a big crisis? Anyhow.
 
-	magicNumber := 6
+	magicNumber := 10
+
+	lineRE := regexp.MustCompile(`(\d+)\t(.*)`)
 
 	// First pass
 	for _, tmpFilename := range tmpFilenames {
@@ -877,7 +905,8 @@ func Reduce(tmpPath string, outPath string) {
 		}
 		tmpF.Close()
 	}
-	bigCounter.persist(outPath)
+
+	return bigCounter
 }
 
 func main() {
@@ -901,25 +930,26 @@ func main() {
 			fmt.Sprintf("Phrases_%s.txt", nowPath))
 	}
 	if *tmpPath == "" && *wikiFodderPath == "" && *ngramFodderPath == "" && *txtFodderPath == "" && *prebakedFodderPath == "" && *xwdFodderPath == "" {
-		log.Fatal("none of --wikipath, --ngrampath, --prebakedpath --txtpath, --xwdpath set. No input, nothing to do!")
+		log.Fatal("none of --wikipath, --ngrampath, --prebakedpath --txtpath, --xwdpath, --tmppath set. No input, nothing to do!")
 	}
 	if *tmpPath == "" {
 		*tmpPath = filepath.Join(os.TempDir(), "phraser", nowPath)
-		if *ngramFodderPath != "" {
-			readNgrams(*ngramFodderPath, *tmpPath) // read ngrams, write tmp files
-		}
-		if *prebakedFodderPath != "" {
-			readPrebaked(*prebakedFodderPath, *tmpPath) // read previously-generated files, write tmp files
-		}
-		if *txtFodderPath != "" {
-			readTextFiles(*txtFodderPath, *tmpPath) // read txts, write tmp files
-		}
-		if *wikiFodderPath != "" {
-			readWikis(*wikiFodderPath, *tmpPath) // read wikis, write tmp files
-		}
-		if *xwdFodderPath != "" {
-			readXWdLists(*xwdFodderPath, *tmpPath) // read Xwd word lists, write tmp files
-		}
 	}
-	Reduce(*tmpPath, *outPath) // read tmp files, add up final number
+	if *ngramFodderPath != "" {
+		readNgrams(*ngramFodderPath, *tmpPath) // read ngrams, write tmp files
+	}
+	if *prebakedFodderPath != "" {
+		readPrebaked(*prebakedFodderPath, *tmpPath) // read previously-generated files, write tmp files
+	}
+	if *txtFodderPath != "" {
+		readTextFiles(*txtFodderPath, *tmpPath) // read txts, write tmp files
+	}
+	if *wikiFodderPath != "" {
+		readWikis(*wikiFodderPath, *tmpPath) // read wikis, write tmp files
+	}
+	bigCounter := LoadBig(*tmpPath)
+	if *xwdFodderPath != "" {
+		readXWdLists(*xwdFodderPath, *tmpPath, bigCounter) // read Xwd word lists, write tmp files
+	}
+	bigCounter.persist(*outPath)
 }
