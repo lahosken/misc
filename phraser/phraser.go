@@ -340,13 +340,21 @@ func line2snippetsPastBrackets(line string, snippets *counter) {
 	return
 }
 
-// Given "Electric Boogaloo", boost counts for "electric", "boogaloo", and "electric boogaloo"
+// Given "Electric Boogaloo", boost counts for
+// "electric", "boogaloo", and "electric boogaloo"
 func tallySnippets(tally *counter, found counter) {
 	for snippet, score := range found.d {
 		if score < 1 {
 			continue
 		}
 		tokens := tokenize(snippet)
+		if len(tokens) < 1 {
+			return
+		}
+		key := strings.Join(tokens, " ")
+		if len(key) <= 35 {
+			tally.inc(key)
+		}
 		for startIx, _ := range tokens {
 			for endIx := startIx + 1; endIx <= len(tokens); endIx += 1 {
 				key := strings.Join(tokens[startIx:endIx], " ")
@@ -360,7 +368,7 @@ func tallySnippets(tally *counter, found counter) {
 		// If we're tallying Beyoncé with score 100, also tally
 		// Beyonce with 50, maybe handy if puzzle author spelled it that way
 		// (but maybe misleading when we're making our own puzzles, hmmm)
-		if score > 1 {
+		if score >= 2 {
 			accentRemover := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 			accentless, _, err := transform.String(accentRemover, snippet)
 			if err == nil && accentless != snippet {
@@ -617,7 +625,7 @@ func readTextFiles(fodderPath, tmpPath string) {
 		}
 		fodderF.Close()
 		found.inc(para)
-		boost := uint64((10000 + len(found.d)) / (1000 + len(found.d)))
+		boost := uint64((20000 + len(found.d)) / (1000 + len(found.d)))
 		if boost > 1 {
 			for key, _ := range found.d {
 				found.boost(key, boost)
@@ -665,6 +673,7 @@ func readXWdLists(fodderPath, tmpPath string, bigCounter *counter) {
 			log.Fatalf("couldn't open txt file %s %v", inFilePath, err)
 		}
 		defer fodderF.Close()
+		already := map[string]bool{} // dicts can contain dupes, count just once plz
 		fodderScan := bufio.NewScanner(fodderF)
 		for {
 			fileNotDone := fodderScan.Scan()
@@ -677,9 +686,11 @@ func readXWdLists(fodderPath, tmpPath string, bigCounter *counter) {
 				continue
 			}
 			spacelessPhraseAndScore := strings.Split(line, ";")
-			spacelessPhrase := spacelessPhraseAndScore[0]
-			spacelessPhrase = strings.ToLower(spacelessPhrase)
-			spacelessPhrase = strings.TrimSpace(spacelessPhrase)
+			spacelessPhrase := strings.Join(tokenize(spacelessPhraseAndScore[0]), " ")
+			if already[spacelessPhrase] {
+				continue
+			}
+			already[spacelessPhrase] = true
 			score, err := strconv.Atoi(spacelessPhraseAndScore[1])
 			if err != nil {
 				continue
@@ -690,11 +701,18 @@ func readXWdLists(fodderPath, tmpPath string, bigCounter *counter) {
 			if score > 100 {
 				score = 100
 			}
+			boost := uint64(math.Sqrt(float64(100 * score)))
+			if strings.Contains(spacelessPhrase, " ") {
+				// Most crossword DB answers leave out spaces, but this one
+				// left the spaces in, amazing.
+				bigCounter.boost(spacelessPhrase, boost)
+				continue
+			}
 			phrase, present := spacified[spacelessPhrase]
 			if present {
-				bigCounter.boost(phrase, uint64(score))
+				bigCounter.boost(phrase, boost)
 			} else {
-				unfoundCounter.boost(spacelessPhrase, uint64(score))
+				unfoundCounter.boost(spacelessPhrase, boost)
 			}
 		}
 	}
