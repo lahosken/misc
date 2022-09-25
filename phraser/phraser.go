@@ -237,19 +237,15 @@ func ingestWikiPage(page string, co *counter) {
 				continue
 			}
 			if titleREMatch := titleRE.FindStringSubmatch(line); titleREMatch != nil {
-				// colon signals discardiness: User:, File:, Talk:, Etc:...
-				if strings.Contains(titleREMatch[1], ":") {
-					return
-				}
-				if strings.HasSuffix(titleREMatch[1], "/Gallery") {
-					return
-				}
 				title = titleREMatch[1]
-				counter10x := counter{}
-				line2snippetsPastBrackets(title, &counter10x)
-				for s, score := range counter10x.d {
-					found.boost(s, 10*score)
+				// colon signals discardiness: User:, File:, Talk:, Etc:...
+				if strings.Contains(title, ":") {
+					return
 				}
+				if strings.HasSuffix(title, "/Gallery") {
+					return
+				}
+				found.boost(title, 10)
 				continue
 			}
 			if textREMatch := textRE.FindStringSubmatch(line); textREMatch != nil {
@@ -270,7 +266,7 @@ func ingestWikiPage(page string, co *counter) {
 			line2snippets(line, found)
 		}
 	}
-	interestingP := strings.Contains(page, "puzzle") || strings.Contains(page, "latin-script") || strings.Contains(page, "cipher") || strings.Contains(page, "recreational math") || strings.Contains(page, "hidden messages") || strings.Contains(page, "idiomatic")
+	interestingP := strings.Contains(page, "puzzle") || strings.Contains(page, "latin-script") || strings.Contains(page, "cipher") || strings.Contains(page, "recreational math") || strings.Contains(page, "hidden messages") || strings.Contains(page, "idiomatic") || strings.Contains(page, "simile")
 	for snippet, score := range found.d {
 		if interestingP {
 			co.boost(snippet, score*10)
@@ -348,7 +344,7 @@ func tallySnippets(tally *counter, found counter) {
 		}
 		tokens := tokenize(snippet)
 		if len(tokens) < 1 {
-			return
+			continue
 		}
 		key := strings.Join(tokens, " ")
 		if len(key) <= 35 {
@@ -774,7 +770,7 @@ func readWikis(fodderPath, tmpPath string) {
 			log.Fatalf("couldn't open wiki file %s %v", inFilePath, err)
 		}
 		defer fodderF.Close()
-		var co *counter = new(counter)
+		co := new(counter)
 		fodderScan := bufio.NewScanner(fodderF)
 		page := ""
 		for {
