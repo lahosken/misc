@@ -12,7 +12,6 @@ import (
 	"log"
 	"math"
 	"os"
-	"os/user"
 	"path/filepath"
 	"regexp"
 	"runtime/pprof"
@@ -942,10 +941,7 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 	if *outPath == "" {
-		u, _ := user.Current()
-		*outPath = filepath.Join(
-			u.HomeDir,
-			fmt.Sprintf("Phrases_%s.txt", nowPath))
+		*outPath = fmt.Sprintf("Phrases_%s.txt", nowPath)
 	}
 	if *tmpPath == "" && *wikiFodderPath == "" && *ngramFodderPath == "" && *txtFodderPath == "" && *prebakedFodderPath == "" && *xwdFodderPath == "" {
 		log.Fatal("none of --wikipath, --ngrampath, --prebakedpath --txtpath, --xwdpath, --tmppath set. No input, nothing to do!")
