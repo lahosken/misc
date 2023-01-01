@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="bs/bootstrap.min.css" rel="stylesheet">
+    <script src="builtin/builtin.js"></script>
+    <title>MemeC: Meme Composer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style> @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap'); </style>
+  </head>
+  <body>
+    <div class="container-fluid m-3">
+      <div id=inputtery class="card text-bg-primary mb-3 d-inline-block">
+	<div class="card-body">
+	  <label for=infile>Choose file to upload (or drag something)</label><br>
+	  <input type=file id=infile name=infile
+		 accept="image/png, image/jpeg, image/gif">
+	</div>
+      </div>
+      <div class="m-3 d-inline-block">
+	<label for="builtin" class="form-label">Or choose a built-in image:</label>
+	<input class="form-control" list="builtinOptions" id=builtin placeholder="Type to search...">
+	<datalist id="builtinOptions">
+	</datalist>
+      </div>
+    </div>
+    <div>
+    <div style="max-width: 640px;" class="d-inline-block align-top m-3">
+	<img id=outimg src="builtin/good-guy-greg.png" class="img-fluid">
+    </div>
+    <div style="max-width: 600px;" class="d-inline-block align-top m-3">
+      <form>
+	<div class="mb-3">
+	    <label for=toptext class="form-label">Top Text:</label><br>
+	    <textarea class="form-control" id=toptext rows=3></textarea>
+	</div>
+	<div class="my-3">
+	    <label for=bottomtext class="form-label">Bottom Text:</label><br>
+	    <textarea class="form-control" id=bottomtext rows=3></textarea>
+	</div>
+	<div class="my-3">
+	    <label for=allovertext class="form-label">Allover Text:</label><br>
+	    <textarea class="form-control" id=allovertext rows=7></textarea>
+	</div>
+	<div class="input-group my-3">
+	  <span class="input-group-text">Font:</span>
+	  <input type=number id=fontSize name=fontSize min=12 max=1200 value=100 class="form-control">
+	  <span class="input-group-text mr-3">px</span>
+
+	  <select id=typeface class="form-select" aria-label="Select typeface">
+	    <option selected value="">Default</option>
+	    <option value="'VT323',monospace">VT323</option>
+	    <option value="sans-serif">Sans</option>
+	    <option value="serif">Serif</option>
+	    <option value="monospace">Mono</option>
+	    <option value="cursive">Cursive</option>
+	  </select>
+	  <span class="input-group-text ml-3">Outline:</span>
+	  <select id=outline class="form-select" aria-label="Select outline color">
+	    <option selected value="black">Black</option>
+	    <option value="lime">Lime</option>
+	    <option value="transparent">(None)</option>
+	    <option value="green">Pine</option>
+	    <option value="red">Red</option>
+	    <option value="white">White</option>
+	  </select>
+	  <span class="input-group-text ml-3">Fill:</span>
+	  <select id=fill class="form-select" aria-label="Select fill color">
+	    <option value="black">Black</option>
+	    <option value="lime">Lime</option>
+	    <option value="transparent">(None)</option>
+	    <option value="green">Pine</option>
+	    <option value="red">Red</option>
+	    <option selected value="white">White</option>
+	  </select>
+	</div>
+      </form>
+    </div>
+    </div>
+    <div class="container mt-5 pt-5">
+      <p>MemeC: Meme Composer</p>
+      <p>Want to suggest a new "builtin" image? Want to report a bug?
+	<a href="https://lahosken.san-francisco.ca.us/self/contact/">Here's where to find me</a>.
+      <ul class="list-group">
+      <li class="list-group-item"><a href="https://getbootstrap.com/">UI widgetry Copyright 2011-2022 The Bootstrap Authors</a>
+      <li class="list-group-item"><a href="https://github.com/phoikoi/VT323">VT323 font by Peter Hull</a>
+      </ul>
+    </div>
+    <div id=offscreen style="position: absolute; left: -10000px; top: 0px;">
+      <img id=bkgimg src="builtin/good-guy-greg.png" style="position: absolute;">
+      <canvas id=canv style="position: absolute;"></canvas>
+    </div>
+    <script src="bs/bootstrap.bundle.min.js"></script>
+    <script src="s.js"></script>
+  </body>
+</html>
