@@ -1,4 +1,5 @@
 builtin/*.*
+!builtin/index.html
 !builtin/good-guy-greg.png
 !builtin/squinting-fry-not-sure-if.jpg
 !builtin/globby.py
