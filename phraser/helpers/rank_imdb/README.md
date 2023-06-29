@@ -16,14 +16,13 @@ there, just:
 Gunzip these files to uncompress them.
 
 Run the <tt>rank_imdb.py</tt> script. It expects to find the <tt>*.tsv</tt>
-files in the same directory. It generates two files in the same directory:
+files in the same directory. It generates one fils in the same directory:
 
 + <tt>imdb_names.txt</tt> A crossword-dictionary text file of people-names.
     This file strives to rank crossword clue-able-ness of names. Along with
     entries for "Brad Pitt" it also has "Brad" and "Pitt". The theory is that
     Brad Pitt's fame makes it pretty easy to clue BRAD in a crossword, something
     like "Famous actor: ____ Pitt"
-+ <tt>imdb_titles.txt</tt> A crossword-dictionary text file of titles.
 
 To approximate well-known-ness, the script uses the number of reviews on IMDB.
 As of a couple of days ago when I grabbed my data, the movie
