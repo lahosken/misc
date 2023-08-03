@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>ipuz Xwd testorama</title>
+    <style>
+    </style>
+    <script src="ipuzx.js"></script>
+    <script>
+      var testme = ipuzx.Factory();
+      async function f() {
+	  const testdata_response = await fetch("./thin-walls.ipuz");
+	  const testdata = await testdata_response.json();
+	  console.log(testdata);
+	  testme.data = testdata;
+      }
+      f();
+      window.addEventListener("load", function() {
+	  testme.gridCanvas = document.getElementById("griddy");
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <canvas id=griddy
+	      width=640 height=640>
+      </canvas>
+    </div>
+  </body>
+</html>

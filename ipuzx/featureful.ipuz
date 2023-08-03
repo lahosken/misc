@@ -1,0 +1,1150 @@
+{
+  "showenumerations": false,
+  "notes": "",
+  "puzzle": [
+    [
+      1,
+      2,
+      3,
+      "#",
+      4,
+      5,
+      6,
+      7,
+      "#",
+      8,
+      9,
+      10,
+      11
+    ],
+    [
+      12,
+      ":",
+      {
+        "style": {
+          "shapebg": "circle"
+        },
+        "cell": ":"
+      },
+      13,
+      ":",
+      ":",
+      ":",
+      ":",
+      "#",
+      14,
+      ":",
+      {
+        "style": {
+          "shapebg": "circle"
+        },
+        "cell": ":"
+      },
+      ":"
+    ],
+    [
+      15,
+      ":",
+      ":",
+      ":",
+      ":",
+      ":",
+      ":",
+      ":",
+      "#",
+      16,
+      ":",
+      ":",
+      ":"
+    ],
+    [
+      17,
+      ":",
+      ":",
+      ":",
+      "#",
+      "#",
+      18,
+      ":",
+      19,
+      ":",
+      ":",
+      "#",
+      "#"
+    ],
+    [
+      "#",
+      "#",
+      "#",
+      20,
+      21,
+      22,
+      "#",
+      23,
+      ":",
+      ":",
+      ":",
+      {
+        "style": {
+          "shapebg": "circle"
+        },
+        "cell": 24
+      },
+      "#"
+    ],
+    [
+      25,
+      26,
+      27,
+      ":",
+      ":",
+      ":",
+      28,
+      {
+        "style": {
+          "shapebg": "circle"
+        },
+        "cell": ":"
+      },
+      ":",
+      "#",
+      29,
+      ":",
+      30
+    ],
+    [
+      31,
+      ":",
+      ":",
+      "#",
+      32,
+      ":",
+      ":",
+      ":",
+      ":",
+      "#",
+      33,
+      ":",
+      ":"
+    ],
+    [
+      34,
+      ":",
+      ":",
+      "#",
+      35,
+      ":",
+      ":",
+      ":",
+      ":",
+      36,
+      ":",
+      ":",
+      ":"
+    ],
+    [
+      "#",
+      37,
+      ":",
+      38,
+      ":",
+      ":",
+      "#",
+      39,
+      ":",
+      ":",
+      "#",
+      "#",
+      "#"
+    ],
+    [
+      "#",
+      "#",
+      40,
+      ":",
+      ":",
+      ":",
+      41,
+      "#",
+      "#",
+      42,
+      43,
+      44,
+      45
+    ],
+    [
+      46,
+      47,
+      ":",
+      ":",
+      "#",
+      48,
+      ":",
+      49,
+      50,
+      ":",
+      ":",
+      ":",
+      ":"
+    ],
+    [
+      51,
+      ":",
+      ":",
+      ":",
+      "#",
+      52,
+      ":",
+      ":",
+      {
+        "style": {
+          "shapebg": "circle"
+        },
+        "cell": ":"
+      },
+      ":",
+      ":",
+      ":",
+      ":"
+    ],
+    [
+      53,
+      ":",
+      {
+        "style": {
+          "shapebg": "circle"
+        },
+        "cell": ":"
+      },
+      ":",
+      "#",
+      54,
+      ":",
+      ":",
+      ":",
+      "#",
+      55,
+      ":",
+      ":"
+    ]
+  ],
+  "copyright": "",
+  "intro": "",
+  "version": "http://ipuz.org/v2",
+  "origin": "Crossword Compiler 11.16",
+  "empty": ":",
+  "title": "",
+  "kind": [
+    "http://ipuz.org/crossword#1"
+  ],
+  "clues": {
+    "Across": [
+      {
+        "answer": "SPIN",
+        "number": 1,
+        "clue": "Whirl"
+      },
+      {
+        "number": 4,
+        "clue": "A site for reviews"
+      },
+      {
+        "number": 8,
+        "clue": "Inappropriate city name for a place so bustling"
+      },
+      {
+        "answer": "KATHARINA",
+        "number": 12,
+        "clue": "Movie: The Lost Honour of _________ Blum"
+      },
+      {
+        "number": 14,
+        "clue": "Impressed"
+      },
+      {
+        "answer": "IN THE PAINT",
+        "number": 15,
+        "clue": "Close to the basket"
+      },
+      {
+        "answer": "SET IN",
+        "number": 16,
+        "clue": "___ __ motion"
+      },
+      {
+        "number": 17,
+        "clue": "Nut butter known as &quot;women's gold&quot; in Burkina Faso"
+      },
+      {
+        "number": 18,
+        "clue": "\ud83e\uddde"
+      },
+      {
+        "number": 20,
+        "clue": "<i>I.e.</i>, speaking frankly"
+      },
+      {
+        "number": 23,
+        "clue": "Pigeons make unimpressive ones"
+      },
+      {
+        "number": 25,
+        "clue": "set a higher standard"
+      },
+      {
+        "answer": "PING",
+        "number": 29,
+        "clue": "SONAR noise"
+      },
+      {
+        "number": 31,
+        "clue": "Revolutionary figure (not to be confused with 26-Down)",
+	"references": [
+          {
+            "direction": "Down",
+            "number": "26"
+          }
+	]
+      },
+      {
+        "number": 32,
+        "clue": "In _____ (<i>i.e.</i>, how to make some answers fit into the grid)"
+      },
+      {
+        "number": 33,
+        "clue": "Barely make, with &quot;out&quot;"
+      },
+      {
+        "answer": "PINT",
+        "number": 34,
+        "clue": "\u00bd quart"
+      },
+      {
+        "answer": "HAD A BLAST",
+        "number": 35,
+        "clue": "Enjoyed themself (as a demolitions expert)"
+      },
+      {
+        "number": 37,
+        "clue": "Facilitates"
+      },
+      {
+        "answer": "REIN",
+        "number": 39,
+        "clue": "Horse controller"
+      },
+      {
+        "answer": "LETS IN",
+        "number": 40,
+        "clue": "Accepts"
+      },
+      {
+        "number": 42,
+        "clue": "Castle part"
+      },
+      {
+        "number": 46,
+        "clue": "Legwear for a bagpipe player"
+      },
+      {
+        "answer": "ELIMINATE",
+        "number": 48,
+        "clue": "Remove"
+      },
+      {
+        "answer": "GRINS",
+        "number": 51,
+        "clue": "Smiles like the Cheshire Cat"
+      },
+      {
+        "answer": "REMINGTON",
+        "number": 52,
+        "clue": "Tabulating machine manufacturer _________ Rand"
+      },
+      {
+        "answer": "BEGIN",
+        "number": 53,
+        "clue": "Start"
+      },
+      {
+        "answer": "STINK",
+        "number": 54,
+        "clue": "Smell bad"
+      },
+      {
+        "answer": "INNS",
+        "number": 55,
+        "clue": "Places to overnight"
+      }
+    ],
+    "Down": [
+      {
+        "answer": "SKINS",
+        "number": 1,
+        "clue": "Shirts <i>vs</i> _____"
+      },
+      {
+        "number": 2,
+        "clue": "Trail"
+      },
+      {
+        "answer": "IN THE",
+        "number": 3,
+        "clue": "Stop __ ___ Name of Love"
+      },
+      {
+        "number": 4,
+        "clue": "Mouth, slangily"
+      },
+      {
+        "number": 5,
+        "clue": "Neither EON nor AGE, but rather ___"
+      },
+      {
+        "answer": "LINING",
+        "number": 6,
+        "clue": "Inner coat layer"
+      },
+      {
+        "number": 7,
+        "clue": "Battle like Bell <i>vs</i> Western Union"
+      },
+      {
+        "number": 8,
+        "clue": "Desert haven"
+      },
+      {
+        "answer": "SWEET PEA",
+        "number": 9,
+        "clue": "Flowering vine"
+      },
+      {
+        "number": 10,
+        "clue": "Allow"
+      },
+      {
+        "answer": "ODIN",
+        "number": 11,
+        "clue": "Allfather"
+      },
+      {
+        "number": 13,
+        "clue": "Moor"
+      },
+      {
+        "answer": "NEED BE",
+        "number": 19,
+        "clue": "If required: If ____ __"
+      },
+      {
+        "number": 21,
+        "clue": "Jazz saxophonist Sidney ______"
+      },
+      {
+        "number": 22,
+        "clue": "Serious pests"
+      },
+      {
+        "answer": "SINKS",
+        "number": 24,
+        "clue": "What a leaking boat eventually does"
+      },
+      {
+        "number": 25,
+        "clue": "Ref"
+      },
+      {
+        "answer": "PAINE",
+        "number": 26,
+        "clue": "Revolutionary figure (not to be confused with 31-Across)",
+	"references": [
+          {
+            "direction": "Across",
+            "number": "31"
+          }
+	]
+      },
+      {
+        "answer": "TOTALLING",
+        "number": 27,
+        "clue": "Destroying, as in a car"
+      },
+      {
+        "number": 28,
+        "clue": "Silent assent"
+      },
+      {
+        "number": 30,
+        "clue": "What you need to do to something before you can 42-Across it"
+      },
+      {
+        "answer": "LINKING",
+        "number": 36,
+        "clue": "Connecting"
+      },
+      {
+        "answer": "SETSIN",
+        "number": 38,
+        "clue": "Becomes established"
+      },
+      {
+        "answer": "INLET",
+        "number": 41,
+        "clue": "Coastal feature"
+      },
+      {
+        "continued": [
+          {
+            "direction": "Down",
+            "number": "44"
+          }
+        ],
+        "label": "43/44",
+        "answer": "eat in eton",
+        "number": 43,
+        "clue": "These sound alike: Have take-out at home, Bershire school"
+      },
+      {
+        "number": 45,
+        "clue": "Places for pigs"
+      },
+      {
+        "number": 46,
+        "clue": "Pre-FSB"
+      },
+      {
+        "number": 47,
+        "clue": "Anger"
+      },
+      {
+        "answer": "IM IN",
+        "number": 49,
+        "clue": "Say this in your hacker voice"
+      },
+      {
+        "answer": "MINK",
+        "number": 50,
+        "clue": "Stole material"
+      }
+    ]
+  },
+  "dimensions": {
+    "width": 13,
+    "height": 13
+  },
+  "author": "",
+  "solution": [
+    [
+      {
+        "value": "S",
+        "cell": 1
+      },
+      {
+        "value": "P",
+        "cell": 2
+      },
+      {
+        "value": "IN",
+        "cell": 3
+      },
+      "#",
+      {
+        "value": "Y",
+        "cell": 4
+      },
+      {
+        "value": "E",
+        "cell": 5
+      },
+      {
+        "value": "L",
+        "cell": 6
+      },
+      {
+        "value": "P",
+        "cell": 7
+      },
+      "#",
+      {
+        "value": "O",
+        "cell": 8
+      },
+      {
+        "value": "S",
+        "cell": 9
+      },
+      {
+        "value": "L",
+        "cell": 10
+      },
+      {
+        "value": "O",
+        "cell": 11
+      }
+    ],
+    [
+      {
+        "value": "K",
+        "cell": 12
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      {
+        "value": "H",
+        "cell": 13
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "R",
+        "cell": ":"
+      },
+      {
+        "value": "IN",
+        "cell": ":"
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "A",
+        "cell": 14
+      },
+      {
+        "value": "W",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "D",
+        "cell": ":"
+      }
+    ],
+    [
+      {
+        "value": "IN",
+        "cell": 15
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      {
+        "value": "H",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "P",
+        "cell": ":"
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "IN",
+        "cell": ":"
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "S",
+        "cell": 16
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      {
+        "value": "IN",
+        "cell": ":"
+      }
+    ],
+    [
+      {
+        "value": "S",
+        "cell": 17
+      },
+      {
+        "value": "H",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      "#",
+      "#",
+      {
+        "value": "G",
+        "cell": 18
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "N",
+        "cell": 19
+      },
+      {
+        "value": "I",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      "#",
+      "#"
+    ],
+    [
+      "#",
+      "#",
+      "#",
+      {
+        "value": "T",
+        "cell": 20
+      },
+      {
+        "value": "B",
+        "cell": 21
+      },
+      {
+        "value": "H",
+        "cell": 22
+      },
+      "#",
+      {
+        "value": "N",
+        "cell": 23
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "S",
+        "cell": ":"
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      {
+        "value": "S",
+        "cell": 24
+      },
+      "#"
+    ],
+    [
+      {
+        "value": "U",
+        "cell": 25
+      },
+      {
+        "value": "P",
+        "cell": 26
+      },
+      {
+        "value": "T",
+        "cell": 27
+      },
+      {
+        "value": "H",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "N",
+        "cell": 28
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "P",
+        "cell": 29
+      },
+      {
+        "value": "IN",
+        "cell": ":"
+      },
+      {
+        "value": "G",
+        "cell": 30
+      }
+    ],
+    [
+      {
+        "value": "M",
+        "cell": 31
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "O",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "C",
+        "cell": 32
+      },
+      {
+        "value": "R",
+        "cell": ":"
+      },
+      {
+        "value": "O",
+        "cell": ":"
+      },
+      {
+        "value": "W",
+        "cell": ":"
+      },
+      {
+        "value": "D",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "E",
+        "cell": 33
+      },
+      {
+        "value": "K",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      }
+    ],
+    [
+      {
+        "value": "P",
+        "cell": 34
+      },
+      {
+        "value": "IN",
+        "cell": ":"
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "H",
+        "cell": 35
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "D",
+        "cell": ":"
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "B",
+        "cell": ":"
+      },
+      {
+        "value": "L",
+        "cell": 36
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "S",
+        "cell": ":"
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      }
+    ],
+    [
+      "#",
+      {
+        "value": "E",
+        "cell": 37
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "S",
+        "cell": 38
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "S",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "R",
+        "cell": 39
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "IN",
+        "cell": ":"
+      },
+      "#",
+      "#",
+      "#"
+    ],
+    [
+      "#",
+      "#",
+      {
+        "value": "L",
+        "cell": 40
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      {
+        "value": "S",
+        "cell": ":"
+      },
+      {
+        "value": "IN",
+        "cell": 41
+      },
+      "#",
+      "#",
+      {
+        "value": "K",
+        "cell": 42
+      },
+      {
+        "value": "E",
+        "cell": 43
+      },
+      {
+        "value": "E",
+        "cell": 44
+      },
+      {
+        "value": "P",
+        "cell": 45
+      }
+    ],
+    [
+      {
+        "value": "K",
+        "cell": 46
+      },
+      {
+        "value": "I",
+        "cell": 47
+      },
+      {
+        "value": "L",
+        "cell": ":"
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "E",
+        "cell": 48
+      },
+      {
+        "value": "L",
+        "cell": ":"
+      },
+      {
+        "value": "I",
+        "cell": 49
+      },
+      {
+        "value": "M",
+        "cell": 50
+      },
+      {
+        "value": "IN",
+        "cell": ":"
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      }
+    ],
+    [
+      {
+        "value": "G",
+        "cell": 51
+      },
+      {
+        "value": "R",
+        "cell": ":"
+      },
+      {
+        "value": "IN",
+        "cell": ":"
+      },
+      {
+        "value": "S",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "R",
+        "cell": 52
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "M",
+        "cell": ":"
+      },
+      {
+        "value": "IN",
+        "cell": ":"
+      },
+      {
+        "value": "G",
+        "cell": ":"
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      {
+        "value": "O",
+        "cell": ":"
+      },
+      {
+        "value": "N",
+        "cell": ":"
+      }
+    ],
+    [
+      {
+        "value": "B",
+        "cell": 53
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "G",
+        "cell": ":"
+      },
+      {
+        "value": "IN",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "S",
+        "cell": 54
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      {
+        "value": "IN",
+        "cell": ":"
+      },
+      {
+        "value": "K",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "IN",
+        "cell": 55
+      },
+      {
+        "value": "N",
+        "cell": ":"
+      },
+      {
+        "value": "S",
+        "cell": ":"
+      }
+    ]
+  ]
+}

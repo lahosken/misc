@@ -1,0 +1,448 @@
+{
+  "showenumerations": false,
+  "notes": "",
+  "puzzle": [
+    [
+      1,
+      2,
+      ":",
+      3,
+      ":",
+      4,
+      5
+    ],
+    [
+      ":",
+      {
+        "style": {
+          "barred": "L"
+        },
+        "cell": 6
+      },
+      {
+        "style": {
+          "barred": "T"
+        },
+        "cell": ":"
+      },
+      ":",
+      "#",
+      ":",
+      {
+        "style": {
+          "barred": "L"
+        },
+        "cell": ":"
+      }
+    ],
+    [
+      ":",
+      {
+        "style": {
+          "barred": "L"
+        },
+        "cell": 7
+      },
+      {
+        "style": {
+          "barred": "T"
+        },
+        "cell": ":"
+      },
+      ":",
+      ":",
+      ":",
+      {
+        "style": {
+          "barred": "L"
+        },
+        "cell": ":"
+      }
+    ],
+    [
+      8,
+      {
+        "style": {
+          "barred": "T"
+        },
+        "cell": ":"
+      },
+      {
+        "style": {
+          "barred": "T"
+        },
+        "cell": ":"
+      },
+      ":",
+      {
+        "style": {
+          "barred": "T"
+        },
+        "cell": ":"
+      },
+      {
+        "style": {
+          "barred": "T"
+        },
+        "cell": ":"
+      },
+      ":"
+    ],
+    [
+      ":",
+      {
+        "style": {
+          "barred": "TL"
+        },
+        "cell": 9
+      },
+      {
+        "style": {
+          "barred": "T"
+        },
+        "cell": ":"
+      },
+      ":",
+      {
+        "style": {
+          "barred": "T"
+        },
+        "cell": ":"
+      },
+      {
+        "style": {
+          "barred": "T"
+        },
+        "cell": 10
+      },
+      {
+        "style": {
+          "barred": "L"
+        },
+        "cell": ":"
+      }
+    ],
+    [
+      ":",
+      {
+        "style": {
+          "barred": "L"
+        },
+        "cell": ":"
+      },
+      "#",
+      11,
+      {
+        "style": {
+          "barred": "T"
+        },
+        "cell": ":"
+      },
+      ":",
+      {
+        "style": {
+          "barred": "L"
+        },
+        "cell": ":"
+      }
+    ],
+    [
+      12,
+      ":",
+      ":",
+      ":",
+      {
+        "style": {
+          "barred": "T"
+        },
+        "cell": ":"
+      },
+      ":",
+      ":"
+    ]
+  ],
+  "copyright": "",
+  "intro": "",
+  "version": "http://ipuz.org/v2",
+  "origin": "Crossword Compiler 11.16",
+  "empty": ":",
+  "title": "",
+  "kind": [
+    "http://ipuz.org/crossword#1"
+  ],
+  "clues": {
+    "Across": [
+      {
+        "number": 1,
+        "clue": "Fast cars except for ends in hoods"
+      },
+      {
+        "number": 6,
+        "clue": "Sadness from ska shifted four"
+      },
+      {
+        "number": 7,
+        "clue": "Sarcastic statement of obviousness consists of silent assent and grunt"
+      },
+      {
+        "answer": "I DABBLE",
+        "number": 8,
+        "clue": "Hobbyist's self-assessment from confused da' bible"
+      },
+      {
+        "number": 9,
+        "clue": "Sword-drawing sound FX from greave armor location good"
+      },
+      {
+        "number": 11,
+        "clue": "Whiskey variety in mercury element"
+      },
+      {
+        "number": 12,
+        "clue": "Nonsense in next few ends plus French article"
+      }
+    ],
+    "Down": [
+      {
+        "number": 1,
+        "clue": "Humid to scrambled video socket"
+      },
+      {
+        "number": 2,
+        "clue": "Have initially one with nothing"
+      },
+      {
+        "answer": "RED BIRD",
+        "number": 3,
+        "clue": "Cardinal in confused right bidder"
+      },
+      {
+        "number": 4,
+        "clue": "Had backwards Morse T"
+      },
+      {
+        "number": 5,
+        "clue": "Gullible masses from church spire swapping high for tall"
+      },
+      {
+        "number": 9,
+        "clue": "Cutting tool was backwards"
+      },
+      {
+        "number": 10,
+        "clue": "Hair product got a leg up"
+      }
+    ]
+  },
+  "dimensions": {
+    "width": 7,
+    "height": 7
+  },
+  "author": "",
+  "solution": [
+    [
+      {
+        "value": "H",
+        "cell": 1
+      },
+      {
+        "value": "O",
+        "cell": 2
+      },
+      {
+        "value": "T",
+        "cell": ":"
+      },
+      {
+        "value": "R",
+        "cell": 3
+      },
+      {
+        "value": "O",
+        "cell": ":"
+      },
+      {
+        "value": "D",
+        "cell": 4
+      },
+      {
+        "value": "S",
+        "cell": 5
+      }
+    ],
+    [
+      {
+        "value": "D",
+        "cell": ":"
+      },
+      {
+        "value": "W",
+        "cell": 6
+      },
+      {
+        "value": "O",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "H",
+        "cell": ":"
+      }
+    ],
+    [
+      {
+        "value": "M",
+        "cell": ":"
+      },
+      {
+        "value": "N",
+        "cell": 7
+      },
+      {
+        "value": "O",
+        "cell": ":"
+      },
+      {
+        "value": "D",
+        "cell": ":"
+      },
+      {
+        "value": "U",
+        "cell": ":"
+      },
+      {
+        "value": "H",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      }
+    ],
+    [
+      {
+        "value": "I",
+        "cell": 8
+      },
+      {
+        "value": "D",
+        "cell": ":"
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "B",
+        "cell": ":"
+      },
+      {
+        "value": "B",
+        "cell": ":"
+      },
+      {
+        "value": "L",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      }
+    ],
+    [
+      {
+        "value": "O",
+        "cell": ":"
+      },
+      {
+        "value": "S",
+        "cell": 9
+      },
+      {
+        "value": "H",
+        "cell": ":"
+      },
+      {
+        "value": "I",
+        "cell": ":"
+      },
+      {
+        "value": "N",
+        "cell": ":"
+      },
+      {
+        "value": "G",
+        "cell": 10
+      },
+      {
+        "value": "P",
+        "cell": ":"
+      }
+    ],
+    [
+      {
+        "value": "U",
+        "cell": ":"
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      "#",
+      {
+        "value": "R",
+        "cell": 11
+      },
+      {
+        "value": "Y",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      },
+      {
+        "value": "L",
+        "cell": ":"
+      }
+    ],
+    [
+      {
+        "value": "T",
+        "cell": 12
+      },
+      {
+        "value": "W",
+        "cell": ":"
+      },
+      {
+        "value": "A",
+        "cell": ":"
+      },
+      {
+        "value": "D",
+        "cell": ":"
+      },
+      {
+        "value": "D",
+        "cell": ":"
+      },
+      {
+        "value": "L",
+        "cell": ":"
+      },
+      {
+        "value": "E",
+        "cell": ":"
+      }
+    ]
+  ]
+}
