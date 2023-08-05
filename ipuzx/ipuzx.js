@@ -4,11 +4,9 @@ var ipuzx = {}
     class Wrangler {
 	constructor() {
 	    this._data = false;
-	    this._gridCanvas = false;
+	    this._grids = [];
 	    this._acrossCluesDiv = false;
 	    this._downCluesDiv = false;
-
-	    this._gridCtx = false; // TODO: why not just make a new context each render?
 
 	    this._ui = {
 		"entry": false,
@@ -19,7 +17,11 @@ var ipuzx = {}
 	    return this._data;
 	}
 	get gridCanvas() {
-	    return this._gridCanvas;
+	    if (this._grids.length) {
+		return this._grids[0].canvas;
+	    } else {
+		return false;
+	    }
 	}
 	set data(d) {
 	    this._data = JSON.parse(JSON.stringify(d));
@@ -133,21 +135,47 @@ var ipuzx = {}
 	    if (downEntries.length) {
 		this._data.downEntries = downEntries;
 	    }
-	    this.renderGrid();
+	    this.renderGrids();
+	}
+	addGridCanvas(c) {
+	    if (!c) { return }
+	    if (!c.hasAttribute('tabindex')) {
+		c.setAttribute('tabindex', 0);
+	    }
+	    var g = {
+		"canvas": c,
+		"ui": {
+		    "selEntry": false,
+		    "focSquare": false,
+		    "direction": "across",
+		}
+	    };
+	    if (this._data.acrossEntries) {
+		g.ui.selEntry = this._data.acrossEntries[0];
+		g.ui.focSquare = {
+		    "row": this._data.acrossEntries[0].startRow,
+		    "col": this._data.acrossEntries[0].startCol,
+		}
+		g.direction = "across";
+	    }
+	    this._grids.push(g);
+	    this.renderGrids();
 	}
 	set gridCanvas(c) {
-	    this._gridCanvas = c;
-	    this._gridCtx = c.getContext('2d');
-	    this.renderGrid();
+	    this._grids = [];
+	    this.addGridCanvas(c)
 	}
-	renderGrid() {
-	    var context = this._gridCtx;
+	renderGrids() {
+	    this._grids.forEach((g) => this.renderGrid(g))
+	}
+	renderGrid(g) {
+	    var context = g.canvas.getContext("2d");
 	    if (!context) { return; }
 	    if (!this._data) { return; }
-	    const sqSz = Math.floor(Math.min(this._gridCanvas.width / this._data.dimensions.width,
-					     this._gridCanvas.height / this._data.dimensions.height))
-	    const xOffset = Math.floor((this._gridCanvas.width - sqSz *  this._data.dimensions.width) / 2)
-	    const yOffset = Math.floor((this._gridCanvas.height - sqSz *  this._data.dimensions.height) / 2)
+	    const sqSz = Math.floor(Math.min(g.canvas.width / this._data.dimensions.width,
+					     g.canvas.height / this._data.dimensions.height))
+	    const xOffset = Math.floor((g.canvas.width - sqSz *  this._data.dimensions.width) / 2)
+	    const yOffset = Math.floor((g.canvas.height - sqSz *  this._data.dimensions.height) / 2)
 	    const blockStr = this._data.block || "#";
 	    const emptyStr = this._data.empty || 0;	    
 	    for (var rowIx = 0; rowIx < this._data.dimensions.height; rowIx++) {
@@ -202,6 +230,8 @@ var ipuzx = {}
 			    context.lineTo(colIx * sqSz + xOffset+sqSz-2, rowIx * sqSz + yOffset);
 			}
 			if (sq.style.barred.includes("B")) {
+			    // TODO: untested, Crossword Compiler only uses "T" and "L", and
+			    //  I created my test xwd in Crossword Compiler
 			    context.moveTo(colIx * sqSz + xOffset+1, rowIx * sqSz + yOffset+sqSz);
 			    context.lineTo(colIx * sqSz + xOffset+sqSz-2, rowIx * sqSz + yOffset+sqSz);
 			}
@@ -210,6 +240,8 @@ var ipuzx = {}
 			    context.lineTo(colIx * sqSz + xOffset, rowIx * sqSz + yOffset+sqSz-2);
 			}
 			if (sq.style.barred.includes("R")) {
+			    // TODO: untested, Crossword Compiler only uses "T" and "L", and
+			    //  I created my test xwd in Crossword Compiler
 			    context.moveTo(colIx * sqSz + xOffset+sqSz, rowIx * sqSz + yOffset+1);
 			    context.lineTo(colIx * sqSz + xOffset+sqSz, rowIx * sqSz + yOffset+sqSz-2);
 			}
