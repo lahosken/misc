@@ -1,17 +1,15 @@
 /* LOL todo */
 var ipuzx = {}
 {
+    // user pressed a key in a grid canvas. 
+    function gridKeyUp(e) {
+    }
     class Wrangler {
 	constructor() {
 	    this._data = false;
 	    this._grids = [];
 	    this._acrossCluesDiv = false;
 	    this._downCluesDiv = false;
-
-	    this._ui = {
-		"entry": false,
-		"focus": false,
-	    }
 	}
 	get data() {
 	    return this._data;
@@ -100,11 +98,6 @@ var ipuzx = {}
 	    }
 	    if (acrossEntries.length) {
 		this._data.acrossEntries = acrossEntries;
-		this._ui.entry = acrossEntries[0];
-		this._ui.focus = {
-		    "row": this._ui.entry.startRow,
-		    "col": this._ui.entry.startCol,
-		}
 	    }
 	    var downEntries = [];
 	    for (var rowIx = 0; rowIx < this._data.puzzle.length-1; rowIx++) {
@@ -135,6 +128,9 @@ var ipuzx = {}
 	    if (downEntries.length) {
 		this._data.downEntries = downEntries;
 	    }
+	    if (acrossEntries.length) {
+		this._grids.forEach((g) => g.ui = this.initUI());
+	    }
 	    this.renderGrids();
 	}
 	addGridCanvas(c) {
@@ -144,20 +140,9 @@ var ipuzx = {}
 	    }
 	    var g = {
 		"canvas": c,
-		"ui": {
-		    "selEntry": false,
-		    "focSquare": false,
-		    "direction": "across",
-		}
+		"ui": this.initUI(),
 	    };
-	    if (this._data.acrossEntries) {
-		g.ui.selEntry = this._data.acrossEntries[0];
-		g.ui.focSquare = {
-		    "row": this._data.acrossEntries[0].startRow,
-		    "col": this._data.acrossEntries[0].startCol,
-		}
-		g.direction = "across";
-	    }
+	    c.addEventListener("keyup", gridKeyUp);
 	    this._grids.push(g);
 	    this.renderGrids();
 	}
@@ -167,6 +152,31 @@ var ipuzx = {}
 	}
 	renderGrids() {
 	    this._grids.forEach((g) => this.renderGrid(g))
+	}
+	initUI() {
+	    var ui = {
+		"selEntry": false,
+		"focSquare": false,
+		"direction": "across",
+		guess: [],
+	    };
+	    if (this._data.puzzle && this._data.puzzle.length) {
+		for (var rowIx = 0; rowIx < this._data.puzzle.length; rowIx++) {
+		    var row = [];
+		    for (var colIx = 0; colIx < this._data.puzzle[rowIx].length; colIx++) {
+			row.push("");
+		    }
+		    ui.guess.push(row);
+		}
+	    }
+	    if (this._data.acrossEntries && this._data.acrossEntries.length) {
+		ui.selEntry = this._data.acrossEntries[0];
+		ui.focSquare = 	{
+		    "row": ui.selEntry.startRow,
+		    "col": ui.selEntry.startCol,
+		}
+	    }
+	    return ui
 	}
 	renderGrid(g) {
 	    var context = g.canvas.getContext("2d");
@@ -188,16 +198,16 @@ var ipuzx = {}
 		    if (sq.cell != blockStr) {
 			bgFillStyle = "rgb(255, 255, 255)";
 		    }
-		    if (this._ui.entry &&
-			rowIx >= this._ui.entry.startRow &&
-			rowIx <= this._ui.entry.endRow &&
-			colIx >= this._ui.entry.startCol &&
-			colIx <= this._ui.entry.endCol) {
+		    if (g.ui.selEntry &&
+			rowIx >= g.ui.selEntry.startRow &&
+			rowIx <= g.ui.selEntry.endRow &&
+			colIx >= g.ui.selEntry.startCol &&
+			colIx <= g.ui.selEntry.endCol) {
 			bgFillStyle = "rgb(200, 255, 255)";
 		    }
-		    if (this._ui.focus &&
-			rowIx == this._ui.focus.row &&
-			colIx == this._ui.focus.col) {
+		    if (g.ui.focSquare &&
+			rowIx == g.ui.focSquare.row &&
+			colIx == g.ui.focSquare.col) {
 			bgFillStyle = "rgb(200, 255, 200)";
 		    }
 		    context.fillStyle = bgFillStyle;
