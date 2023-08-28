@@ -136,7 +136,13 @@
       ":",
       ":",
       ":",
-      ":",
+      {
+        "style": {
+          "colortext": "0000FF",
+          "color": "00FFFF"
+        },
+        "cell": ":"
+      },
       36,
       ":",
       ":",
@@ -202,7 +208,12 @@
         },
         "cell": ":"
       },
-      ":",
+      {
+        "style": {
+          "color": "00FF00"
+        },
+        "cell": ":"
+      },
       ":",
       ":",
       ":"
@@ -299,12 +310,12 @@
       {
         "number": 31,
         "clue": "Revolutionary figure (not to be confused with 26-Down)",
-	"references": [
+        "references": [
           {
             "direction": "Down",
             "number": "26"
           }
-	]
+        ]
       },
       {
         "number": 32,
@@ -457,12 +468,12 @@
         "answer": "PAINE",
         "number": 26,
         "clue": "Revolutionary figure (not to be confused with 31-Across)",
-	"references": [
+        "references": [
           {
             "direction": "Across",
             "number": "31"
           }
-	]
+        ]
       },
       {
         "answer": "TOTALLING",
@@ -896,6 +907,10 @@
       },
       {
         "value": "B",
+        "style": {
+          "colortext": "0000FF",
+          "color": "00FFFF"
+        },
         "cell": ":"
       },
       {

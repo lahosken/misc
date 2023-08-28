@@ -2,7 +2,207 @@
 var ipuzx = {}
 {
     // user pressed a key in a grid canvas. 
-    function gridKeyUp(e) {
+    function gridKeyDown(e) {
+	console.log("this:", this);
+	console.log("event:", e);
+	if (!this._ipuzxGrid.ui.focSquare) { return }
+	if (e.altKey) { return }
+	if (e.ctrlKey) { return }
+	if (e.metaKey) { return }
+	const w = this._ipuzxWrangler;
+	const g = this._ipuzxGrid;
+	var rowIx = g.ui.focSquare.row;
+	var colIx = g.ui.focSquare.col;
+
+	function goOneSquareRight() {
+	    if (!w._data.puzzle[rowIx][colIx].blocked.right) {
+		g.ui.focSquare.col++;
+		colIx = g.ui.focSquare.col;
+		g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
+	    }
+	}
+	function goOneSquareLeft() {
+	    if (!w._data.puzzle[rowIx][colIx].blocked.left) {
+		g.ui.focSquare.col--;
+		colIx = g.ui.focSquare.col;
+		g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
+	    }
+	}
+	function goOneSquareDown() {
+	    if (!w._data.puzzle[rowIx][colIx].blocked.down) {
+		g.ui.focSquare.row++;
+		rowIx = g.ui.focSquare.row;
+		g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
+	    }
+	}
+	function goOneSquareUp() {
+	    if (!w._data.puzzle[rowIx][colIx].blocked.up) {
+		g.ui.focSquare.row--;
+		rowIx = g.ui.focSquare.row;
+		g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
+	    }
+	}
+	function goOneSquare() {
+	    if (g.ui.direction == "across") {
+		goOneSquareRight();
+	    } else {
+		goOneSquareDown();
+	    }
+	}
+	function goOneSquareBack() {
+	    if (g.ui.direction == "across") {
+		goOneSquareLeft();
+	    } else {
+		goOneSquareUp();
+	    }
+	}
+	function findFirstAcrossEntryAfter(excludeEntry, afterRowIx, afterColIx) {
+	    if (arguments.length < 2) {
+		afterRoxIx = -1;
+		afterColIx = -1;
+	    }
+	    for (var rowIx = 0; rowIx < w._data.puzzle.length; rowIx++) {
+		if (rowIx < afterRowIx) { continue }
+		for (var colIx = 0; colIx < w._data.puzzle[rowIx].length; colIx++) {
+		    if (rowIx == afterRowIx && colIx <= afterColIx) { continue }
+		    const rv = w._data.puzzle[rowIx][colIx].acrossEntry;
+		    if (!rv) { continue }
+		    if (rv == excludeEntry) { continue }
+		    return rv
+		}
+	    }
+	    return false
+	}
+	function findFirstDownEntryAfter(excludeEntry, afterRowIx, afterColIx) {
+	    if (arguments.length < 2) {
+		afterRoxIx = -1;
+		afterColIx = -1;
+	    }
+	    for (var rowIx = 0; rowIx < w._data.puzzle.length; rowIx++) {
+		if (rowIx < afterRowIx) { continue }
+		for (var colIx = 0; colIx < w._data.puzzle[rowIx].length; colIx++) {
+		    if (rowIx == afterRowIx && colIx <= afterColIx) { continue }
+		    const rv = w._data.puzzle[rowIx][colIx].downEntry;
+		    if (!rv) { continue }
+		    if (rv == excludeEntry) { continue }
+		    if (rv.startRow != rowIx) { continue }
+		    return rv
+		}
+	    }
+	    return false
+	}
+	
+	const blockStr = w._data.block || "#";
+	if (w._data.puzzle[rowIx][colIx].cell == blockStr) {
+	    return;
+	}
+	switch (e.key) {
+	case "Tab":
+	    if (e.shiftKey) {
+		console.log("TODO back-tab");
+	    } else {
+		var nextEntry = false;
+		if (g.ui.direction == "across") {
+		    if (w._data.puzzle[rowIx][colIx].acrossEntry) {
+			const ae = w._data.puzzle[rowIx][colIx].acrossEntry;
+			nextEntry = findFirstAcrossEntryAfter(ae, ae.startRow, ae.startCol);
+		    } else {
+			nextEntry = findFirstAcrossEntryAfter("no entry", rowIx, colIx);
+		    }
+		    if (!nextEntry) {
+			nextEntry = findFirstDownEntryAfter("no entry");
+		    }
+		    if (!nextEntry) {
+			nextEntry = findFirstAcrossEntryAfter("no entry");
+		    }
+		    if (!nextEntry) { return }
+		} else {
+		    if (w._data.puzzle[rowIx][colIx].downEntry) {
+			const de = w._data.puzzle[rowIx][colIx].downEntry;
+			nextEntry = findFirstDownEntryAfter(de, de.startRow, de.startCol);
+		    } else {
+			nextEntry = findFirstDownEntryAfter("no entry", rowIx, colIx);
+		    }
+		    if (!nextEntry) {
+			nextEntry = findFirstAcrossEntryAfter("no entry");
+		    }
+		    if (!nextEntry) {
+			nextEntry = findFirstDownEntryAfter("no entry");
+		    }
+		    if (!nextEntry) { return }
+		}
+		g.ui.selEntry = nextEntry;
+		g.ui.focSquare.row = nextEntry.startRow;
+		g.ui.focSquare.col = nextEntry.startCol;
+		g.ui.direction = nextEntry.direction;
+	    }
+	    e.preventDefault();
+	    w.renderGrid(g);
+	    return
+	case "Backspace":
+	    g.ui.guess[rowIx][colIx] = "";
+	    goOneSquareBack();
+	    e.preventDefault();
+	    w.renderGrid(g);
+	    return
+	case "Delete":
+	case " ": // spacebar
+	    g.ui.guess[rowIx][colIx] = "";
+	    goOneSquare();
+	    e.preventDefault();
+	    w.renderGrid(g);
+	    return
+	case "ArrowRight":
+	    if (g.ui.direction == "across") {
+		goOneSquareRight();
+	    } else {
+		g.ui.direction = "across";
+		g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
+	    }
+	    w.renderGrid(g);
+	    e.preventDefault();
+	    return
+	case "ArrowLeft":
+	    if (g.ui.direction == "across") {
+		goOneSquareLeft();
+	    } else {
+		g.ui.direction = "across";
+		g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
+	    }
+	    w.renderGrid(g);
+	    e.preventDefault();
+	    return
+	case "ArrowUp":
+	    if (g.ui.direction == "across") {
+		g.ui.direction = "down";
+		g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
+	    } else {
+		goOneSquareUp();
+	    }
+	    e.preventDefault();
+	    w.renderGrid(g);
+	    return
+	case "ArrowDown":
+	    if (g.ui.direction == "across") {
+		g.ui.direction = "down";
+		g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
+	    } else {
+		goOneSquareDown();
+	    }
+	    e.preventDefault();
+	    w.renderGrid(g);
+	    return
+	default:
+	    // fall through
+	}
+	if (e.key.length == 1) {
+	    g.ui.guess[rowIx][colIx] = e.key.toUpperCase();
+	    goOneSquare();
+	    e.preventDefault();
+	    w.renderGrid(g);
+	    return
+	}
+	console.log("tra la la", e.key);
     }
     class Wrangler {
 	constructor() {
@@ -29,7 +229,7 @@ var ipuzx = {}
 	    for (var rowIx = 0; rowIx < this._data.puzzle.length; rowIx++) {
 		for (var colIx = 0; colIx < this._data.puzzle[rowIx].length; colIx++) {
 		    if (typeof({}) == typeof(this._data.puzzle[rowIx][colIx])) { continue }
-		    this._data.puzzle[rowIx][colIx] = { "cell": this._data.puzzle[rowIx][colIx] }
+		    this._data.puzzle[rowIx][colIx] = { cell: this._data.puzzle[rowIx][colIx] }
 		}
 	    }
 	    const blockStr = d.block || "#";
@@ -79,10 +279,10 @@ var ipuzx = {}
 		    if (!this._data.puzzle[rowIx][colIx].blocked.left) { continue }
 		    if (this._data.puzzle[rowIx][colIx].blocked.right) { continue }
 		    var entry = {
-			"dir": "across",
-			"startRow": rowIx,
-			"endRow": rowIx,
-			"startCol": colIx,
+			direction: "across",
+			startRow: rowIx,
+			endRow: rowIx,
+			startCol: colIx,
 		    }
 		    if (this._data.puzzle[rowIx][colIx].cell && this._data.puzzle[rowIx][colIx].cell != emptyStr) {
 			entry.label = String(this._data.puzzle[rowIx][colIx].cell);
@@ -108,10 +308,10 @@ var ipuzx = {}
 		    if (!this._data.puzzle[rowIx][colIx].blocked.up) { continue }
 		    if (this._data.puzzle[rowIx][colIx].blocked.down) { continue }
 		    var entry = {
-			"dir": "down",
-			"startRow": rowIx,
-			"startCol": colIx,
-			"endCol": colIx,
+			dir: "down",
+			startRow: rowIx,
+			startCol: colIx,
+			endCol: colIx,
 		    }
 		    if (this._data.puzzle[rowIx][colIx].cell && this._data.puzzle[rowIx][colIx].cell != emptyStr) {
 			entry.label = String(this._data.puzzle[rowIx][colIx].cell);
@@ -139,10 +339,12 @@ var ipuzx = {}
 		c.setAttribute('tabindex', 0);
 	    }
 	    var g = {
-		"canvas": c,
-		"ui": this.initUI(),
+		canvas: c,
+		ui: this.initUI(),
 	    };
-	    c.addEventListener("keyup", gridKeyUp);
+	    c.addEventListener("keydown", gridKeyDown);
+	    c._ipuzxWrangler = this;
+	    c._ipuzxGrid = g;
 	    this._grids.push(g);
 	    this.renderGrids();
 	}
@@ -155,9 +357,9 @@ var ipuzx = {}
 	}
 	initUI() {
 	    var ui = {
-		"selEntry": false,
-		"focSquare": false,
-		"direction": "across",
+		selEntry: false,
+		focSquare: false,
+		direction: "across",
 		guess: [],
 	    };
 	    if (this._data.puzzle && this._data.puzzle.length) {
@@ -172,8 +374,8 @@ var ipuzx = {}
 	    if (this._data.acrossEntries && this._data.acrossEntries.length) {
 		ui.selEntry = this._data.acrossEntries[0];
 		ui.focSquare = 	{
-		    "row": ui.selEntry.startRow,
-		    "col": ui.selEntry.startCol,
+		    row: ui.selEntry.startRow,
+		    col: ui.selEntry.startCol,
 		}
 	    }
 	    return ui
@@ -191,12 +393,25 @@ var ipuzx = {}
 	    for (var rowIx = 0; rowIx < this._data.dimensions.height; rowIx++) {
 		for (var colIx = 0; colIx < this._data.dimensions.width; colIx++) {
 		    const sq = this._data.puzzle[rowIx][colIx];
+		    var soln = {};
+		    var style = {};
+		    if (sq.style) { style = sq.style; }
+		    if (typeof(sq.style) == typeof("string")) {
+			style =  this._data.styles[sq.style];
+		    }
+
 		    context.beginPath();
-		    context.rect(colIx * sqSz + xOffset , rowIx * sqSz + yOffset, sqSz, sqSz);		    
+		    context.rect(colIx * sqSz + xOffset, rowIx * sqSz + yOffset, sqSz, sqSz);
 		    context.closePath();
 		    var bgFillStyle = "rgb(0, 0, 0)";
+		    if (style.colorbar) {
+			bgFillStyle = "#" + style.colorbar;
+		    }
 		    if (sq.cell != blockStr) {
-			bgFillStyle = "rgb(255, 255, 255)";
+			bgFillStyle = style.color || "rgb(255, 255, 255)";
+			if (style.color) {
+			    bgFillStyle = "#" + style.color;
+			}
 		    }
 		    if (g.ui.selEntry &&
 			rowIx >= g.ui.selEntry.startRow &&
@@ -216,8 +431,8 @@ var ipuzx = {}
 		    context.strokeStyle = "rgb(0, 0, 0)";
 		    context.stroke();
 
-		    if (sq.style && sq.style.shapebg) {
-			if (sq.style.shapebg == "circle") {
+		    if (style && style.shapebg) {
+			if (style.shapebg == "circle") {
 			    context.beginPath();
 			    context.arc((colIx + 0.5) * sqSz + xOffset,
 					(rowIx + 0.5) * sqSz + yOffset,
@@ -229,8 +444,6 @@ var ipuzx = {}
 			}
 		    }
 
-		    // TODO: I haven't tested this at all, realized I didn't have a
-		    // test puzzle with walls instead of block-squares
 		    if (sq.style && sq.style.barred) {
 			context.lineWidth = 3;
 			context.strokeStyle = "rgb(0, 0, 0)";
@@ -259,16 +472,31 @@ var ipuzx = {}
 			context.stroke();
 		    }
 
-		    if (sq.cell != blockStr &&
+		    if (sq.cell &&
+			sq.cell != blockStr &&
 			sq.cell != emptyStr) {
-			context.beginPath();
-			context.rect(colIx * sqSz + xOffset + 2, rowIx * sqSz + yOffset + 2, sqSz/3, sqSz/3);		    
-			context.closePath();
 			context.fillStyle = bgFillStyle;
-			context.fill();
+			context.fillRect(colIx * sqSz + xOffset + 2, rowIx * sqSz + yOffset + 2, sqSz/3, sqSz/3);
 			context.font = "" + Math.floor(sqSz/4) + "px serif";
 			context.fillStyle = "rgb(0, 0, 0)";
 			context.fillText(String(sq.cell), colIx * sqSz + xOffset+2, (rowIx + 0.25) * sqSz + yOffset);
+		    }
+		    if (g.ui.guess[rowIx][colIx]) {
+			const guess = g.ui.guess[rowIx][colIx];
+			context.fillStyle = "rgb(0, 0, 0)";
+			var fontSize = sqSz * 4 / 5;
+			var m = {}
+			while (fontSize > 5) {
+			    fontSize = fontSize * 0.95;
+			    context.font = "" + fontSize + "px sans-serif"
+			    m = context.measureText(String(guess));
+			    if (m.width < sqSz * 4 / 5) { break }
+			}
+			const a = m.actualBoundingBoxAscent;
+			const d = Math.max(0, m.actualBoundingBoxDescent);
+			context.fillText(String(guess),
+					 colIx * sqSz + (sqSz - m.width)/2,
+					 rowIx * sqSz + (sqSz + a -d)/2 + 1);
 		    }
 		}
 	    }
