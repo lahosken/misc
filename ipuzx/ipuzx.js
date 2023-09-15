@@ -2,9 +2,39 @@
 var ipuzx = {}
 {
     // user pressed a key in a grid canvas. 
-    function gridKeyDown(e) {
-	console.log("this:", this);
-	console.log("event:", e);
+    function gridClick(e) {
+	const w = this._ipuzxWrangler;
+	const g = this._ipuzxGrid;
+	const sqSz = Math.floor(Math.min(g.canvas.width / w._data.dimensions.width,
+					 g.canvas.height / w._data.dimensions.height))
+	const xOffset = Math.floor((g.canvas.width - sqSz *  w._data.dimensions.width) / 2)
+	const yOffset = Math.floor((g.canvas.height - sqSz *  w._data.dimensions.height) / 2)
+	const rowIx = Math.floor((e.offsetY - yOffset) / sqSz);
+	const colIx = Math.floor((e.offsetX - xOffset) / sqSz);
+	if (rowIx < 0) { return }
+	if (rowIx >= w._data.puzzle.length) { return }
+	if (colIx < 0) { return }
+	if (colIx >= w._data.puzzle[rowIx].length) { return }
+	if ((rowIx == g.ui.focSquare.row) && (colIx == g.ui.focSquare.col)) {
+	    if (g.ui.direction == "across") {
+		g.ui.direction = "down";
+	    } else {
+		g.ui.direction = "across";
+	    }
+	} else {
+	    g.ui.focSquare = {
+		row: rowIx,
+		col: colIx
+	    }
+	}
+	if (g.ui.direction == "across") {
+	    g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
+	} else {
+	    g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
+	}
+	w.renderGrid(g);
+    }
+    function gridKeyDown(e) {	
 	if (!this._ipuzxGrid.ui.focSquare) { return }
 	if (e.altKey) { return }
 	if (e.ctrlKey) { return }
@@ -15,28 +45,28 @@ var ipuzx = {}
 	var colIx = g.ui.focSquare.col;
 
 	function goOneSquareRight() {
-	    if (!w._data.puzzle[rowIx][colIx].blocked.right) {
+	    if (colIx < w._data.puzzle[rowIx].length-1) {
 		g.ui.focSquare.col++;
 		colIx = g.ui.focSquare.col;
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
 	    }
 	}
 	function goOneSquareLeft() {
-	    if (!w._data.puzzle[rowIx][colIx].blocked.left) {
+	    if (colIx > 0) {
 		g.ui.focSquare.col--;
 		colIx = g.ui.focSquare.col;
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
 	    }
 	}
 	function goOneSquareDown() {
-	    if (!w._data.puzzle[rowIx][colIx].blocked.down) {
+	    if (rowIx < w._data.puzzle.length-1) {
 		g.ui.focSquare.row++;
 		rowIx = g.ui.focSquare.row;
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
 	    }
 	}
 	function goOneSquareUp() {
-	    if (!w._data.puzzle[rowIx][colIx].blocked.up) {
+	    if (rowIx > 0) {
 		g.ui.focSquare.row--;
 		rowIx = g.ui.focSquare.row;
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
@@ -58,7 +88,7 @@ var ipuzx = {}
 	}
 	function findFirstAcrossEntryAfter(excludeEntry, afterRowIx, afterColIx) {
 	    if (arguments.length < 2) {
-		afterRoxIx = -1;
+		afterRowIx = -1;
 		afterColIx = -1;
 	    }
 	    for (var rowIx = 0; rowIx < w._data.puzzle.length; rowIx++) {
@@ -73,15 +103,32 @@ var ipuzx = {}
 	    }
 	    return false
 	}
+	function findLastAcrossEntryBefore(excludeEntry, beforeRowIx, beforeColIx) {
+	    if (arguments.length < 2) {
+		beforeRowIx = w._data.puzzle.length + 69;
+		beforeColIx = w._data.puzzle[0].length + 69;
+	    }
+	    for (var rowIx = w._data.puzzle.length-1; rowIx >= 0; rowIx--) {
+		if (rowIx > beforeRowIx) { continue }
+		for (var colIx = w._data.puzzle[rowIx].length-1; colIx >= 0; colIx--) {
+		    if (rowIx == beforeRowIx && colIx >= beforeColIx) { continue }
+		    const rv = w._data.puzzle[rowIx][colIx].acrossEntry;
+		    if (!rv) { continue }
+		    if (rv == excludeEntry) { continue }
+		    return rv
+		}
+	    }
+	    return false
+	}
 	function findFirstDownEntryAfter(excludeEntry, afterRowIx, afterColIx) {
 	    if (arguments.length < 2) {
-		afterRoxIx = -1;
+		afterRowIx = -1;
 		afterColIx = -1;
 	    }
 	    for (var rowIx = 0; rowIx < w._data.puzzle.length; rowIx++) {
 		if (rowIx < afterRowIx) { continue }
 		for (var colIx = 0; colIx < w._data.puzzle[rowIx].length; colIx++) {
-		    if (rowIx == afterRowIx && colIx <= afterColIx) { continue }
+		    if (rowIx == afterRowIx && colIx < afterColIx) { continue }
 		    const rv = w._data.puzzle[rowIx][colIx].downEntry;
 		    if (!rv) { continue }
 		    if (rv == excludeEntry) { continue }
@@ -91,15 +138,63 @@ var ipuzx = {}
 	    }
 	    return false
 	}
-	
-	const blockStr = w._data.block || "#";
-	if (w._data.puzzle[rowIx][colIx].cell == blockStr) {
-	    return;
+	function findLastDownEntryBefore(excludeEntry, beforeRowIx, beforeColIx) {
+	    if (arguments.length < 2) {
+		beforeRowIx = w._data.puzzle.length + 69;
+		beforeColIx = w._data.puzzle[0].length + 69;
+	    }
+	    for (var rowIx = w._data.puzzle.length-1; rowIx >= 0; rowIx--) {
+		if (rowIx > beforeRowIx) { continue }
+		for (var colIx = w._data.puzzle[rowIx].length-1; colIx >= 0; colIx--) {
+		    if (rowIx == beforeRowIx && colIx > beforeColIx) { continue }
+		    const rv = w._data.puzzle[rowIx][colIx].downEntry;
+		    if (!rv) { continue }
+		    if (rv == excludeEntry) { continue }
+		    if (rv.startRow != rowIx) { continue }
+		    return rv
+		}
+	    }
+	    return false
 	}
+
 	switch (e.key) {
 	case "Tab":
 	    if (e.shiftKey) {
-		console.log("TODO back-tab");
+		var nextEntry = false;
+		if (g.ui.direction == "across") {
+		    if (w._data.puzzle[rowIx][colIx].acrossEntry) {
+			const ae = w._data.puzzle[rowIx][colIx].acrossEntry;
+			nextEntry = findLastAcrossEntryBefore(ae, ae.startRow, ae.startCol);
+		    } else {
+			nextEntry = findLastAcrossEntryBefore("no entry", rowIx, colIx);
+		    }
+		    if (!nextEntry) {
+			nextEntry = findLastDownEntryBefore("no entry");
+		    }
+		    if (!nextEntry) {
+			nextEntry = findLastAcrossBeforeAfter("no entry");
+		    }
+		    if (!nextEntry) { return }
+
+		} else {
+		    if (w._data.puzzle[rowIx][colIx].downEntry) {
+			const de = w._data.puzzle[rowIx][colIx].downEntry;
+			nextEntry = findLastDownEntryBefore(de, de.startRow, de.startCol);
+		    } else {
+			nextEntry = findLastDownEntryBefore("no entry", rowIx, colIx);
+		    }
+		    if (!nextEntry) {
+			nextEntry = findLastAcrossEntryBefore("no entry");
+		    }
+		    if (!nextEntry) {
+			nextEntry = findLastDownEntryBefore("no entry");
+		    }
+		    if (!nextEntry) { return }
+		}
+		g.ui.selEntry = nextEntry;
+		g.ui.focSquare.row = nextEntry.startRow;
+		g.ui.focSquare.col = nextEntry.startCol;
+		g.ui.direction = nextEntry.direction;
 	    } else {
 		var nextEntry = false;
 		if (g.ui.direction == "across") {
@@ -202,7 +297,6 @@ var ipuzx = {}
 	    w.renderGrid(g);
 	    return
 	}
-	console.log("tra la la", e.key);
     }
     class Wrangler {
 	constructor() {
@@ -343,6 +437,7 @@ var ipuzx = {}
 		ui: this.initUI(),
 	    };
 	    c.addEventListener("keydown", gridKeyDown);
+	    c.addEventListener("click", gridClick);
 	    c._ipuzxWrangler = this;
 	    c._ipuzxGrid = g;
 	    this._grids.push(g);
@@ -424,6 +519,9 @@ var ipuzx = {}
 			rowIx == g.ui.focSquare.row &&
 			colIx == g.ui.focSquare.col) {
 			bgFillStyle = "rgb(200, 255, 200)";
+			if (sq.cell == blockStr) {
+			    bgFillStyle = "rgb(27, 200, 27)";
+			}
 		    }
 		    context.fillStyle = bgFillStyle;
 		    context.fill();
