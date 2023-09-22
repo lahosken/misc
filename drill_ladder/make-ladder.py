@@ -162,9 +162,12 @@ def render(chain, outpath):
     f.close()
 
 def main():
+  if len(sys.argv) < 2:
+    print("Usage: ./make-ladder.py text-file-with-one-time-per-line.txt")
+    return
   inpath = sys.argv[-1]
   outpath = inpath.replace(".txt", "").replace(".", "_") + ".html"
-  open("outpath", "a").close()
+  open(outpath, "a").close()
   in_list = load_list(inpath)
   distances = all_distances(in_list)
   chain = chainify(distances)
