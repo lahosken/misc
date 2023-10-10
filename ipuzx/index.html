@@ -11,21 +11,35 @@
       async function f() {
 	  const testdata_response = await fetch("./featureful.ipuz");
 	  const testdata = await testdata_response.json();
-	  console.log(testdata);
 	  testme.data = testdata;
       }
       f();
       window.addEventListener("load", function() {
 	  testme.gridCanvas = document.getElementById("griddy1");
+	  testme.addClues(document.getElementById("acrossclues"),
+			  document.getElementById("downclues"));
+	  testme.titleSpan = document.getElementById("xwdTitle");
+	  testme.rebusButton = document.getElementById("cramBtn");
       });
     </script>
   </head>
-  <body>
-    <div>
+  <body style="position: relative">
+    <div style="width: 60%">
+      <center>
+      <div>
+	<span id=xwdTitle> </span> <button id=cramBtn title="cram many letters in one square"> Cram! </button>
+      </div>
       <canvas id=griddy1
-	      width=640 height=640
+	      width=405 height=405
 	      tabindex=0>
       </canvas>
+      </center>
+      <div style="columns: 2; border: 1px dotted blue" id=downclues>
+	<p><b>Down</b>
+      </div>
+    </div>
+    <div style="position: absolute; left: 65%; top: 0px; border: 1px dotted red" id="acrossclues">
+	<p><b>Across</b>
     </div>
   </body>
 </html>

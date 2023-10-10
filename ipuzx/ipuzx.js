@@ -16,10 +16,10 @@ var ipuzx = {}
 	if (colIx < 0) { return }
 	if (colIx >= w._data.puzzle[rowIx].length) { return }
 	if ((rowIx == g.ui.focSquare.row) && (colIx == g.ui.focSquare.col)) {
-	    if (g.ui.direction == "across") {
-		g.ui.direction = "down";
+	    if (g.ui.direction == "Across") {
+		g.ui.direction = "Down";
 	    } else {
-		g.ui.direction = "across";
+		g.ui.direction = "Across";
 	    }
 	} else {
 	    g.ui.focSquare = {
@@ -27,10 +27,13 @@ var ipuzx = {}
 		col: colIx
 	    }
 	}
-	if (g.ui.direction == "across") {
+	if (g.ui.direction == "Across") {
 	    g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
 	} else {
 	    g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
+	}
+	if (g.ui.selEntry) {
+	    w.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
 	}
 	w.renderGrid(g);
     }
@@ -49,6 +52,9 @@ var ipuzx = {}
 		g.ui.focSquare.col++;
 		colIx = g.ui.focSquare.col;
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
+		if (g.ui.selEntry) {
+		    w.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
+		}
 	    }
 	}
 	function goOneSquareLeft() {
@@ -56,6 +62,9 @@ var ipuzx = {}
 		g.ui.focSquare.col--;
 		colIx = g.ui.focSquare.col;
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
+		if (g.ui.selEntry) {
+		    w.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
+		}
 	    }
 	}
 	function goOneSquareDown() {
@@ -63,6 +72,9 @@ var ipuzx = {}
 		g.ui.focSquare.row++;
 		rowIx = g.ui.focSquare.row;
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
+		if (g.ui.selEntry) {
+		    w.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
+		}
 	    }
 	}
 	function goOneSquareUp() {
@@ -70,17 +82,22 @@ var ipuzx = {}
 		g.ui.focSquare.row--;
 		rowIx = g.ui.focSquare.row;
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
+		if (g.ui.selEntry) {
+		    w.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
+		}
 	    }
 	}
 	function goOneSquare() {
-	    if (g.ui.direction == "across") {
+	    if (g.ui.direction == "Across") {
+		if (w._data.puzzle[rowIx][colIx].blocked.right) { return }
 		goOneSquareRight();
 	    } else {
+		if (w._data.puzzle[rowIx][colIx].blocked.down) { return }
 		goOneSquareDown();
 	    }
 	}
 	function goOneSquareBack() {
-	    if (g.ui.direction == "across") {
+	    if (g.ui.direction == "Across") {
 		goOneSquareLeft();
 	    } else {
 		goOneSquareUp();
@@ -161,7 +178,7 @@ var ipuzx = {}
 	case "Tab":
 	    if (e.shiftKey) {
 		var nextEntry = false;
-		if (g.ui.direction == "across") {
+		if (g.ui.direction == "Across") {
 		    if (w._data.puzzle[rowIx][colIx].acrossEntry) {
 			const ae = w._data.puzzle[rowIx][colIx].acrossEntry;
 			nextEntry = findLastAcrossEntryBefore(ae, ae.startRow, ae.startCol);
@@ -195,9 +212,12 @@ var ipuzx = {}
 		g.ui.focSquare.row = nextEntry.startRow;
 		g.ui.focSquare.col = nextEntry.startCol;
 		g.ui.direction = nextEntry.direction;
+		if (g.ui.selEntry) {
+		    w.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
+		}
 	    } else {
 		var nextEntry = false;
-		if (g.ui.direction == "across") {
+		if (g.ui.direction == "Across") {
 		    if (w._data.puzzle[rowIx][colIx].acrossEntry) {
 			const ae = w._data.puzzle[rowIx][colIx].acrossEntry;
 			nextEntry = findFirstAcrossEntryAfter(ae, ae.startRow, ae.startCol);
@@ -230,47 +250,76 @@ var ipuzx = {}
 		g.ui.focSquare.row = nextEntry.startRow;
 		g.ui.focSquare.col = nextEntry.startCol;
 		g.ui.direction = nextEntry.direction;
+		if (g.ui.selEntry) {
+		    w.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
+		}
 	    }
 	    e.preventDefault();
 	    w.renderGrid(g);
 	    return
 	case "Backspace":
-	    g.ui.guess[rowIx][colIx] = "";
-	    goOneSquareBack();
+	    if (g.ui.rebusModeP) {
+		if (g.ui.guess[rowIx][colIx].length > 0) {
+		    g.ui.guess[rowIx][colIx] = g.ui.guess[rowIx][colIx].substring(0, g.ui.guess[rowIx][colIx].length-1);
+		} else {
+		    // TODO what behavior makes sense here?
+		}
+	    } else {
+		g.ui.guess[rowIx][colIx] = "";
+		goOneSquareBack();
+	    }
 	    e.preventDefault();
 	    w.renderGrid(g);
 	    return
 	case "Delete":
 	case " ": // spacebar
-	    g.ui.guess[rowIx][colIx] = "";
-	    goOneSquare();
+	    if  (g.ui.rebusModeP) {
+		// TODO copy-pasted from backspace, but should space behave this way really?
+		if (g.ui.guess[rowIx][colIx].length > 0) {
+		    g.ui.guess[rowIx][colIx] = g.ui.guess[rowIx][colIx].substring(0, g.ui.guess[rowIx][colIx].length-1);
+		} else {
+		    // TODO what behavior makes sense here?
+		}
+	    } else {
+		g.ui.guess[rowIx][colIx] = "";
+		goOneSquare();
+	    }
 	    e.preventDefault();
 	    w.renderGrid(g);
 	    return
 	case "ArrowRight":
-	    if (g.ui.direction == "across") {
+	    if (g.ui.direction == "Across") {
 		goOneSquareRight();
 	    } else {
-		g.ui.direction = "across";
+		g.ui.direction = "Across";
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
+		if (g.ui.selEntry) {
+		    w.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
+		}
 	    }
 	    w.renderGrid(g);
 	    e.preventDefault();
 	    return
 	case "ArrowLeft":
-	    if (g.ui.direction == "across") {
+	    if (g.ui.direction == "Across") {
 		goOneSquareLeft();
 	    } else {
-		g.ui.direction = "across";
+		g.ui.direction = "Across";
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].acrossEntry;
+		if (g.ui.selEntry) {
+		    w.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
+		}
 	    }
 	    w.renderGrid(g);
 	    e.preventDefault();
 	    return
 	case "ArrowUp":
-	    if (g.ui.direction == "across") {
-		g.ui.direction = "down";
+	    if (g.ui.direction == "Across") {
+		g.ui.direction = "Down";
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
+		if (g.ui.selEntry) {
+		    w.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
+		}
 	    } else {
 		goOneSquareUp();
 	    }
@@ -278,9 +327,12 @@ var ipuzx = {}
 	    w.renderGrid(g);
 	    return
 	case "ArrowDown":
-	    if (g.ui.direction == "across") {
-		g.ui.direction = "down";
+	    if (g.ui.direction == "Across") {
+		g.ui.direction = "Down";
 		g.ui.selEntry = w._data.puzzle[rowIx][colIx].downEntry;
+		if (g.ui.selEntry) {
+		    w.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
+		}
 	    } else {
 		goOneSquareDown();
 	    }
@@ -291,12 +343,63 @@ var ipuzx = {}
 	    // fall through
 	}
 	if (e.key.length == 1) {
-	    g.ui.guess[rowIx][colIx] = e.key.toUpperCase();
-	    goOneSquare();
+	    const blockStr = w._data.block || "#";
+	    if (w._data.puzzle[rowIx][colIx].cell == blockStr) {
+		return
+	    }
+	    if (g.ui.rebusModeP) {
+		g.ui.guess[rowIx][colIx] += e.key.toUpperCase();
+	    } else {
+		g.ui.guess[rowIx][colIx] = e.key.toUpperCase();
+		goOneSquare();
+	    }
 	    e.preventDefault();
 	    w.renderGrid(g);
 	    return
 	}
+    }
+
+    function sanitizeViaJS(htmls) {
+	// Maybe someday the JS built-in sanitizer will emerge
+	// from experimental status. Until then, roll our own...
+	var doc = new DOMParser().parseFromString(htmls, "text/html");
+	if (typeof doc.createElement !== 'function') {
+	    doc.createElement.remove();
+	}
+	// recursive tree-walker helper function
+	function helper(node) {
+	    if (node.nodeType == Node.TEXT_NODE) {
+		return node.cloneNode(true);
+	    }
+	    if (node.tagName == 'BODY') {
+		var newNode = doc.createElement('span');
+		for (var i = 0; i < node.childNodes.length; i++) {
+		    newNode.appendChild(helper(node.childNodes[i]), false);
+		}
+		return newNode
+	    }
+	    if ({
+		'B': true,
+		'I': true,
+		'S': true,
+		'U': true,
+		'EM': true,
+		'STRONG': true,
+		'BIG': true,
+		'SMALL': true,
+		'SUP': true,
+		'SUB': true,
+		'BR': true,
+	    }[node.tagName]) {
+		var newNode = doc.createElement(node.tagName);
+		for (var i = 0; i < node.childNodes.length; i++) {
+		    newNode.appendChild(helper(node.childNodes[i]), false);
+		}
+		return newNode
+	    }
+	    return doc.createDocumentFragment();
+	}
+	return helper(doc.body)
     }
     class Wrangler {
 	constructor() {
@@ -304,6 +407,8 @@ var ipuzx = {}
 	    this._grids = [];
 	    this._acrossCluesDiv = false;
 	    this._downCluesDiv = false;
+	    this._titleSpan = false;
+	    this._rebusButton = false;
 	}
 	get data() {
 	    return this._data;
@@ -373,13 +478,13 @@ var ipuzx = {}
 		    if (!this._data.puzzle[rowIx][colIx].blocked.left) { continue }
 		    if (this._data.puzzle[rowIx][colIx].blocked.right) { continue }
 		    var entry = {
-			direction: "across",
+			direction: "Across",
 			startRow: rowIx,
 			endRow: rowIx,
 			startCol: colIx,
 		    }
 		    if (this._data.puzzle[rowIx][colIx].cell && this._data.puzzle[rowIx][colIx].cell != emptyStr) {
-			entry.label = String(this._data.puzzle[rowIx][colIx].cell);
+			entry.number = String(this._data.puzzle[rowIx][colIx].cell);
 		    }
 		    for (var endColIx = colIx; endColIx < this._data.puzzle[rowIx].length; endColIx++) {
 			this._data.puzzle[rowIx][endColIx].acrossEntry = entry;
@@ -402,13 +507,13 @@ var ipuzx = {}
 		    if (!this._data.puzzle[rowIx][colIx].blocked.up) { continue }
 		    if (this._data.puzzle[rowIx][colIx].blocked.down) { continue }
 		    var entry = {
-			dir: "down",
+			direction: "Down",
 			startRow: rowIx,
 			startCol: colIx,
 			endCol: colIx,
 		    }
 		    if (this._data.puzzle[rowIx][colIx].cell && this._data.puzzle[rowIx][colIx].cell != emptyStr) {
-			entry.label = String(this._data.puzzle[rowIx][colIx].cell);
+			entry.number = String(this._data.puzzle[rowIx][colIx].cell);
 		    }
 		    for (var endRowIx = rowIx; endRowIx < this._data.puzzle.length; endRowIx++) {
 			this._data.puzzle[endRowIx][colIx].downEntry = entry;
@@ -425,7 +530,9 @@ var ipuzx = {}
 	    if (acrossEntries.length) {
 		this._grids.forEach((g) => g.ui = this.initUI());
 	    }
+	    this.showTitle();
 	    this.renderGrids();
+	    this.fillClues();
 	}
 	addGridCanvas(c) {
 	    if (!c) { return }
@@ -447,15 +554,40 @@ var ipuzx = {}
 	    this._grids = [];
 	    this.addGridCanvas(c)
 	}
+	set titleSpan(s) {
+	    this._titleSpan = s;
+	}
+	set rebusButton(b) {
+	    this._rebusButton = b;
+	    b.addEventListener('click', (e) => {
+		if (this._grids.length < 1) return
+		const newMode = ! this._grids[0].ui.rebusModeP;
+		const baseHTML = b.innerHTML.replace(" (On)", "").replace(" (Off)", "");
+		if (newMode) {
+		    b.innerHTML = baseHTML + " (On)";
+		} else {
+		    b.innerHTML = baseHTML + " (Off)";
+		}
+		this._grids.forEach((g) => g.ui.rebusModeP = newMode);
+		this._grids[0].canvas.focus();
+	    });
+	}
+	showTitle() {
+	    if (!this._titleSpan) return
+	    if (!this._data) return
+	    const titleText = this._data.title || "Crossword";
+	    this._titleSpan.innerText = titleText;
+	}
 	renderGrids() {
-	    this._grids.forEach((g) => this.renderGrid(g))
+	    this._grids.forEach((g) => this.renderGrid(g));
 	}
 	initUI() {
 	    var ui = {
 		selEntry: false,
 		focSquare: false,
-		direction: "across",
+		direction: "Across",
 		guess: [],
+		rebusModeP: false,
 	    };
 	    if (this._data.puzzle && this._data.puzzle.length) {
 		for (var rowIx = 0; rowIx < this._data.puzzle.length; rowIx++) {
@@ -467,7 +599,7 @@ var ipuzx = {}
 		}
 	    }
 	    if (this._data.acrossEntries && this._data.acrossEntries.length) {
-		ui.selEntry = this._data.acrossEntries[0];
+		ui.selEntry = this._data.acrossEntries[0];		
 		ui.focSquare = 	{
 		    row: ui.selEntry.startRow,
 		    col: ui.selEntry.startCol,
@@ -575,7 +707,7 @@ var ipuzx = {}
 			sq.cell != emptyStr) {
 			context.fillStyle = bgFillStyle;
 			context.fillRect(colIx * sqSz + xOffset + 2, rowIx * sqSz + yOffset + 2, sqSz/3, sqSz/3);
-			context.font = "" + Math.floor(sqSz/4) + "px serif";
+			context.font = "" + Math.floor(Math.max(7, sqSz/4)) + "px serif";
 			context.fillStyle = "rgb(0, 0, 0)";
 			context.fillText(String(sq.cell), colIx * sqSz + xOffset+2, (rowIx + 0.25) * sqSz + yOffset);
 		    }
@@ -584,7 +716,7 @@ var ipuzx = {}
 			context.fillStyle = "rgb(0, 0, 0)";
 			var fontSize = sqSz * 4 / 5;
 			var m = {}
-			while (fontSize > 5) {
+			while (fontSize > 9) {
 			    fontSize = fontSize * 0.95;
 			    context.font = "" + fontSize + "px sans-serif"
 			    m = context.measureText(String(guess));
@@ -599,6 +731,86 @@ var ipuzx = {}
 		}
 	    }
 	}
+	cursorJump(g, number, acrossOrDown) {
+	    number = String(number);
+	    if (!this._data) { return }
+	    for (var rowIx = 0; rowIx < this._data.puzzle.length; rowIx++) {
+		for (var colIx = 0; colIx < this._data.puzzle[rowIx].length; colIx++) {
+		    if (String(this._data.puzzle[rowIx][colIx].cell) == number) {
+			g.ui.focSquare = { row: rowIx, col: colIx };
+			g.ui.direction = acrossOrDown;
+			if (acrossOrDown == "Across") {
+			    g.ui.selEntry = this._data.puzzle[rowIx][colIx].acrossEntry;
+			} else {
+			    g.ui.selEntry = this._data.puzzle[rowIx][colIx].downEntry;
+			}
+			if (g.ui.selEntry) {
+			    this.highlightClues(String(g.ui.selEntry.number), g.ui.selEntry.direction);
+			}
+			this.renderGrid(g);
+			return
+		    }
+		}
+	    }
+	}
+	addClues(acrossDiv, downDiv) {
+	    this._acrossCluesDiv = acrossDiv;
+	    this._downCluesDiv = downDiv;
+	    this.fillClues();
+	}
+	highlightClues(number, acrossOrDown) {
+	    number = String(number)
+	    function helper(clueList, impliedAcrossOrDown) {
+		clueList.forEach((c) => {
+		    if (c.div) {
+			if (impliedAcrossOrDown == acrossOrDown && String(c.number) == number) {
+			    c.div.style.backgroundColor = "lime" // TODO lime, really?
+			} else if (c.continued && c.continued.some((i) => i.direction == acrossOrDown && i.number == number)) {
+			    c.div.style.backgroundColor = "pink" // TODO pink, really?
+			} else if (c.references && c.references.some((i) => i.direction == acrossOrDown && i.number == number)) {
+			    c.div.style.backgroundColor = "pink" // TODO pink, really? Is same as "continued" more confusing or less confusing?
+			} else {
+			    c.div.style.backgroundColor = "";
+			}
+		    }
+		})
+	    }
+	    helper(this._data.clues.Across, "Across");
+	    helper(this._data.clues.Down, "Down");
+	}
+	fillClues() {
+	    if (!this._data) return
+	    if (!this._data.clues) return
+	    function fillCluesHelper(wrangler, clueData, div, acrossOrDown) {
+		for (var i = 0; i < clueData.length; i++) {
+		    const c = clueData[i];
+		    var clueDiv = document.createElement("div");
+		    clueDiv.style["text-indent"] = "-0.5em";
+		    clueDiv.style["margin-left"] = "0.5em";
+		    var numB = document.createElement("b");
+		    const label = c.label || String(c.number);
+		    numB.appendChild(document.createTextNode(label));
+		    var clueSpan = sanitizeViaJS(c.clue);
+		    clueDiv.appendChild(numB);
+		    clueDiv.appendChild(document.createTextNode(" "))
+		    clueDiv.appendChild(clueSpan);
+		    div.appendChild(clueDiv);
+		    clueDiv.addEventListener('click', (e) => {
+			wrangler.highlightClues(String(c.number), acrossOrDown);
+			wrangler._grids.forEach((g) => wrangler.cursorJump(g, c.number, acrossOrDown));
+			wrangler._grids[0].canvas.focus();
+		    });
+		    c.div = clueDiv;
+		}
+	    }
+	    if (this._data.clues.Across && this._acrossCluesDiv) {
+		fillCluesHelper(this, this._data.clues.Across, this._acrossCluesDiv, "Across");
+	    }
+	    if (this._data.clues.Down && this._downCluesDiv) {
+		fillCluesHelper(this, this._data.clues.Down, this._downCluesDiv, "Down");
+	    }
+	}
     }
+
     ipuzx.Factory = function () { return new Wrangler(); }
 }
