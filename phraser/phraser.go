@@ -44,9 +44,8 @@ var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to file")
 
 const (
 	tmpFilenameFormat         = "p-%s-%012d.txt"
-	dictTampThreshholdEntries = 160000
-	// counter.d when my PC hit 40% mem full:  27946126
-	dictOutputThreshhold = 10000000
+	dictTampThreshholdEntries = 2560000
+	dictOutputThreshhold = 160000000
 )
 
 var (
