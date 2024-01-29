@@ -9,6 +9,7 @@ SITES = {
     "haj-math-meme": "https://lemmy.blahaj.zone/feeds/c/mathmemes.xml?sort=Active",
     "leml-prog-hum": "https://lemmy.ml/feeds/c/programmerhumor.xml?sort=Active",
     "leml-memes": "https://lemmy.ml/feeds/c/memes.xml?sort=Active",
+    "leml-all": "https://lemmy.ml/feeds/all.xml?sort=TopSixHour",
     }
 
 LINK_RE = re.compile(r'<a href="([^"]*)"')
