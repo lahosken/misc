@@ -45,7 +45,7 @@ var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to file")
 const (
 	tmpFilenameFormat         = "p-%s-%012d.txt"
 	dictTampThreshholdEntries = 2560000
-	dictOutputThreshhold = 160000000
+	dictOutputThreshhold      = 160000000
 )
 
 var (
@@ -658,7 +658,9 @@ func readXWdLists(fodderPath, tmpPath string, bigCounter *counter) {
 		}
 	}
 
-	inFilePaths, _ := filepath.Glob(filepath.Join(fodderPath, "*.dict"))
+	inFilePathsT, _ := filepath.Glob(filepath.Join(fodderPath, "*.txt"))
+	inFilePathsD, _ := filepath.Glob(filepath.Join(fodderPath, "*.dict"))
+	inFilePaths := append(inFilePathsD, inFilePathsT...)
 	unfoundCounter := counter{}
 	for _, inFilePath := range inFilePaths {
 		log.Printf("READING %v", inFilePath)
