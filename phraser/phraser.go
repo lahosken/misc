@@ -9,6 +9,7 @@ import (
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
+	"io"
 	"log"
 	"math"
 	"os"
@@ -44,8 +45,8 @@ var cpuprofile = flag.String("cpuprofile", "", "Write cpu profile to file")
 
 const (
 	tmpFilenameFormat         = "p-%s-%012d.txt"
-	dictTampThreshholdEntries = 2560000
-	dictOutputThreshhold      = 160000000
+	dictTampThreshholdEntries = 640000
+	dictOutputThreshhold      = 20000000
 )
 
 var (
@@ -230,9 +231,8 @@ func ingestWikiPage(page string, co *counter) {
 	for _, line := range strings.Split(page, "\n") {
 		if !textModeP {
 			if redirREMatch := redirRE.FindStringSubmatch(line); redirREMatch != nil {
-				line2snippetsPastBrackets(title, found)
-				line2snippetsPastBrackets(title, found)
-				line2snippetsPastBrackets(redirREMatch[1], found)
+				found.boost(title, 10)
+				found.boost(redirREMatch[1], 10)
 				continue
 			}
 			if titleREMatch := titleRE.FindStringSubmatch(line); titleREMatch != nil {
@@ -244,7 +244,7 @@ func ingestWikiPage(page string, co *counter) {
 				if strings.HasSuffix(title, "/Gallery") {
 					return
 				}
-				found.boost(title, 10)
+				found.boost(title, 20)
 				continue
 			}
 			if textREMatch := textRE.FindStringSubmatch(line); textREMatch != nil {
@@ -280,7 +280,6 @@ func line2snippetsPastBrackets(line string, snippets *counter) {
 	for _, deleteMeRE := range deleteMeREs {
 		line = deleteMeRE.ReplaceAllString(line, "")
 	}
-	line = strings.Replace(line, " &amp; ", " and ", -1)
 	if cur2REMatches := cur2RE.FindAllStringSubmatch(line, -1); cur2REMatches != nil {
 		for _, cur2REMatch := range cur2REMatches {
 			pipeFields := strings.Split(cur2REMatch[1], "|")
@@ -346,13 +345,17 @@ func tallySnippets(tally *counter, found counter) {
 			continue
 		}
 		key := strings.Join(tokens, " ")
-		if len(key) <= 35 {
-			tally.inc(key)
+		if len(key) < 80 {
+			tally.boost(key, score)
+		}
+		scoreDiv2 := uint64(1)
+		if score > 1 {
+			scoreDiv2 = uint64(score / 2)
 		}
 		for startIx, _ := range tokens {
 			for endIx := startIx + 1; endIx <= len(tokens); endIx += 1 {
 				key := strings.Join(tokens[startIx:endIx], " ")
-				tally.boost(key, score)
+				tally.boost(key, scoreDiv2)
 				if len(key) > 35 {
 					break
 				}
@@ -389,6 +392,7 @@ func line2snippets(line string, snippets *counter) {
 		return
 	}
 	line = refRE.ReplaceAllString(line, "")
+	line = strings.Replace(line, " &amp; ", " and ", -1)
 	if bra2REMatches := bra2RE.FindAllStringSubmatch(line, -1); bra2REMatches != nil {
 		for _, bra2REMatch := range bra2REMatches {
 			pipeFields := strings.Split(bra2REMatch[1], "|")
@@ -404,15 +408,11 @@ func line2snippets(line string, snippets *counter) {
 			if len(pipeFields) == 2 {
 				// for input "in 1901, [[Mahatma Gandhi|Gandhi]] stopped in Mauritius"
 				// we want to count strings
-				//   Mahatma Gandhi
-				//   Gandhi
-				//   in 1901, Gandhi stopped in Maritius
-				counter5x := counter{}
-				line2snippetsPastBrackets(pipeFields[0], &counter5x)
-				line2snippetsPastBrackets(pipeFields[1], &counter5x)
-				for s, score := range counter5x.d {
-					snippets.boost(s, 5*score)
-				}
+				// Mahatma Gandhi (boost somewhat, apparently important enough to xref)
+				// Gandhi         (boost a lot, apparently how we actually refer to him)
+				// in 1901, Gandhi stopped in Maritius (boost normal-text amounts)
+				snippets.boost(pipeFields[0], 2)
+				snippets.boost(pipeFields[1], 10)
 				// continue, getting the anchor text in context
 				line = strings.Replace(line, bra2REMatch[0], pipeFields[1], 1)
 			} else if len(pipeFields) == 1 {
@@ -420,12 +420,7 @@ func line2snippets(line string, snippets *counter) {
 				// count strings
 				//   Indira Gandhi
 				//   prime minister Indira Gandhi of India
-				// count the link triple
-				counter10x := counter{}
-				line2snippetsPastBrackets(pipeFields[0], &counter10x)
-				for s, score := range counter10x.d {
-					snippets.boost(s, 10*score)
-				}
+				snippets.boost(pipeFields[0], 10)
 
 				// continuing, getting anchor text in context
 				line = strings.Replace(line, bra2REMatch[0], pipeFields[0], 1)
@@ -588,6 +583,7 @@ func readTextFiles(fodderPath, tmpPath string) {
 				line = ""
 			}
 			line = strings.TrimSpace(line)
+			found.inc(line)
 			if line == "" || len(para) > 5000 {
 				para = para + " " + line
 				found.inc(para)
@@ -600,8 +596,6 @@ func readTextFiles(fodderPath, tmpPath string) {
 					}
 					// If we're filling up enough such that we consider tamping,
 					// write out what we have, and reset the counter.
-					// (Don't actually tamp, tho; that would remove all unique sentences,
-					// i.e., most sentences.)
 					if len(found.d) > dictTampThreshholdEntries {
 						tally := counter{}
 						tallySnippets(&tally, found)
@@ -745,11 +739,11 @@ func readPrebaked(fodderPath, tmpPath string) {
 			line := scan.Text()
 			match := lineRE.FindStringSubmatch(line)
 			if match == nil {
-				log.Fatal("weird prebaked file line %s %s", inPath, line)
+				log.Fatalf("weird prebaked file line %s %s", inPath, line)
 			}
 			sqrtScore, err := strconv.Atoi(match[1])
 			if err != nil {
-				log.Fatal("weird prebaked file line (non-int score?) %s %s", inPath, line)
+				log.Fatalf("weird prebaked file line (non-int score?) %s %s", inPath, line)
 			}
 			score := uint64(math.Pow(float64(sqrtScore), 2))
 			phrase := match[2]
@@ -772,14 +766,21 @@ func readWikis(fodderPath, tmpPath string) {
 		}
 		defer fodderF.Close()
 		co := new(counter)
-		fodderScan := bufio.NewScanner(fodderF)
+		reader := bufio.NewReader(fodderF)
 		page := ""
+
 		for {
-			fileNotDone := fodderScan.Scan()
-			if !fileNotDone {
-				break
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				lineSlice := line
+				if len(line) > 50 {
+					lineSlice = "starts with " + line[:40] + "..."
+				}
+				log.Printf("wiki read error: \n  LINE %v\n  ERR %v", lineSlice, err)
 			}
-			line := fodderScan.Text()
 			if strings.HasPrefix(line, "  <page>") {
 				pageCount += 1
 				page = ""
@@ -819,7 +820,7 @@ func LoadBig(tmpPath string) (bigCounter *counter) {
 	tmpFileGlobPattern := regexp.MustCompile(`%.*?d`).ReplaceAllString(tmpFilenameFormat, "*")
 	tmpFilenames, err := filepath.Glob(filepath.Join(tmpPath, tmpFileGlobPattern))
 	if err != nil {
-		log.Fatal("couldn't glob temp files %v", err)
+		log.Fatalf("couldn't glob temp files %v", err)
 	}
 
 	// We make two passes.
@@ -862,11 +863,11 @@ func LoadBig(tmpPath string) (bigCounter *counter) {
 			line := scan.Text()
 			match := lineRE.FindStringSubmatch(line)
 			if match == nil {
-				log.Fatal("Weird tmp file line %s %s", tmpFilename, line)
+				log.Fatalf("Weird tmp file line %s %s", tmpFilename, line)
 			}
 			score, err := strconv.Atoi(match[1])
 			if err != nil {
-				log.Fatal("Weird tmp file line (non-int score?) %s %s", tmpFilename, line)
+				log.Fatalf("Weird tmp file line (non-int score?) %s %s", tmpFilename, line)
 			}
 			if score <= magicNumber {
 				break
@@ -902,11 +903,11 @@ func LoadBig(tmpPath string) (bigCounter *counter) {
 			line := scan.Text()
 			match := lineRE.FindStringSubmatch(line)
 			if match == nil {
-				log.Fatal("weird tmp file line %s %s", tmpFilename, line)
+				log.Fatalf("weird tmp file line %s %s", tmpFilename, line)
 			}
 			score, err := strconv.Atoi(match[1])
 			if err != nil {
-				log.Fatal("weird tmp file line (non-int score?) %s %s", tmpFilename, line)
+				log.Fatalf("weird tmp file line (non-int score?) %s %s", tmpFilename, line)
 			}
 			if score > magicNumber {
 				continue
