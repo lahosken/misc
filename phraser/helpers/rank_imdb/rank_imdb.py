@@ -11,7 +11,7 @@ from math import floor
 def read_title_ratings():
     r = Counter()
     for line in open("title.ratings.tsv"):
-        tt, rating_s, numVotes_s = line.strip().split("\t")
+        tt, rating_s, numVotes_s = str(line).strip().split("\t")
         if tt == "tconst": continue
         numVotes = int(numVotes_s, 10)
         if numVotes < 5000: continue # too obscure
@@ -86,34 +86,39 @@ def normalize(s):
         if c == "'": continue
         if c == "&": retval += "and"
         if c.isspace() or c == "-":
+            if not len(retval): continue
             if retval[-1] == " ": continue
             retval += " "
             continue
         if c.isalnum():
             retval += c
             continue
-    return retval
+    return retval.strip()
 
 def write_prebaked(title_basics, ratings, names, people):
     output = Counter()
     big_title_rating = ratings.most_common(10)[-1][1]
-    scale = big_title_rating / 1000
-    for tt, rating in ratings.most_common(3000):
+    scale = big_title_rating / 200
+    for tt, rating in ratings.most_common(10_000):
         if rating > big_title_rating: rating = big_title_rating
         if tt not in title_basics: continue
         title = normalize(title_basics[tt])
         if len(title) < 1: continue
         if title in output: continue
-        output[title] = int(rating / scale)
+        score = int(rating / scale)
+        if score < 2: break
+        output[title] = score
     big_people_rating = people.most_common(10)[-1][1]
-    scale = big_people_rating / 1000
-    for nm, rating in people.most_common(3000):
+    scale = big_people_rating / 200
+    for nm, rating in people.most_common(10_000):
         if rating > big_people_rating: rating = big_people_rating
         if nm not in names: continue
         name = normalize(names[nm])
         if len(name) < 1: continue
         if name in output: continue
-        output[name] = int(rating / scale)
+        score = int(rating / scale)
+        if score < 2: break
+        output[name] = score
     f = open("imdb.txt", "w")
     for key, value in output.most_common():
         f.write("{}\t{}\n".format(value, key))
