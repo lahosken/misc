@@ -21,3 +21,8 @@ In the same dir:
 $ `./eat_grocerydb.py > grocerydb.txt`
 
 Copy `grocerydb.txt` to your "prebaked" dir
+
+The data was used for
+"Prevalence of processed foods in major US grocery stores"
+Babak Ravandi and Gordana Ispirova and Michael Sebek and Peter Mehler and Albert-László Barabási and Giulia Menichetti
+https://www.nature.com/articles/s43016-024-01095-7
