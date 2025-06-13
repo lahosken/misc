@@ -91,6 +91,7 @@ var (
 		regexp.MustCompile(`&lt;math.*`),
 		regexp.MustCompile(`.*&lt;/math&gt;`),
 		regexp.MustCompile(`&quot;`),
+		regexp.MustCompile(`ʻ`), // hawaiʻi
 		regexp.MustCompile(`&lt;sup.*?&lt;/sup&gt;`),
 		regexp.MustCompile(`&lt;big.*?&lt;/big&gt;`),
 		regexp.MustCompile(`&lt;.*?&gt;`),
@@ -244,6 +245,7 @@ func ingestWikiPage(page string, co *counter) {
 				if strings.HasSuffix(title, "/Gallery") {
 					return
 				}
+        title = strings.Replace(title, "&amp;", "and", -1)
 				found.boost(title, 20)
 				continue
 			}
