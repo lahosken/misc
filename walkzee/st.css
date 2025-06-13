@@ -1,0 +1,30 @@
+#rvcanvas {
+    z-index: -1;
+    width: 100%;
+}
+
+#refresh {
+    position: absolute;
+}
+
+#hands {
+    text-align: center;
+}
+
+button {
+    font-family: monospace;
+    font-size: 200%;
+}
+
+button.claw {
+    background-color: yellow;
+}
+
+button.noclaw {
+}
+
+.hand1rule {
+    display: inline-block;
+    width: 2em;
+    background-color: white;
+}
