@@ -1,8 +1,8 @@
-var locs = JSON.parse(localStorage.getItem("locs") || "{}");
-var locTimes = JSON.parse(localStorage.getItem("locTimes") || "{}");
-var hopper = JSON.parse(localStorage.getItem("hopper") || "[]" );
-var hands = JSON.parse(localStorage.getItem("hands") || "[]" );
-var score = JSON.parse(localStorage.getItem("score") || "10" );
+var locs = JSON.parse(localStorage.getItem("wz-locs") || "{}");
+var locTimes = JSON.parse(localStorage.getItem("wz-locTimes") || "{}");
+var hopper = JSON.parse(localStorage.getItem("wz-hopper") || "[]" );
+var hands = JSON.parse(localStorage.getItem("wz-hands") || "[]" );
+var score = JSON.parse(localStorage.getItem("wz-score") || "10" );
 
 
 // transient state
@@ -368,6 +368,7 @@ function fetchCurPos(desperateP) {
 function refreshNearbyBlocks() {
     const now = Date.now();
     const anHourAgo = now - (60 * 60 * 1000)
+    const threeHoursAgo = now - (3 * 60 * 60 * 1000)
     for (var northOffset = -1; northOffset < 2; northOffset++) {
 	for (var eastOffset = -1; eastOffset < 2; eastOffset++) {
 	    const neighborLat = cachedPos.lat + (northOffset / cachedPos.kmPerLat);
@@ -380,6 +381,9 @@ function refreshNearbyBlocks() {
 	    }
 	    if (! (blockKey in locs)) {
 		locs[blockKey] = [];
+	    }
+	    if (locTimes[blockKey] < threeHoursAgo) {
+		locs[blockKey] = locs[blockKey].filter((l) => {return l.roll > 0})
 	    }
 	    locTimes[blockKey] = now;
 	    if (neighborLat > 80) continue
@@ -555,12 +559,14 @@ function hopBtnClick(ev) {
 	claw = { area: "void" };
 	showHopper();
 	showHands();
+	newMsg();
     }
     if (claw.area == "hop") {
 	hopper[payload.d] = hopper[claw.die];
 	hopper[claw.die] = 0;
 	claw = { area: "void" };
 	showHopper();
+	newMsg();
     }
     if (claw.area == "map") {
 	if (!(claw.block in locs)) { claw = { area: "void" }; return }
@@ -570,6 +576,7 @@ function hopBtnClick(ev) {
 	claw = { area: "void" };
 	drawMap()
 	showHopper();
+	newMsg();
     }
 
     persist();
@@ -636,11 +643,11 @@ function claimBtnClick(ev) {
 }
 
 function persist() {
-    localStorage.setItem("locs", JSON.stringify(locs));
-    localStorage.setItem("locTimes", JSON.stringify(locTimes));
-    localStorage.setItem("hopper", JSON.stringify(hopper.filter((d) => { return d > 0 })));
-    localStorage.setItem("hands", JSON.stringify(hands));
-    localStorage.setItem("score", JSON.stringify(score));
+    localStorage.setItem("wz-locs", JSON.stringify(locs));
+    localStorage.setItem("wz-locTimes", JSON.stringify(locTimes));
+    localStorage.setItem("wz-hopper", JSON.stringify(hopper.filter((d) => { return d > 0 })));
+    localStorage.setItem("wz-hands", JSON.stringify(hands));
+    localStorage.setItem("wz-score", JSON.stringify(score));
 }
 
 function tickMinute() {
