@@ -70,6 +70,7 @@ function jfh(hand) {
     var got3 = false;
     var got2 = false;
     for (var ix = 1; ix < counts.length; ix++) {
+	if (counts[ix] == 5) { return true } // 5 of a kind is a full house i guess
 	if (counts[ix] == 3) { got3 = true; }
 	if (counts[ix] == 2) { got2 = true; }
     }
@@ -146,7 +147,7 @@ window.addEventListener("resize", (event) => {
     const c = document.getElementById("rvcanvas");
     c.height = c.width;
 
-    drawMap();
+    redraw();
 });
 window.addEventListener("load", (event) => {
     const rf = document.getElementById("refresh");
@@ -159,12 +160,11 @@ window.addEventListener("load", (event) => {
 
     setInterval(tickMinute, 60 * 1000);
 
-    maybeExtendHopper();
+    rightsizeHopper();
     while (hands.length < 3) {
 	addHand();
     }
-    showHands();
-    showHopper();    
+    redraw();
 }, false);
 
 function rfBtnClick(ev) {
@@ -175,14 +175,20 @@ function rfBtnClick(ev) {
     }, 5 * 1000);
 }
 
-function maybeExtendHopper() {
+function rightsizeHopper() {
     var zeroCount = 0;
     hopper.forEach((v) => {
 	if (v == 0) { zeroCount++ }
     });
-    while (zeroCount < 3) {
-	hopper.push(0);
-	zeroCount++
+    if ((zeroCount < 3) || (zeroCount / hopper.length < 0.33)) {
+	hopper.push(0, 0, 0)
+	return
+    }
+    if (zeroCount < 6) return
+    if (zeroCount / hopper.length < 0.4) return
+    if (hopper[hopper.length-1] == 0) {
+	hopper.length--
+	return
     }
 }
 
@@ -243,9 +249,7 @@ function canvClick(e) {
     if (clickedLoc.roll <= 0) {
 	claw = { area: "void" }
 	newMsg();
-	drawMap();
-	showHands();
-	showHopper();
+	redraw();
 	return
     }
     if (dist(clickedLoc.lat, clickedLoc.lng, cachedPos.lat, cachedPos.lng) > 0.5) {
@@ -257,9 +261,7 @@ function canvClick(e) {
 	block: closest_bix.block,
 	ix: closest_bix.ix,
     }
-    drawMap();
-    showHands();
-    showHopper();
+    redraw();
     newMsg("Where do you want it?");
 }
 
@@ -467,7 +469,23 @@ function receivedCurPos(pos) {
     const rf = document.getElementById("refresh");
     rf.disabled = false;
     refreshNearbyBlocks();
-    drawMap();
+    redraw();
+    
+    // The geolocation API might give an olllld location, but not
+    // give us an error message or anything. What a scamp! 
+    if (Date.now() - pos.timestamp > 9 * 1000) {
+        // Maybe we should retry? Maybe?
+        // (An earlier implementation always retried, w/short delay. That
+        //  pretty much locked up my phone when I went through a tunnel, so
+        //  that wasn't a good handler. 
+        //  So... uhm, randomly maybe retry with some random delay or
+	//  something. Not well thought-out, obviously, but worked OK
+        //  for many years in Troubadour Tour Board, so good enough?)
+        if (Math.random() < 0.7) {
+            setTimeout(fetchCurPosDesperate, 1000 * (Math.random() + 0.01));
+        }
+	
+    }
 }
 
 function addHand() {
@@ -548,24 +566,23 @@ function hopBtnClick(ev) {
 	    die: payload.d,
 	}
 	newMsg("Where do you want it?");
-	showHopper()
+	redraw();
 	return
     } 
+    rightsizeHopper();
     if (claw.area == "void") return
-    maybeExtendHopper();
     if (claw.area == "hands") {
 	hopper[payload.d] = hands[claw.hand].dice[claw.die];
 	hands[claw.hand].dice[claw.die] = 0;
 	claw = { area: "void" };
-	showHopper();
-	showHands();
+	redraw();
 	newMsg();
     }
     if (claw.area == "hop") {
 	hopper[payload.d] = hopper[claw.die];
 	hopper[claw.die] = 0;
 	claw = { area: "void" };
-	showHopper();
+	redraw();
 	newMsg();
     }
     if (claw.area == "map") {
@@ -574,8 +591,7 @@ function hopBtnClick(ev) {
 	hopper[payload.d] = locs[claw.block][claw.ix].roll;
 	locs[claw.block][claw.ix].roll = 0;
 	claw = { area: "void" };
-	drawMap()
-	showHopper();
+	redraw();
 	newMsg();
     }
 
@@ -592,7 +608,7 @@ function dieBtnClick(ev) {
 	    die: payload.d,
 	}
 	newMsg("Where do you want it?");
-	showHands();
+	redraw();
     } else {
 	if (claw.area == "void") return
 	if (claw.area == "hands") {
@@ -601,16 +617,15 @@ function dieBtnClick(ev) {
 	    hands[payload.h].dice[payload.d] = tmp;
 	    newMsg("Working towards that " + HANDRULE[hands[payload.h].rule].p);
 	    claw = { area: "void" };
-	    showHopper();
-	    showHands();
+	    redraw();
 	}
 	if (claw.area == "hop") {
 	    hands[payload.h].dice[payload.d] = hopper[claw.die];
 	    hopper[claw.die] = 0;
 	    claw = { area: "void" };
 	    newMsg("Working towards that " + HANDRULE[hands[payload.h].rule].p);
-	    showHopper();
-	    showHands();
+	    rightsizeHopper();
+	    redraw();
 	}
 	if (claw.area == "map") {
 	    if (!(claw.block in locs)) { claw = { area: "void" }; return }
@@ -619,8 +634,7 @@ function dieBtnClick(ev) {
 	    locs[claw.block][claw.ix].roll = 0;
 	    newMsg("Working towards that " + HANDRULE[hands[payload.h].rule].p);
 	    claw = { area: "void" }; 
-	    drawMap();
-	    showHands();
+	    redraw();
 	}
     }
     persist();
@@ -638,14 +652,20 @@ function claimBtnClick(ev) {
 	salvageHands.push(hands[ix]);
     }
     hands = salvageHands;
-    showHands();
+    redraw();
     persist();
+}
+
+function redraw() {
+    drawMap();
+    showHands();
+    showHopper();
 }
 
 function persist() {
     localStorage.setItem("wz-locs", JSON.stringify(locs));
     localStorage.setItem("wz-locTimes", JSON.stringify(locTimes));
-    localStorage.setItem("wz-hopper", JSON.stringify(hopper.filter((d) => { return d > 0 })));
+    localStorage.setItem("wz-hopper", JSON.stringify(hopper));
     localStorage.setItem("wz-hands", JSON.stringify(hands));
     localStorage.setItem("wz-score", JSON.stringify(score));
 }
