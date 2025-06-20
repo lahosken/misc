@@ -5,6 +5,13 @@
 
 #refresh {
     position: absolute;
+    top: 0px;
+    left: 0px;
+}
+#help {
+    position: absolute;
+    top: 0px;
+    right: 0px;
 }
 
 #hands {
@@ -25,6 +32,11 @@ button.noclaw {
 
 .hand1rule {
     display: inline-block;
-    width: 2em;
+    width: 4em;
+    text-align: right;
     background-color: white;
+}
+.hand1rule img {
+    height: 1em;
+    width: 1em;
 }
