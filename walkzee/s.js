@@ -14,32 +14,30 @@ var cachedPos = { // where am I (as of last time fetched position)?
     kmPerLng: 87.83,
 };
 
-var documentWasHiddenP = false; // last time the timer ticked, was user even looking at this tab?
-
 const HANDRULE = {
-    "5kind": { p: "Five of a kind", l: "5x", j: j5x, pt: 5 },
-    "4kind": { p: "Four of a kind", l: "4x", j: j4x, pt: 3 },
-    "Strai": { p: "Straight", l: "St", j: jst, pt: 2 },
-    "House": { p: "Full House", l: "FH", j: jfh, pt: 2 },
-    "3kind": { p: "Three of a kind", l: "3x", j: j3x, pt: 1 },
-    "Aces": { p: "Pair of ⚀s", l: "11", j: j11, pt: 1 },
-    "Deuces": { p: "Pair of ⚁s", l: "22", j: j22, pt: 1  },
-    "Treys": { p: "Pair of ⚂s", l: "33", j: j33, pt: 1  },
-    "Caters": { p: "Pair of ⚃s", l: "44",  j: j44, pt: 1  },
-    "Cinques": { p: "Pair of ⚄s", l: "55", j: j55, pt: 1  },
-    "Boxcars": { p: "Pair of ⚅s", l: "66", j: j66, pt: 1  },
+    "5kind": { p: "Five of a kind", l: "5×❓", j: is5Kind, pt: 5 },
+    "4kind": { p: "Four of a kind", l: "4×❓", j: is4Kind, pt: 3 },
+    "Straight": { p: "Straight", l: "Straight", j: isStraight, pt: 2 },
+    "House": { p: "Full House", l: "🏠", j: isFullHouse, pt: 2 },
+    "3kind": { p: "Three of a kind", l: "3×❓", j: is3Kind, pt: 1.8 },
+    "Aces": { p: "Pair of ⚀(1)s", l: '2×<img src="ace.png">', j: isPair1s, pt: 1.7 },
+    "Deuces": { p: "Pair of ⚁(2)s", l: '2×<img src="deuce.png">', j: isPair2s, pt: 1.2  },
+    "Treys": { p: "Pair of ⚂(3)s", l: '2×<img src="trey.png">', j: isPair3s, pt: 1.3  },
+    "Caters": { p: "Pair of ⚃(4)s", l: '2×<img src="cater.png">',  j: isPair4s, pt: 1.4  },
+    "Cinques": { p: "Pair of ⚄(5)s", l: '2×<img src="cinque.png">', j: isPair5s, pt: 1.5  },
+    "Boxcars": { p: "Pair of ⚅(6)s", l: '2×<img src="boxcar.png">', j: isPair6s, pt: 1.6  },
 };
 
-const UNICS = "●⚀⚁⚂⚃⚄⚅";
+const UNICS = "○⚀⚁⚂⚃⚄⚅";
 
-function j5x(hand) {
+function is5Kind(hand) {
     if (hand[0] <= 0) { return false }
     for (var ix = 0; ix < hand.length; ix++) {
 	if (hand[ix] != hand[0]) { return false }
     }
     return true
 }
-function j4x(hand) {
+function is4Kind(hand) {
     var counts = [0, 0, 0, 0, 0, 0, 0];
     hand.forEach((die) => {
 	counts[die]++;
@@ -50,7 +48,7 @@ function j4x(hand) {
     }
     return false
 }
-function j3x(hand) {
+function is3Kind(hand) {
     var counts = [0, 0, 0, 0, 0, 0, 0];
     hand.forEach((die) => {
 	counts[die]++;
@@ -61,8 +59,8 @@ function j3x(hand) {
     }
     return false
 }
-function jfh(hand) {
-    if (j5x(hand)) return true
+function isFullHouse(hand) {
+    if (is5Kind(hand)) return true
     var counts = [0, 0, 0, 0, 0, 0, 0];
     hand.forEach((die) => {
 	counts[die]++;
@@ -76,7 +74,7 @@ function jfh(hand) {
     }
     return (got3 && got2)
 }
-function jst(hand) {
+function isStraight(hand) {
     var counts = [0, 0, 0, 0, 0, 0, 0];
     hand.forEach((die) => {
 	counts[die]++;
@@ -88,7 +86,7 @@ function jst(hand) {
     if (counts[1] && counts[6]) return false
     return true
 }
-function j11(hand) {
+function isPair1s(hand) {
     const t = 1;
     count = 0;
     for (var ix = 0; ix < hand.length; ix++) {
@@ -97,7 +95,7 @@ function j11(hand) {
     }
     return (count > 1)
 }
-function j22(hand) {
+function isPair2s(hand) {
     const t = 2;
     count = 0;
     for (var ix = 0; ix < hand.length; ix++) {
@@ -106,7 +104,7 @@ function j22(hand) {
     }
     return (count > 1)
 }
-function j33(hand) {
+function isPair3s(hand) {
     const t = 3;
     count = 0;
     for (var ix = 0; ix < hand.length; ix++) {
@@ -115,7 +113,7 @@ function j33(hand) {
     }
     return (count > 1)
 }
-function j44(hand) {
+function isPair4s(hand) {
     const t = 4;
     count = 0;
     for (var ix = 0; ix < hand.length; ix++) {
@@ -124,7 +122,7 @@ function j44(hand) {
     }
     return (count > 1)
 }
-function j55(hand) {
+function isPair5s(hand) {
     const t = 5;
     count = 0;
     for (var ix = 0; ix < hand.length; ix++) {
@@ -133,7 +131,7 @@ function j55(hand) {
     }
     return (count > 1)
 }
-function j66(hand) {
+function isPair6s(hand) {
     const t = 6;
     count = 0;
     for (var ix = 0; ix < hand.length; ix++) {
@@ -172,7 +170,7 @@ function rfBtnClick(ev) {
     fetchCurPos();
     setTimeout(() => {
 	ev.target.disabled = false;
-    }, 5 * 1000);
+    }, 10 * 1000);
 }
 
 function rightsizeHopper() {
@@ -467,7 +465,6 @@ function receivedCurPos(pos) {
         kmPerLng: 111.1 * Math.cos(pos.coords.latitude * 3.14159 / 180.0),
     }
     const rf = document.getElementById("refresh");
-    rf.disabled = false;
     refreshNearbyBlocks();
     redraw();
     
@@ -526,7 +523,7 @@ function showHands() {
 	
 	var ruleSpan = document.createElement("div");
 	ruleSpan.className = "hand1rule";
-	ruleSpan.appendChild(document.createTextNode(HANDRULE[hand.rule].l));
+	ruleSpan.innerHTML = HANDRULE[hand.rule].l;
 	handDiv.appendChild(ruleSpan);
 
 	handDiv.appendChild(document.createTextNode(" "));
@@ -671,18 +668,9 @@ function persist() {
 }
 
 function tickMinute() {
+    if (document.hidden) { return }
     if (cachedPos.lat || cachedPos.lng) {
 	cullOldBlocks();
     }
-    if (document.hidden) {
-        documentWasHiddenP = true;
-        return;
-    }
-    
-    if (documentWasHiddenP) {
-        setTimeout(fetchCurPos, 5 * 1000);
-    } else {
-	fetchCurPos();
-    }
-    documentWasHiddenP = false;
+    setTimeout(fetchCurPos, 5 * 1000);
 }
