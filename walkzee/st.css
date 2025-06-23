@@ -6,12 +6,12 @@
 #refresh {
     position: absolute;
     top: 0px;
-    left: 0px;
+    right: 0px;
 }
 #help {
     position: absolute;
     top: 0px;
-    right: 0px;
+    left: 0px;
 }
 
 #hands {
@@ -21,6 +21,7 @@
 button {
     font-family: monospace;
     font-size: 200%;
+    min-width: 1.5em;
 }
 
 button.claw {
@@ -32,7 +33,7 @@ button.noclaw {
 
 .hand1rule {
     display: inline-block;
-    width: 4em;
+    width: 5em;
     text-align: right;
     background-color: white;
 }

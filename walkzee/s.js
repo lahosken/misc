@@ -19,7 +19,8 @@ const HANDRULE = {
     "4kind": { p: "Four of a kind", l: "4×❓", j: is4Kind, pt: 3 },
     "Straight": { p: "Straight", l: "Straight", j: isStraight, pt: 2 },
     "House": { p: "Full House", l: "🏠", j: isFullHouse, pt: 2 },
-    "3kind": { p: "Three of a kind", l: "3×❓", j: is3Kind, pt: 1.8 },
+    "3Kind": { p: "Three of a kind", l: "3×❓", j: is3Kind, pt: 1.9 },
+    "2Pair": { p: "Two Pair", l: "2×❓,&nbsp;2×❓", j: is2Pair, pt: 1.9 },
     "Aces": { p: "Pair of ⚀(1)s", l: '2×<img src="ace.png">', j: isPair1s, pt: 1.7 },
     "Deuces": { p: "Pair of ⚁(2)s", l: '2×<img src="deuce.png">', j: isPair2s, pt: 1.2  },
     "Treys": { p: "Pair of ⚂(3)s", l: '2×<img src="trey.png">', j: isPair3s, pt: 1.3  },
@@ -73,6 +74,19 @@ function isFullHouse(hand) {
 	if (counts[ix] == 2) { got2 = true; }
     }
     return (got3 && got2)
+}
+function is2Pair(hand) {
+    if (is4Kind(hand)) return true
+    var counts = [0, 0, 0, 0, 0, 0, 0];
+    hand.forEach((die) => {
+	counts[die]++;
+	if (die <= 0) { return false }
+    });
+    var pairs = 0
+    for (var ix = 1; ix < counts.length; ix++) {
+	if (counts[ix] >= 2) { pairs++; }
+    }
+    return (pairs >= 2)
 }
 function isStraight(hand) {
     var counts = [0, 0, 0, 0, 0, 0, 0];
@@ -639,6 +653,7 @@ function dieBtnClick(ev) {
 
 function claimBtnClick(ev) {
     const beforeScore = score;
+    if (score < 2) score = 2;
     const rule = HANDRULE[hands[ev.target.payload.h].rule];
     score += Math.floor( Math.log2(score) * rule.pt);
     newMsg("Nice work! Your score went up! " + beforeScore + " ↗ " + score);
