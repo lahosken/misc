@@ -10,7 +10,7 @@ A helper script `howto_fetch.py` outputs command lines to download
 yesterday's data (assuming you have the `wget` command). You might
 run `howto_fetch.py` and then copy-paste those commands onto your command line.
 
-Run the <tt>rank_imdb.py</tt> script. It expects to find the <tt>*.json.gz</tt>
+Run the <tt>rank_tmdb.py</tt> script. It expects to find the <tt>*.json.gz</tt>
 files in the same directory. It generates one file in the same directory:
 
 + <tt>tmdb.txt</tt> A text file of popular titles and names, with a popularity
